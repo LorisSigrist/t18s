@@ -1,0 +1,44 @@
+{
+  "name": "t18s",
+  "description": "Typesafe i18n for SvelteKit",
+  "version": "0.0.1",
+  "author": "Loris Sigrist",
+  "type": "module",
+  "main": "src/index.js",
+  "types": "types/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/LorisSigrist/t18s.git"
+  },
+  "homepage": "https://github.com/LorisSigrist/t18s#readme",
+  "license": "MIT",
+  "scripts": {
+    "test": "vitest run --passWithNoTests",
+    "prepublishOnly": "node ./dts.js",
+    "format": "prettier --write ."
+  },
+  "dependencies": {
+    "@formatjs/icu-messageformat-parser": "^2.6.2",
+    "js-yaml": "^4.1.0",
+    "kleur": "^4.1.5"
+  },
+  "devDependencies": {
+    "@formatjs/intl": "^2.9.3",
+    "@types/node": "^20.7.2",
+    "dts-buddy": "^0.2.5",
+    "prettier": "^3.0.3",
+    "vite": "^4.4.9",
+    "vitest": "^0.34.6",
+    "@types/js-yaml": "^4.0.6"
+  },
+  "files": [
+    "types",
+    "src"
+  ],
+  "exports": {
+    ".": {
+      "import": "./src/index.js",
+      "types": "./types/index.d.ts"
+    }
+  }
+}
