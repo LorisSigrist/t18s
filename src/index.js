@@ -27,16 +27,11 @@ const LOADERS = [yamlLoader, jsonLoader];
  * @returns {import("vite").Plugin}
  */
 export function t18s(userConfig = {}) {
-  const fullUserConfig = { ...DEFAULT_CONFIG, ...userConfig };
-
   const logger = new Logger();
   const Adapter = new SvelteStoreAdapter();
 
-  /** @type {string} */
-  let translationDir;
-
-  /** @type {string} */
-  let dtsPath;
+  /** @type {import("./types.js").ResolvedPluginConfig} */
+  let config;
 
   /** @type {import("./types.js").LocaleDictionaries} */
   const localeDictionaries = new Map();
@@ -58,12 +53,12 @@ export function t18s(userConfig = {}) {
     }
 
     const loader = LOADERS.find((l) =>
-      l.fileExtensions.includes(fileExtension),
+      l.fileExtensions.includes(fileExtension)
     );
 
     if (!loader) {
       logger.warn(
-        `Could not find translation loader for .${fileExtension} files. Ignoring file ${filePath}`,
+        `Could not find translation loader for .${fileExtension} files. Ignoring file ${filePath}`
       );
       return null;
     }
@@ -87,6 +82,8 @@ export function t18s(userConfig = {}) {
       logger.error(`Could not determine file extension for ${filePath}`);
       return;
     }
+
+    const isValidLocale = new Intl.Locale(locale);
 
     //Attempt to read the file
     let textContent = "";
@@ -165,36 +162,41 @@ export function t18s(userConfig = {}) {
 
   async function regenerateDTS() {
     const dts = Adapter.getTypeDefinition(localeDictionaries);
-    await writeFile(dtsPath, dts, { encoding: "utf-8" });
+    await writeFile(config.dtsPath, dts, { encoding: "utf-8" });
   }
 
   /**
    * @param {string} path
    * @returns {boolean}
    */
-  const isTranslationFile = (path) => path.startsWith(translationDir);
+  const isTranslationFile = (path) => path.startsWith(config.translationsDir);
 
   return {
     name: "t18s",
     enforce: "pre",
 
     async configResolved(resolvedConfig) {
-      translationDir = resolve(
-        resolvedConfig.root,
-        fullUserConfig.translationsDir,
-      );
-      dtsPath = resolve(resolvedConfig.root, fullUserConfig.dts);
+      const fullUserConfig = { ...DEFAULT_CONFIG, ...userConfig };
+
+      config = {
+        dtsPath: resolve(resolvedConfig.root, fullUserConfig.dts),
+        translationsDir: resolve(
+          resolvedConfig.root,
+          fullUserConfig.translationsDir
+        ),
+        fallbackLocale: "en",
+      };
 
       //Generate all code for the initial translation files
       /** @type {string[]} */
       let files = [];
       try {
-        files = await readdir(translationDir);
+        files = await readdir(config.translationsDir);
       } catch (e) {
         logger.error("Could not read translation directory\n" + e);
         return;
       }
-      const paths = files.map((file) => resolve(translationDir, file));
+      const paths = files.map((file) => resolve(config.translationsDir, file));
       await Promise.all(paths.map(invalidateTranslationFile));
     },
 
@@ -202,7 +204,7 @@ export function t18s(userConfig = {}) {
       if (id.startsWith(VIRTUAL_MODULE_PREFIX)) {
         return id.replace(
           VIRTUAL_MODULE_PREFIX,
-          RESOLVED_VIRTUAL_MODULE_PREFIX,
+          RESOLVED_VIRTUAL_MODULE_PREFIX
         );
       }
     },
@@ -217,7 +219,7 @@ export function t18s(userConfig = {}) {
 
       const locale = id.split("/")[2];
       return Adapter.getDictionaryCode(
-        localeDictionaries.get(locale) || new Map(),
+        localeDictionaries.get(locale) || new Map()
       );
     },
 

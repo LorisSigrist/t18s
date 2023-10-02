@@ -1,4 +1,5 @@
 import { expect } from "vitest";
+import { parse } from "@formatjs/icu-messageformat-parser";
 
 /**
  * Tests that two type definitions are equal.
@@ -26,4 +27,17 @@ export function expectNonWhitespaceToEqual(actual, expected) {
 
   //Compare
   expect(actual).toEqual(expected);
+}
+
+
+/**
+ * Parses a message into an AST, using our standard options.
+ * @param {string} source 
+ * @returns {import("@formatjs/icu-messageformat-parser").MessageFormatElement[]}
+ */
+export function parseMessage(source) {
+  return parse(source, {
+    shouldParseSkeletons: true,
+    requiresOtherClause: false,
+  });
 }

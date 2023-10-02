@@ -21,3 +21,10 @@ export interface Message {
   /** An optional description of the message that provides context for translators. */
   description: string | null;
 }
+
+
+export interface ResolvedPluginConfig {
+  dtsPath: string;
+  translationsDir: string;
+  fallbackLocale: string;
+}

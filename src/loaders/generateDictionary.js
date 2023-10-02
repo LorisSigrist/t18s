@@ -13,8 +13,12 @@ export function getDictionary(tree, locale) {
   /** @type {Map<string, string>} */
   const keyVal = new Map();
 
+  /**
+   * @param {unknown} obj 
+   * @param {string[]} path 
+   */
   function flatten(obj, path = []) {
-    if (typeof obj !== "object") {
+    if (typeof obj === "string") {
       keyVal.set(path.join("."), obj);
       return;
     }

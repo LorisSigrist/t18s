@@ -154,7 +154,6 @@ declare module '@t18s' {
     if (messages.length === 0) {
       code += "undefined";
     } else {
-      console.log(messages);
       code += messages
         .map((message) => `(${message.typeDefinition})`)
         .join(" & ");
@@ -193,6 +192,11 @@ export const locales = writable(${JSON.stringify(locales)});
 export const locale = writable("${locales[0]}");
 export const setLocale = locale.set;
 export const isLoading = writable(false);
+
+export async function loadLocale(newLocale) {
+  const newMessages = (await import(/* @vite-ignore */ "/@id/__x00__@t18s/messages/" + newLocale + "?" + Math.random())).default;
+  messages[newLocale] = newMessages;
+}
 
 const getMessage = (key, values = undefined) => {
   const currentLocale = get(locale);
