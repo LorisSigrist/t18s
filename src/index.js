@@ -1,7 +1,7 @@
 import { basename, resolve } from "path";
 import { readFile, readdir, writeFile } from "fs/promises";
-import { yamlLoader } from "./loaders/yaml/index.js";
-import { jsonLoader } from "./loaders/json/index.js";
+import { YamlHandler } from "./formatHandlers/yaml/index.js";
+import { JsonHandler } from "./formatHandlers/json/index.js";
 import { Logger } from "./utils/logger.js";
 import {
   RESOLVED_VIRTUAL_MODULE_PREFIX,
@@ -9,9 +9,9 @@ import {
   DEFAULT_CONFIG,
 } from "./constants.js";
 import { SvelteStoreAdapter } from "./adapter/svelte/store.js";
-import { LoadingException } from "./loaders/exception.js";
+import { LoadingException } from "./formatHandlers/exception.js";
 
-const LOADERS = [yamlLoader, jsonLoader];
+const HANDLERS = [YamlHandler, JsonHandler];
 
 /**
  * @typedef {{
@@ -37,13 +37,13 @@ export function t18s(userConfig = {}) {
   const localeDictionaries = new Map();
 
   /**
-   * Gets the correct loader for a file.
-   * Logs error messages if no loader could be found.
+   * Gets the correct handler for a file, using it's file extension.
+   * Logs error messages if no handler could be found.
    *
    * @param {string} filePath
-   * @returns {import("./loaders/types.js").Loader | null}
+   * @returns {import("./formatHandlers/types.js").FormatHandler | null}
    */
-  function getLoader(filePath) {
+  function getHandler(filePath) {
     const filename = basename(filePath);
     const fileExtension = filename.split(".").at(-1);
 
@@ -52,18 +52,18 @@ export function t18s(userConfig = {}) {
       return null;
     }
 
-    const loader = LOADERS.find((l) =>
+    const handler = HANDLERS.find((l) =>
       l.fileExtensions.includes(fileExtension)
     );
 
-    if (!loader) {
+    if (!handler) {
       logger.warn(
-        `Could not find translation loader for .${fileExtension} files. Ignoring file ${filePath}`
+        `Could not find translation handler for .${fileExtension} files. Ignoring file ${filePath}`
       );
       return null;
     }
 
-    return loader;
+    return handler;
   }
 
   /**
@@ -71,8 +71,8 @@ export function t18s(userConfig = {}) {
    * @param {string} filePath Absolute path to the file that needs to be invalidated
    */
   async function addTranslationFile(filePath) {
-    const loader = getLoader(filePath);
-    if (!loader) return;
+    const handler = getHandler(filePath);
+    if (!handler) return;
 
     const filename = basename(filePath);
     const fileExtension = filename.split(".").at(-1);
@@ -82,8 +82,6 @@ export function t18s(userConfig = {}) {
       logger.error(`Could not determine file extension for ${filePath}`);
       return;
     }
-
-    const isValidLocale = new Intl.Locale(locale);
 
     //Attempt to read the file
     let textContent = "";
@@ -97,7 +95,7 @@ export function t18s(userConfig = {}) {
     /** @type {import("./types.js").Dictionary} */
     let dictionary;
     try {
-      dictionary = await loader.load(filePath, textContent, locale);
+      dictionary = await handler.load(filePath, textContent, locale);
     } catch (e) {
       if (!(e instanceof LoadingException)) throw e;
       logger.error(e.message);
@@ -116,8 +114,8 @@ export function t18s(userConfig = {}) {
    * @param {string} filePath Absolute path to the file that needs to be invalidated
    */
   async function invalidateTranslationFile(filePath) {
-    const loader = getLoader(filePath);
-    if (!loader) return;
+    const handler = getHandler(filePath);
+    if (!handler) return;
 
     const filename = basename(filePath);
     const fileExtension = filename.split(".").at(-1);
@@ -132,7 +130,7 @@ export function t18s(userConfig = {}) {
     /** @type {import("./types.js").Dictionary} */
     let dictionary;
     try {
-      dictionary = await loader.load(filePath, textContent, locale);
+      dictionary = await handler.load(filePath, textContent, locale);
     } catch (e) {
       if (!(e instanceof LoadingException)) throw e;
       logger.error(e.message);

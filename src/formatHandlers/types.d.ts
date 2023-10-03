@@ -1,6 +1,6 @@
 import { Dictionary } from "../types.js";
 
-export type Loader = {
+export type FormatHandler = {
   fileExtensions: string[];
 
   /**

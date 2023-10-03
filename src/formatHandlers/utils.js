@@ -7,7 +7,7 @@ import { precompile } from "../compiler/precompile.js";
  * @param {string} locale
  * @returns {import("../types.js").Dictionary}
  */
-export function getDictionary(tree, locale) {
+export function generateDictionaryFromTree(tree, locale) {
   if (typeof tree !== "object") return new Map();
 
   /** @type {Map<string, string>} */

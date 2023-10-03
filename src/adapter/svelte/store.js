@@ -1,4 +1,4 @@
-import { addQuotes, stringTypeUnion } from "../utils.js";
+import { addQuotes, stringTypeUnion } from "../stringUtils.js";
 
 /**
  * An t18s adapter that uses Svelte stores to store the translations.
