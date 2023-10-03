@@ -68,9 +68,9 @@ export class FileHandler {
 
   /**
    * Lists the file extensions for which a handler is available
-   * @returns {string[]}
+   * @returns {Set<string>}
    */
   getSupportedFileExtensions() {
-    return this.#handlers.flatMap((h) => h.fileExtensions);
+    return new Set(this.#handlers.flatMap((h) => h.fileExtensions));
   }
 }
