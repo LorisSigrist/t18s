@@ -1,7 +1,7 @@
 import { basename, resolve } from "path";
 import { readdir, writeFile } from "fs/promises";
-import { YamlHandler } from "./formatHandlers/yaml/index.js";
-import { JsonHandler } from "./formatHandlers/json/index.js";
+import { YamlHandler } from "./file-handling/formats/yaml.js";
+import { JsonHandler } from "./file-handling/formats/json.js";
 import { Logger } from "./utils/logger.js";
 import {
   RESOLVED_VIRTUAL_MODULE_PREFIX,
@@ -9,8 +9,8 @@ import {
   DEFAULT_CONFIG,
 } from "./constants.js";
 import { SvelteStoreAdapter } from "./adapter/svelte/store.js";
-import { FileHandler } from "./formatHandlers/fileHandler.js";
-import { LoadingException } from "./formatHandlers/exception.js";
+import { FileHandler } from "./file-handling/fileHandler.js";
+import { LoadingException } from "./file-handling/exception.js";
 
 /**
  * @typedef {{

@@ -111,7 +111,9 @@ export function generateType(elements) {
         } else {
           const unionElements = [];
           for (const option of options) {
-            const branchType = generateType(element.options[option].value);
+            const branchType = generateType(
+              element.options[option]?.value ?? [],
+            );
             if (branchType === "")
               unionElements.push(`{ ${element.value}: "${option}" }`);
             else {
@@ -143,7 +145,7 @@ export function generateType(elements) {
   }
 
   if (intersectionElements.length === 0) return "";
-  if (intersectionElements.length === 1) return intersectionElements[0];
+  if (intersectionElements.length === 1) return intersectionElements.join(""); //TS complains on [0] access
 
   return "(" + intersectionElements.join(") & (") + ")";
 }
