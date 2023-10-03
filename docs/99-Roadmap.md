@@ -1,0 +1,31 @@
+# Roadmap
+
+- [x] TypeSafe
+- [x] Precompile translations, no runtime overhead
+- [x] Supports SSR
+- [x] Full ICU MessageFormat support
+- [x] HMR: No page reload on translation changes
+- [x] Supports Svelte
+- [x] Lazy loading locales
+- [x] Works with SSR
+- [ ] Fallback Locale
+- [ ] Sub Locales (eg EN_US, EN_UK)
+- [x] Loading Delay
+- [ ] Namespaces
+- [ ] Locale extraction helpers
+- [ ] Documentation Site
+- [ ] All Common Message-File Formats
+  - [x] JSON
+  - [x] YAML
+  - [ ] TOML
+  - [ ] CSV
+  - [ ] XLIFF
+  - [ ] PO
+  - [ ] INI
+  - [ ] XML
+- [ ] Edit translations inline in the browser (like [Better i18n for Svelte](https://github.com/versiobit/better-i18n-for-svelte))
+- [ ] Frameworks other than Svelte
+  - [ ] Vanilla
+  - [ ] React
+  - [ ] Vue
+- [ ] Message Description Intellisense
