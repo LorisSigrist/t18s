@@ -1,4 +1,5 @@
 # Options
+
 The plugin accepts the following options:
 
 - `translationsDir` (string): The directory where your translations are stored. Defaults to `src/translations`.
