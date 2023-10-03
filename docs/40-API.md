@@ -1,13 +1,13 @@
 # API
 
-## `init`
+## `init`
 The `init` function is used to initialize `$t18s`. It must be called before any other functions are used. It takes an options object with the following properties:
 
 - `initialLocale`: The initial locale to use. Defaults to `"en"`.
 - `fallbackLocale`: The locale to use if a translation is missing. Defaults to `null`.
 - `loadingDelay`: The delay in ms before `$isLoading` is set to `true`. Defaults to `200`.
 
-## `$t`
+## `$t`
 The `$t` function is the main translation function. It takes a key and any required arguments and returns the translated string.
 
 ```ts
@@ -16,7 +16,7 @@ import { t } from "$t18s";
 t("hello", { name: "World" }); // 'Hello World'
 ```
 
-## `setLocale`
+## `setLocale`
 The `setLocale` function is used to change the current locale. It takes a locale string and returns a promise that resolves when the new locale is loaded.
 
 ```ts
