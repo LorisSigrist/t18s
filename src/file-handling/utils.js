@@ -14,17 +14,22 @@ export function generateDictionaryFromTree(tree, locale) {
   const keyVal = new Map();
 
   /**
-   * @param {unknown} obj
+   * @param {unknown} thing
    * @param {string[]} path
    */
-  function flatten(obj, path = []) {
-    if (typeof obj === "string" || typeof obj === "number") {
-      keyVal.set(path.join("."), String(obj));
+  function flatten(thing, path = []) {
+    if (thing === null) {
+      keyVal.set(path.join("."), "");
       return;
     }
 
-    if (typeof obj === "object" && obj !== null) {
-      for (const [key, value] of Object.entries(obj)) {
+    if (typeof thing === "string" || typeof thing === "number") {
+      keyVal.set(path.join("."), String(thing));
+      return;
+    }
+
+    if (typeof thing === "object") {
+      for (const [key, value] of Object.entries(thing)) {
         flatten(value, [...path, key]);
       }
       return;
