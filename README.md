@@ -18,7 +18,7 @@ This package has not yet been published. Please be patient while I get it to MVP
 - [x] SSR
 - [ ] Fallback Locale
 - [ ] Sub Locales (eg EN_US, EN_UK)
-- [ ] Loading Delay
+- [x] Loading Delay
 - [ ] Namespaces
 - [ ] Message Description Intellisense
 - [ ] More File Formats
