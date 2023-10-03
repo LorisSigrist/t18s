@@ -149,7 +149,7 @@ declare module '${VIRTUAL_MODULE_PREFIX}' {
      * Initialize t18s.
      * This must be called before any other t18s function.
      */
-    export function init(options: { initialLocale: Locale, fallbackLocale?: Locale }) : Promise<void>
+    export function init(options: { initialLocale: Locale, fallbackLocale?: Locale, loadingDelay?: number }) : Promise<void>
 
 
     /**
@@ -224,24 +224,28 @@ ${locales.map(
 }
 
 let fallbackLocale = undefined;
+let loadingDelay = 200;
 
 export async function init(options) {
-  const { initialLocale } = options;
   
-  if(!initialLocale) throw new Error("[t18s] No initial locale provided when calling \`init\`");
-  locale.set(initialLocale);
+  if(!options.initialLocale) throw new Error("[t18s] No initial locale provided when calling \`init\`");
+  locale.set(options.initialLocale);
 
   if(options.fallbackLocale) {
     fallbackLocale = options.fallbackLocale;
   }
 
+  if(options.loadingDelay !== undefined) {
+    loadingDelay = options.loadingDelay;
+  }
+
   try {
     const promises = [];
-    promises.push(preloadLocale(initialLocale));
+    promises.push(preloadLocale(options.initialLocale));
     if(options.fallbackLocale) promises.push(preloadLocale(options.fallbackLocale));
     await Promise.all(promises);
   } catch(e) {
-    throw new Error("[t18s] Failed to load initial locale " + initialLocale + ": " + e.message, {cause: e});
+    throw new Error("[t18s] Failed to load initial locale " + options.initialLocale + ": " + e.message, {cause: e});
   }
 }
 
@@ -258,7 +262,7 @@ export async function loadLocale(newLocale) {
   let done = false;
   try {
     //To avoid showing the loading state too much, we allow a small delay before showing the loading state.
-    sleep(200).then(() => {if(!done) isLoading.set(true)});
+    sleep(loadingDelay).then(() => {if(!done) isLoading.set(true)});
     await preloadLocale(newLocale);
   } catch(e) {
     console.error("[t18s] Failed to load locale " + newLocale + ": " + e.message);
