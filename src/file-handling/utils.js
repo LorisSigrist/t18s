@@ -27,6 +27,7 @@ export function generateDictionaryFromTree(tree, locale) {
       for (const [key, value] of Object.entries(obj)) {
         flatten(value, [...path, key]);
       }
+      return;
     }
 
     throw new Error("Invalid tree");
