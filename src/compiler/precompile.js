@@ -10,7 +10,7 @@ import { TYPE } from "@formatjs/icu-messageformat-parser";
  */
 export function precompile(elements, locale) {
   if (hasOnlyLiterals(elements)) {
-    return '()=>"' + elements.map((e) => e.value).join("") + '"';
+    return '()=>`' + elements.map((e) => e.value).join("") + '`';
   }
 
   return (

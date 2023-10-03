@@ -85,6 +85,8 @@ Both the translation key and the argument name are validated by the typescript c
 
 `t18s` supports the full ICU MessageFormat syntax (including skeletons). You can read more about it [here](https://formatjs.io/docs/core-concepts/icu-syntax/).
 
+Multiple file formats are supported. You can use `.yaml`, `.yml` and `.json`, with more on the way.
+
 ## Try Hot Reloading
 
 Here is a nice opportunity to try out hot reloading. Let's set the name in `helloName` dynamically using an input.

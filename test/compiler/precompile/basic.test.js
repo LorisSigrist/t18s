@@ -43,4 +43,14 @@ describe("compile", () => {
     const correct = formatJS(message, { name: "nick" });
     expect(result).toMatch(correct);
   });
+
+  it("compiles a multiline message", () => {
+    const message = "Hello\nworld";
+    const compiled = precompile(parseMessage(message), "en");
+    const result = eval(`(${compiled})()`);
+
+    const correct = formatJS(message);
+    expect(result).toMatch(correct);
+  });
+
 });
