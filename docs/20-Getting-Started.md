@@ -40,12 +40,12 @@ We can add a locale by creating a file in the `translationsDir`. Let's create `s
 
 ![The en.yaml file in src/translations](./assets/fs-one-locale.png)
 
-
 ```yaml
 hello: Hello World!
 ```
 
 Now we can use this translation in our code.
+
 > MAKE SURE TO USE `$t18s` and not `t18s`
 
 ```svelte
@@ -74,7 +74,6 @@ And update the svelte code.
 
 You will notice a warning in your IDE. This is because we are not passing the required `name` argument to the translation.
 ![Intellisense complaining about a missing argument](./assets/autocomplete-hello-name-invalid.png)
-
 
 Let's fix that:
 
