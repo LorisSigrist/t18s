@@ -8,11 +8,12 @@
 - [x] Supports Svelte
 - [x] Lazy loading locales
 - [x] Works with SSR
-- [ ] Fallback Locale
+- [x] Fallback Locale
 - [ ] Sub Locales (eg EN_US, EN_UK)
 - [x] Loading Delay
 - [ ] Namespaces
 - [ ] Locale extraction helpers
+- [ ] Locale route param matcher
 - [ ] Documentation Site
 - [ ] All Common Message-File Formats
   - [x] JSON
