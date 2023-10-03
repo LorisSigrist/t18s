@@ -17,12 +17,11 @@ const HANDLERS = [YamlHandler, JsonHandler];
  * @typedef {{
  *  translationsDir: string,
  *  dts: string,
- * }} T18sUserConfig
+ * }} T18sUserConfig Configuration options for the t18s plugin
  */
 
 /**
  * TypeSafe translations for Svelte & SvelteKit.
- *
  * @param {Partial<T18sUserConfig>} userConfig
  * @returns {import("vite").Plugin}
  */
@@ -53,12 +52,12 @@ export function t18s(userConfig = {}) {
     }
 
     const handler = HANDLERS.find((l) =>
-      l.fileExtensions.includes(fileExtension)
+      l.fileExtensions.includes(fileExtension),
     );
 
     if (!handler) {
       logger.warn(
-        `Could not find translation handler for .${fileExtension} files. Ignoring file ${filePath}`
+        `Could not find translation handler for .${fileExtension} files. Ignoring file ${filePath}`,
       );
       return null;
     }
@@ -164,6 +163,24 @@ export function t18s(userConfig = {}) {
   }
 
   /**
+   * Reads the initial translation files and generates the initial code.
+   * @param { import("./types.js").ResolvedPluginConfig} config
+   */
+  async function init(config) {
+    /** @type {string[]} */
+    let files = [];
+    try {
+      files = await readdir(config.translationsDir);
+    } catch (e) {
+      logger.error("Could not read translation directory\n" + e);
+      return;
+    }
+    const paths = files.map((file) => resolve(config.translationsDir, file));
+    await Promise.all(paths.map(invalidateTranslationFile));
+  }
+
+  /**
+   * Checks if the given path is a translation file that should be handled by this plugin.
    * @param {string} path
    * @returns {boolean}
    */
@@ -180,29 +197,19 @@ export function t18s(userConfig = {}) {
         dtsPath: resolve(resolvedConfig.root, fullUserConfig.dts),
         translationsDir: resolve(
           resolvedConfig.root,
-          fullUserConfig.translationsDir
+          fullUserConfig.translationsDir,
         ),
         fallbackLocale: "en",
       };
 
-      //Generate all code for the initial translation files
-      /** @type {string[]} */
-      let files = [];
-      try {
-        files = await readdir(config.translationsDir);
-      } catch (e) {
-        logger.error("Could not read translation directory\n" + e);
-        return;
-      }
-      const paths = files.map((file) => resolve(config.translationsDir, file));
-      await Promise.all(paths.map(invalidateTranslationFile));
+      await init(config);
     },
 
     resolveId(id) {
       if (id.startsWith(VIRTUAL_MODULE_PREFIX)) {
         return id.replace(
           VIRTUAL_MODULE_PREFIX,
-          RESOLVED_VIRTUAL_MODULE_PREFIX
+          RESOLVED_VIRTUAL_MODULE_PREFIX,
         );
       }
     },
@@ -217,7 +224,7 @@ export function t18s(userConfig = {}) {
 
       const locale = id.split("/")[2];
       return Adapter.getDictionaryCode(
-        localeDictionaries.get(locale) || new Map()
+        localeDictionaries.get(locale) || new Map(),
       );
     },
 

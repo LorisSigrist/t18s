@@ -26,10 +26,9 @@ export function formatJS(
   });
 }
 
-
 /**
  * Parses a message into an AST, using our standard options.
- * @param {string} source 
+ * @param {string} source
  * @returns {import("@formatjs/icu-messageformat-parser").MessageFormatElement[]}
  */
 export function parseMessage(source) {

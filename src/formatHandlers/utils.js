@@ -14,8 +14,8 @@ export function generateDictionaryFromTree(tree, locale) {
   const keyVal = new Map();
 
   /**
-   * @param {unknown} obj 
-   * @param {string[]} path 
+   * @param {unknown} obj
+   * @param {string[]} path
    */
   function flatten(obj, path = []) {
     if (typeof obj === "string") {

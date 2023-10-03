@@ -22,7 +22,6 @@ export interface Message {
   description: string | null;
 }
 
-
 export interface ResolvedPluginConfig {
   dtsPath: string;
   translationsDir: string;

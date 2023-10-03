@@ -15,7 +15,8 @@
   "scripts": {
     "test": "vitest run --passWithNoTests",
     "prepublishOnly": "node ./dts.js",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "check": "tsc --noEmit"
   },
   "dependencies": {
     "@formatjs/icu-messageformat-parser": "^2.6.2",
@@ -24,12 +25,13 @@
   },
   "devDependencies": {
     "@formatjs/intl": "^2.9.3",
+    "@types/js-yaml": "^4.0.6",
     "@types/node": "^20.7.2",
     "dts-buddy": "^0.2.5",
     "prettier": "^3.0.3",
+    "typescript": "^5.2.2",
     "vite": "^4.4.9",
-    "vitest": "^0.34.6",
-    "@types/js-yaml": "^4.0.6"
+    "vitest": "^0.34.6"
   },
   "files": [
     "types",

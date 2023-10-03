@@ -109,7 +109,7 @@ declare module '@t18s' {
      */
     export const locales : Writable<readonly [${locales
       .map(addQuotes)
-    .join(",")}]>;
+      .join(",")}]>;
       
     /**
      * The current locale
@@ -180,7 +180,7 @@ import { writable, get } from 'svelte/store';
 ${locales
   .map(
     (locale) =>
-      `import { default as dictionary_${locale} } from "@t18s/messages/${locale}";`
+      `import { default as dictionary_${locale} } from "@t18s/messages/${locale}";`,
   )
   .join("\n")}
 

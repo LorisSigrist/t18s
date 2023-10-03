@@ -10,21 +10,21 @@ describe("primitive types", () => {
 
   it("generates a type for a message with a number argument", () => {
     const type = generateType(
-      parseMessage("You have {numPhotos, number} photos.")
+      parseMessage("You have {numPhotos, number} photos."),
     );
     expectNonWhitespaceToEqual(type, "{numPhotos:number}");
   });
 
   it("generates a type for a message with a date argument", () => {
     const type = generateType(
-      parseMessage("The event is on {date, date, long}.")
+      parseMessage("The event is on {date, date, long}."),
     );
     expectNonWhitespaceToEqual(type, "{date:Date}");
   });
 
   it("generates types for a message with a time argument", () => {
     const type = generateType(
-      parseMessage("The event is at {time, time, short}.")
+      parseMessage("The event is at {time, time, short}."),
     );
     expectNonWhitespaceToEqual(type, "{time:Date}");
   });
@@ -36,7 +36,7 @@ describe("primitive types", () => {
 
   it("generates types for a number with a skeleton", () => {
     const type = generateType(
-      parseMessage("{progress, number, ::percent scale/100 .##} completed")
+      parseMessage("{progress, number, ::percent scale/100 .##} completed"),
     );
     expectNonWhitespaceToEqual(type, "{progress:number}");
   });
@@ -44,12 +44,12 @@ describe("primitive types", () => {
   it("generates types for a message with multiple arguments", () => {
     const type = generateType(
       parseMessage(
-        "You have {numPhotos, number} in your {numAlbums, number} albums {name}"
-      )
+        "You have {numPhotos, number} in your {numAlbums, number} albums {name}",
+      ),
     );
     expectNonWhitespaceToEqual(
       type,
-      "{numPhotos:number, numAlbums:number, name: string}"
+      "{numPhotos:number, numAlbums:number, name: string}",
     );
   });
 });
