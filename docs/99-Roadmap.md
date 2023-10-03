@@ -8,9 +8,9 @@
 - [x] Supports Svelte
 - [x] Lazy loading locales
 - [x] Works with SSR
+- [x] Loading Delay
 - [x] Fallback Locale
 - [ ] Sub Locales (eg EN_US, EN_UK)
-- [x] Loading Delay
 - [ ] Namespaces
 - [ ] Locale extraction helpers
 - [ ] Locale route param matcher
@@ -25,8 +25,4 @@
   - [ ] INI
   - [ ] XML
 - [ ] Edit translations inline in the browser (like [Better i18n for Svelte](https://github.com/versiobit/better-i18n-for-svelte))
-- [ ] Frameworks other than Svelte
-  - [ ] Vanilla
-  - [ ] React
-  - [ ] Vue
 - [ ] Message Description Intellisense
