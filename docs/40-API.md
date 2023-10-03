@@ -25,8 +25,6 @@ import { setLocale } from "$t18s";
 await setLocale("de");
 ```
 
-
-
 ## `$isLoading`
 
 The `$isLoading` store tells us if we are currently waiting for a translation to load. This is useful if you want to show a loading indicator while switching languages.
