@@ -20,7 +20,8 @@ export class FileHandler {
    */
   async handle(filePath, locale) {
     const handler = this.#getHandler(filePath);
-    if (!handler) throw new Error(`Could not find handler for ${filePath}`);
+    if (!handler)
+      throw new LoadingException(`Could not find handler for ${filePath}. Supported file extensions are ${this.getSupportedFileExtensions()}`);
     const textContent = await this.#readFileContent(filePath);
     const dictionary = await handler.load(filePath, textContent, locale);
 
