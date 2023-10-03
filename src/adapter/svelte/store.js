@@ -219,7 +219,7 @@ export const isLoading = writable(false);
 const loaders = {
 ${locales.map(
   (locale) =>
-    `    "${locale}": async () => (await import("$t18s/messages/${locale}")).default`
+    `    "${locale}": async () => (await import("$t18s/messages/${locale}")).default`,
 )}
 }
 

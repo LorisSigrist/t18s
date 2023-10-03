@@ -45,11 +45,12 @@ hello: Hello World!
 ```
 
 Then we need to initialize t18s. A good place to do this is the `load` function in the root layout.
+
 > MAKE SURE TO USE `$t18s` and not `t18s`
 
 ```js
 // src/routes/+layout.js
-import {init} from "$t18s"
+import { init } from "$t18s";
 export async function load() {
   await init({ initialLocale: "en" });
 }
@@ -147,13 +148,13 @@ We can list the available locales using the `$locales` store. We can switch betw
 <h1>{$t("hello")}</h1>
 ```
 
-
 ## Using a Fallback Locale
+
 When calling `init`, you can also pass a `fallbackLocale` option. This will be used when a translation is missing in the current locale.
 
 ```js
 // src/routes/+layout.js
-import {init} from "$t18s"
+import { init } from "$t18s";
 
 export async function load() {
   await init({ initialLocale: "de", fallbackLocale: "en" });

@@ -34,6 +34,7 @@ export function t18s(userConfig = {}) {
 
   /** @type {SvelteStoreAdapter} */
   let adapter;
+
   const fileHandler = new FileHandler([YamlHandler, JsonHandler]);
 
   /** @type {import("./types.js").LocaleDictionaries} */
@@ -143,7 +144,7 @@ export function t18s(userConfig = {}) {
         dtsPath: resolve(resolvedConfig.root, fullUserConfig.dts),
         translationsDir: resolve(
           resolvedConfig.root,
-          fullUserConfig.translationsDir
+          fullUserConfig.translationsDir,
         ),
         verbose: fullUserConfig.verbose,
       };
@@ -158,7 +159,7 @@ export function t18s(userConfig = {}) {
       if (id.startsWith(VIRTUAL_MODULE_PREFIX)) {
         return id.replace(
           VIRTUAL_MODULE_PREFIX,
-          RESOLVED_VIRTUAL_MODULE_PREFIX
+          RESOLVED_VIRTUAL_MODULE_PREFIX,
         );
       }
     },
@@ -174,7 +175,7 @@ export function t18s(userConfig = {}) {
       const locale = id.split("/")[2];
       if (!locale) return;
       return adapter.getDictionaryCode(
-        localeDictionaries.get(locale) || new Map()
+        localeDictionaries.get(locale) || new Map(),
       );
     },
 

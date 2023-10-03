@@ -5,13 +5,11 @@ import colors from "kleur";
  * This should be used instead of `console.log` or `console.error` to ensure a consistent format.
  */
 export class Logger {
-
   #verbose = false;
 
   constructor(verbose = false) {
     this.#verbose = verbose;
   }
-
 
   /**
    * Logs a message to the console.
@@ -19,7 +17,7 @@ export class Logger {
    * @param {string} msg
    */
   log(msg) {
-    if(!this.#verbose) return;
+    if (!this.#verbose) return;
     msg = this.#formatMessage(msg, "ⓘ");
     console.log(colors.cyan(msg));
   }
@@ -30,7 +28,7 @@ export class Logger {
    * @param {string} msg
    */
   warn(msg) {
-    if(!this.#verbose) return;
+    if (!this.#verbose) return;
     msg = this.#formatMessage(msg);
     console.warn(colors.bold().yellow(msg));
   }

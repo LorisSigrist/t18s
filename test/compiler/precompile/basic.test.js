@@ -52,5 +52,4 @@ describe("compile", () => {
     const correct = formatJS(message);
     expect(result).toMatch(correct);
   });
-
 });
