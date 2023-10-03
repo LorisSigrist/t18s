@@ -1,5 +1,5 @@
 import { basename, resolve } from "path";
-import { readFile, readdir, writeFile } from "fs/promises";
+import { readdir, writeFile } from "fs/promises";
 import { YamlHandler } from "./formatHandlers/yaml/index.js";
 import { JsonHandler } from "./formatHandlers/json/index.js";
 import { Logger } from "./utils/logger.js";
@@ -9,9 +9,8 @@ import {
   DEFAULT_CONFIG,
 } from "./constants.js";
 import { SvelteStoreAdapter } from "./adapter/svelte/store.js";
+import { FileHandler } from "./formatHandlers/fileHandler.js";
 import { LoadingException } from "./formatHandlers/exception.js";
-
-const HANDLERS = [YamlHandler, JsonHandler];
 
 /**
  * @typedef {{
@@ -27,7 +26,8 @@ const HANDLERS = [YamlHandler, JsonHandler];
  */
 export function t18s(userConfig = {}) {
   const logger = new Logger();
-  const Adapter = new SvelteStoreAdapter();
+  const adapter = new SvelteStoreAdapter();
+  const fileHandler = new FileHandler([YamlHandler, JsonHandler]);
 
   /** @type {import("./types.js").ResolvedPluginConfig} */
   let config;
@@ -36,74 +36,22 @@ export function t18s(userConfig = {}) {
   const localeDictionaries = new Map();
 
   /**
-   * Gets the correct handler for a file, using it's file extension.
-   * Logs error messages if no handler could be found.
-   *
-   * @param {string} filePath
-   * @returns {import("./formatHandlers/types.js").FormatHandler | null}
-   */
-  function getHandler(filePath) {
-    const filename = basename(filePath);
-    const fileExtension = filename.split(".").at(-1);
-
-    if (!fileExtension) {
-      logger.error(`Could not determine file extension for ${filePath}`);
-      return null;
-    }
-
-    const handler = HANDLERS.find((l) =>
-      l.fileExtensions.includes(fileExtension),
-    );
-
-    if (!handler) {
-      logger.warn(
-        `Could not find translation handler for .${fileExtension} files. Ignoring file ${filePath}`,
-      );
-      return null;
-    }
-
-    return handler;
-  }
-
-  /**
    * Register a new translation file.
    * @param {string} filePath Absolute path to the file that needs to be invalidated
    */
   async function addTranslationFile(filePath) {
-    const handler = getHandler(filePath);
-    if (!handler) return;
+    const locale = getLocale(filePath);
 
-    const filename = basename(filePath);
-    const fileExtension = filename.split(".").at(-1);
-    const locale = filename.split(".")[0];
-
-    if (!fileExtension) {
-      logger.error(`Could not determine file extension for ${filePath}`);
-      return;
-    }
-
-    //Attempt to read the file
-    let textContent = "";
     try {
-      textContent = await readFile(filePath, "utf-8");
-    } catch (e) {
-      logger.error(`Could not read file ${filePath}`);
-      return;
-    }
-
-    /** @type {import("./types.js").Dictionary} */
-    let dictionary;
-    try {
-      dictionary = await handler.load(filePath, textContent, locale);
+      const dictionary = await fileHandler.handle(filePath, locale);
+      localeDictionaries.set(locale, dictionary);
     } catch (e) {
       if (!(e instanceof LoadingException)) throw e;
       logger.error(e.message);
     }
 
-    localeDictionaries.set(locale, dictionary);
-
     await regenerateDTS();
-    Adapter.HMRAddLocale(locale);
+    adapter.HMRAddLocale(locale);
   }
 
   /**
@@ -113,52 +61,39 @@ export function t18s(userConfig = {}) {
    * @param {string} filePath Absolute path to the file that needs to be invalidated
    */
   async function invalidateTranslationFile(filePath) {
-    const handler = getHandler(filePath);
-    if (!handler) return;
+    const locale = getLocale(filePath);
 
-    const filename = basename(filePath);
-    const fileExtension = filename.split(".").at(-1);
-    const locale = filename.split(".")[0];
-
-    if (!fileExtension) {
-      logger.error(`Could not determine file extension for ${filePath}`);
-      return;
-    }
-    const textContent = await readFile(filePath, "utf-8");
-
-    /** @type {import("./types.js").Dictionary} */
-    let dictionary;
     try {
-      dictionary = await handler.load(filePath, textContent, locale);
+      const dictionary = await fileHandler.handle(filePath, locale);
+      localeDictionaries.set(locale, dictionary);
     } catch (e) {
       if (!(e instanceof LoadingException)) throw e;
       logger.error(e.message);
     }
 
-    localeDictionaries.set(locale, dictionary);
-
     await regenerateDTS();
-    Adapter.HMRInvalidateLocale(locale);
+    adapter.HMRInvalidateLocale(locale);
   }
 
   /**
    * Remove a _translation_ file.
    * Assumes the file is in the `translationsDir` directory.
-   * @param {string} file Absolute path to the translation file that no longer exists
+   * @param {string} filePath Absolute path to the translation file that no longer exists
    * @returns void
    */
-  async function removeTranslationFile(file) {
-    const filename = basename(file);
+  async function removeTranslationFile(filePath) {
+    const filename = basename(filePath);
     const locale = filename.split(".")[0];
 
+    if (!locale) throw new Error("Could not determine locale for ${filePath}");
     localeDictionaries.delete(locale);
 
     await regenerateDTS();
-    Adapter.HMRRemoveLocale(locale);
+    adapter.HMRRemoveLocale(locale);
   }
 
   async function regenerateDTS() {
-    const dts = Adapter.getTypeDefinition(localeDictionaries);
+    const dts = adapter.getTypeDefinition(localeDictionaries);
     await writeFile(config.dtsPath, dts, { encoding: "utf-8" });
   }
 
@@ -185,6 +120,20 @@ export function t18s(userConfig = {}) {
    * @returns {boolean}
    */
   const isTranslationFile = (path) => path.startsWith(config.translationsDir);
+
+  /**
+   * Resolves the locale a given path belongs to.
+   * @param {string} path
+   * @returns {string}
+   *
+   * @throws {Error} If the path does not belong to any locale
+   */
+  const getLocale = (path) => {
+    const filename = basename(path);
+    const locale = filename.split(".")[0];
+    if (!locale) throw new Error("Could not determine locale for ${filePath}");
+    return locale;
+  };
 
   return {
     name: "t18s",
@@ -215,15 +164,16 @@ export function t18s(userConfig = {}) {
     },
 
     load(id) {
-      id = id.split("?")[0]; //Remove query parameters
+      id = id.split("?")[0] ?? ""; //Remove query parameters
       if (!id.startsWith(RESOLVED_VIRTUAL_MODULE_PREFIX)) return;
 
       if (id === RESOLVED_VIRTUAL_MODULE_PREFIX) {
-        return Adapter.getMainCode(localeDictionaries);
+        return adapter.getMainCode(localeDictionaries);
       }
 
       const locale = id.split("/")[2];
-      return Adapter.getDictionaryCode(
+      if (!locale) return;
+      return adapter.getDictionaryCode(
         localeDictionaries.get(locale) || new Map(),
       );
     },
@@ -244,7 +194,7 @@ export function t18s(userConfig = {}) {
         await invalidateTranslationFile(path);
       });
 
-      Adapter.useServer(server);
+      adapter.useServer(server);
     },
   };
 }

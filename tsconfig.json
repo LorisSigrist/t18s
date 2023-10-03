@@ -5,7 +5,10 @@
     "target": "ESNext",
     "noEmit": true,
     "moduleResolution": "NodeNext",
-    "module": "NodeNext"
+    "module": "NodeNext",
+    "noImplicitAny": true,
+    "noUncheckedIndexedAccess": true,
+    "strict": true
   },
   "include": ["src"]
 }

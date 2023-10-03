@@ -9,6 +9,7 @@ export const JsonHandler = {
       const parsed = JSON.parse(content);
       return generateDictionaryFromTree(parsed, locale);
     } catch (e) {
+      if (!(e instanceof Error)) throw e;
       throw new LoadingException(
         `Could not parse JSON file ${filePath}: ${e.message}`,
         { cause: e },

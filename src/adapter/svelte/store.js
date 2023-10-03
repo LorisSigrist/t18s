@@ -215,7 +215,7 @@ locale.subscribe((value) => { t.set(getMessage) });
 
 if(import.meta.hot) { 
 
-  import.meta.hot.on("t18s:createLocale", async (data)=>{
+  import.meta.hot.on("t18s:createLocale", async (data) => {
     locales.update((locales) => [...locales, data.locale]);
 
     //Force-reload the module - Add a random query parameter to bust the cache
@@ -227,7 +227,7 @@ if(import.meta.hot) {
     t.set(getMessage); //update the store
   });
 
-  import.meta.hot.on("t18s:invalidateLocale", async (data)=>{
+  import.meta.hot.on("t18s:invalidateLocale", async (data) => {
     //Force-reload the module - Add a random query parameter to bust the cache
     const newMessages = (await import(/* @vite-ignore */ "/@id/__x00__@t18s/messages/" + data.locale + "?" + Math.random())).default;
     console.info("[t18s] Reloading locale " + data.locale);
@@ -236,7 +236,7 @@ if(import.meta.hot) {
     t.set(getMessage); //update the store
   });
   
-  import.meta.hot.on("t18s:removeLocale", async (data)=>{
+  import.meta.hot.on("t18s:removeLocale", async (data) => {
     console.info("[t18s] Removing locale " + data.locale);
 
     delete messages[data.locale];

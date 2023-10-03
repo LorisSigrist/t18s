@@ -12,6 +12,7 @@ export const YamlHandler = {
       });
       return generateDictionaryFromTree(parsed, locale);
     } catch (e) {
+      if (!(e instanceof Error)) throw e;
       throw new LoadingException(
         `Could not parse YAML file ${filePath}: ${e.message}`,
         { cause: e },
