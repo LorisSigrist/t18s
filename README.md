@@ -11,7 +11,7 @@ While it is still in early development, it already has some powerful and unique 
 - [x] Precompiled translations, no runtime overhead
 - [x] Supports SSR and Prerendering
 
-## Documentation
+## Documentation
 - [Introduction](docs/10-Introduction.md)
 - [Getting Started](docs/20-Getting-Started.md)
 - [Usage](docs/30-Usage.md)
