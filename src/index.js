@@ -115,13 +115,6 @@ export function t18s(userConfig = {}) {
   }
 
   /**
-   * Checks if the given path is a translation file that should be handled by this plugin.
-   * @param {string} path
-   * @returns {boolean}
-   */
-  const isTranslationFile = (path) => path.startsWith(config.translationsDir);
-
-  /**
    * Resolves the locale a given path belongs to.
    * @param {string} path
    * @returns {string}
@@ -146,7 +139,7 @@ export function t18s(userConfig = {}) {
         dtsPath: resolve(resolvedConfig.root, fullUserConfig.dts),
         translationsDir: resolve(
           resolvedConfig.root,
-          fullUserConfig.translationsDir,
+          fullUserConfig.translationsDir
         ),
         fallbackLocale: "en",
       };
@@ -158,7 +151,7 @@ export function t18s(userConfig = {}) {
       if (id.startsWith(VIRTUAL_MODULE_PREFIX)) {
         return id.replace(
           VIRTUAL_MODULE_PREFIX,
-          RESOLVED_VIRTUAL_MODULE_PREFIX,
+          RESOLVED_VIRTUAL_MODULE_PREFIX
         );
       }
     },
@@ -174,11 +167,19 @@ export function t18s(userConfig = {}) {
       const locale = id.split("/")[2];
       if (!locale) return;
       return adapter.getDictionaryCode(
-        localeDictionaries.get(locale) || new Map(),
+        localeDictionaries.get(locale) || new Map()
       );
     },
 
     configureServer(server) {
+      /**
+       * Checks if we should react to changes made to the given path.
+       * @param {string} path
+       * @returns {boolean}
+       */
+      const isTranslationFile = (path) =>
+        path.startsWith(config.translationsDir);
+
       server.watcher.on("unlink", async (path) => {
         if (!isTranslationFile(path)) return;
         await removeTranslationFile(path);

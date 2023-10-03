@@ -1,5 +1,5 @@
-export const VIRTUAL_MODULE_PREFIX = "@t18s";
-export const RESOLVED_VIRTUAL_MODULE_PREFIX = "\0@t18s";
+export const VIRTUAL_MODULE_PREFIX = "$t18s";
+export const RESOLVED_VIRTUAL_MODULE_PREFIX = "\0$t18s";
 
 /** @type {import("./index.js").T18sUserConfig} */
 export const DEFAULT_CONFIG = {
