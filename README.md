@@ -16,8 +16,7 @@ While it is still in early development, it already has some powerful and unique 
 
 - [Introduction](docs/10-Introduction.md)
 - [Getting Started](docs/20-Getting-Started.md)
-- [Usage](docs/30-Usage.md)
+- [Plugin Options](docs/30-Options.md)
 - [API](docs/40-API.md)
-- [Advanced Usage](docs/50-Advanced-Usage.md)
 - [Precompilation](docs/80-Precompilation.md)
 - [Roadmap](docs/99-Roadmap.md)
