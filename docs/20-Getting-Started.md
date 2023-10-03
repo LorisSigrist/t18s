@@ -44,9 +44,20 @@ We can add a locale by creating a file in the `translationsDir`. Let's create `s
 hello: Hello World!
 ```
 
-Now we can use this translation in our code.
-
+Then we need to initialize t18s. A good place to do this is the `load` function in the root layout.
 > MAKE SURE TO USE `$t18s` and not `t18s`
+
+```js
+// src/routes/+layout.js
+import {init} from "$t18s"
+export async function load() {
+  await init({ initialLocale: "en" });
+}
+```
+
+> Usually you would dynamically set the initial locale based on the user's preferences. We will cover this in a later section.
+
+Now we can use the message in our code.
 
 ```svelte
 <script>
@@ -134,4 +145,17 @@ We can list the available locales using the `$locales` store. We can switch betw
 {/each}
 
 <h1>{$t("hello")}</h1>
+```
+
+
+## Using a Fallback Locale
+When calling `init`, you can also pass a `fallbackLocale` option. This will be used when a translation is missing in the current locale.
+
+```js
+// src/routes/+layout.js
+import {init} from "$t18s"
+
+export async function load() {
+  await init({ initialLocale: "de", fallbackLocale: "en" });
+}
 ```

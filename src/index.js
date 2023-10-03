@@ -16,6 +16,7 @@ import { LoadingException } from "./file-handling/exception.js";
  * @typedef {{
  *  translationsDir: string,
  *  dts: string,
+ *  verbose: boolean,
  * }} T18sUserConfig Configuration options for the t18s plugin
  */
 
@@ -25,12 +26,15 @@ import { LoadingException } from "./file-handling/exception.js";
  * @returns {import("vite").Plugin}
  */
 export function t18s(userConfig = {}) {
-  const logger = new Logger();
-  const adapter = new SvelteStoreAdapter();
-  const fileHandler = new FileHandler([YamlHandler, JsonHandler]);
-
   /** @type {import("./types.js").ResolvedPluginConfig} */
   let config;
+
+  /** @type {Logger} */
+  let logger;
+
+  /** @type {SvelteStoreAdapter} */
+  let adapter;
+  const fileHandler = new FileHandler([YamlHandler, JsonHandler]);
 
   /** @type {import("./types.js").LocaleDictionaries} */
   const localeDictionaries = new Map();
@@ -101,7 +105,7 @@ export function t18s(userConfig = {}) {
    * Reads the initial translation files and generates the initial code.
    * @param { import("./types.js").ResolvedPluginConfig} config
    */
-  async function init(config) {
+  async function loadInitialLocales(config) {
     /** @type {string[]} */
     let files = [];
     try {
@@ -139,19 +143,22 @@ export function t18s(userConfig = {}) {
         dtsPath: resolve(resolvedConfig.root, fullUserConfig.dts),
         translationsDir: resolve(
           resolvedConfig.root,
-          fullUserConfig.translationsDir,
+          fullUserConfig.translationsDir
         ),
-        fallbackLocale: "en",
+        verbose: fullUserConfig.verbose,
       };
 
-      await init(config);
+      logger = new Logger(config.verbose);
+      adapter = new SvelteStoreAdapter(config);
+
+      await loadInitialLocales(config);
     },
 
     resolveId(id) {
       if (id.startsWith(VIRTUAL_MODULE_PREFIX)) {
         return id.replace(
           VIRTUAL_MODULE_PREFIX,
-          RESOLVED_VIRTUAL_MODULE_PREFIX,
+          RESOLVED_VIRTUAL_MODULE_PREFIX
         );
       }
     },
@@ -167,7 +174,7 @@ export function t18s(userConfig = {}) {
       const locale = id.split("/")[2];
       if (!locale) return;
       return adapter.getDictionaryCode(
-        localeDictionaries.get(locale) || new Map(),
+        localeDictionaries.get(locale) || new Map()
       );
     },
 

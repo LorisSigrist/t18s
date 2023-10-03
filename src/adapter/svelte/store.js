@@ -1,5 +1,5 @@
 import { VIRTUAL_MODULE_PREFIX } from "../../constants.js";
-import { addQuotes, stringTypeUnion } from "../stringUtils.js";
+import { addQuotes, stringTypeUnion } from "../../utils/stringUtils.js";
 
 /**
  * An t18s adapter that uses Svelte stores to store the translations.
@@ -7,6 +7,14 @@ import { addQuotes, stringTypeUnion } from "../stringUtils.js";
 export class SvelteStoreAdapter {
   /** @type {import("vite").ViteDevServer | null} */
   #server = null;
+
+  /** @type {import("../../types.js").ResolvedPluginConfig} */
+  #config;
+
+  /** @param {import("../../types.js").ResolvedPluginConfig}  config*/
+  constructor(config) {
+    this.#config = config;
+  }
 
   /**
    * @param {import("vite").ViteDevServer | null} server
@@ -29,7 +37,7 @@ export class SvelteStoreAdapter {
    */
   getMainCode(localeDictionaries) {
     const locales = [...localeDictionaries.keys()];
-    return generateMainModuleCode(locales);
+    return generateMainModuleCode(locales, this.#config.verbose);
   }
 
   /**
@@ -137,6 +145,12 @@ declare module '${VIRTUAL_MODULE_PREFIX}' {
      */
     export const isLoading: Writable<boolean>;
 
+    /**
+     * Initialize t18s.
+     * This must be called before any other t18s function.
+     */
+    export function init(options: { initialLocale: Locale, fallbackLocale?: Locale }) : Promise<void>
+
 
     /**
      * Waits for the given locale to be loaded. Call this during \`load\` with the initial locale to prevent the page from rendering before the translations are loaded.
@@ -188,26 +202,55 @@ declare module '${VIRTUAL_MODULE_PREFIX}' {
 /**
  * Generates the code for the "$t18s" module
  * @param {string[]} locales
+ * @param {boolean} verbose
  * @returns {string}
  */
-function generateMainModuleCode(locales) {
+function generateMainModuleCode(locales, verbose) {
   return `
 import { writable, get } from 'svelte/store';
 
 const messages = {}
 
 export const locales = writable(${JSON.stringify(locales)});
-export const locale = writable("${locales[0]}");
+export const locale = writable(null);
 export const setLocale = locale.set;
 export const isLoading = writable(false);
 
 const loaders = {
 ${locales.map(
   (locale) =>
-    `    "${locale}": async () => (await import("$t18s/messages/${locale}")).default`,
+    `    "${locale}": async () => (await import("$t18s/messages/${locale}")).default`
 )}
 }
 
+let fallbackLocale = undefined;
+
+export async function init(options) {
+  const { initialLocale } = options;
+  
+  if(!initialLocale) throw new Error("[t18s] No initial locale provided when calling \`init\`");
+  locale.set(initialLocale);
+
+  if(options.fallbackLocale) {
+    fallbackLocale = options.fallbackLocale;
+  }
+
+  try {
+    const promises = [];
+    promises.push(preloadLocale(initialLocale));
+    if(options.fallbackLocale) promises.push(preloadLocale(options.fallbackLocale));
+    await Promise.all(promises);
+  } catch(e) {
+    throw new Error("[t18s] Failed to load initial locale " + initialLocale + ": " + e.message, {cause: e});
+  }
+}
+
+//Load the given locale quietly in the background
+//May throw
+async function preloadLocale(newLocale) {
+  const newMessages = await loaders[newLocale]();
+  messages[newLocale] = newMessages;
+}
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -216,8 +259,7 @@ export async function loadLocale(newLocale) {
   try {
     //To avoid showing the loading state too much, we allow a small delay before showing the loading state.
     sleep(200).then(() => {if(!done) isLoading.set(true)});
-    const newMessages = await loaders[newLocale]();
-    messages[newLocale] = newMessages;
+    await preloadLocale(newLocale);
   } catch(e) {
     console.error("[t18s] Failed to load locale " + newLocale + ": " + e.message);
   } finally {
@@ -228,10 +270,26 @@ export async function loadLocale(newLocale) {
 
 const getMessage = (key, values = undefined) => {
   const currentLocale = get(locale);
+
+  if(currentLocale === null) {
+    throw new Error("[t18s] No locale set. Did you forget to call \`init\`?");
+  }
+
   if(messages[currentLocale] && messages[currentLocale][key]) {
     return messages[currentLocale][key](values);
-  } else {
-    console.warn("[t18s] Translation for key " + key + " not found in locale " + currentLocale);
+  } else if (fallbackLocale && messages[fallbackLocale] && messages[fallbackLocale][key]) {
+    ${
+      verbose
+        ? 'console.debug("[t18s] Translation for key " + key + " not found in locale " + currentLocale +". Using fallback locale " + fallbackLocale);'
+        : ""
+    }
+    return messages[fallbackLocale][key](values);
+  }  else {
+  ${
+    verbose
+      ? 'console.warn("[t18s] Translation for key " + key + " not found in locale " + currentLocale);'
+      : ""
+  }
     return key;
   }
 }
@@ -239,7 +297,8 @@ const getMessage = (key, values = undefined) => {
 export const t = writable(getMessage);
 
 //Update the store when the locale changes
-locale.subscribe((newLocale) => { 
+locale.subscribe((newLocale) => {
+  if(newLocale === null) return;
   if(newLocale in messages) {
     t.set(getMessage)
   } else {
@@ -255,7 +314,7 @@ if(import.meta.hot) {
     //Force-reload the module - Add a random query parameter to bust the cache
     const newMessages = (await import(/* @vite-ignore */ "/@id/__x00__$t18s/messages/" + data.locale + "?" + Math.random())).default;
 
-    console.info("[t18s] Adding locale " + data.locale);
+    ${verbose ? ' console.info("[t18s] Adding locale " + data.locale);' : ""}
 
     messages[data.locale] = newMessages;
     t.set(getMessage); //update the store
@@ -264,14 +323,16 @@ if(import.meta.hot) {
   import.meta.hot.on("t18s:invalidateLocale", async (data) => {
     //Force-reload the module - Add a random query parameter to bust the cache
     const newMessages = (await import(/* @vite-ignore */ "/@id/__x00__$t18s/messages/" + data.locale + "?" + Math.random())).default;
-    console.info("[t18s] Reloading locale " + data.locale);
+   
+
+    ${verbose ? 'console.info("[t18s] Reloading locale " + data.locale);' : ""}
 
     messages[data.locale] = newMessages;
     t.set(getMessage); //update the store
   });
   
   import.meta.hot.on("t18s:removeLocale", async (data) => {
-    console.info("[t18s] Removing locale " + data.locale);
+    ${verbose ? 'console.info("[t18s] Removing locale " + data.locale);' : ""}
 
     delete messages[data.locale];
 

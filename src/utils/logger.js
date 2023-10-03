@@ -5,20 +5,32 @@ import colors from "kleur";
  * This should be used instead of `console.log` or `console.error` to ensure a consistent format.
  */
 export class Logger {
+
+  #verbose = false;
+
+  constructor(verbose = false) {
+    this.#verbose = verbose;
+  }
+
+
   /**
-   * Logs a message to the console
+   * Logs a message to the console.
+   * If verbose is disabled, this will noop.
    * @param {string} msg
    */
   log(msg) {
+    if(!this.#verbose) return;
     msg = this.#formatMessage(msg, "ⓘ");
     console.log(colors.cyan(msg));
   }
 
   /**
-   * Logs a warning message to the console
+   * Logs a warning message to the console.
+   * If verbose is disabled, this will noop.
    * @param {string} msg
    */
   warn(msg) {
+    if(!this.#verbose) return;
     msg = this.#formatMessage(msg);
     console.warn(colors.bold().yellow(msg));
   }

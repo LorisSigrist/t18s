@@ -25,5 +25,5 @@ export interface Message {
 export interface ResolvedPluginConfig {
   dtsPath: string;
   translationsDir: string;
-  fallbackLocale: string;
+  verbose: boolean;
 }
