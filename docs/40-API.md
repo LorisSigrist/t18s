@@ -30,7 +30,7 @@ await setLocale("de");
 
 ## `$isLoading`
 
-The `$isLoading` store tells us if we are currently waiting for a translation to load. This is useful if you want to show a loading indicator while switching languages.
+The `$isLoading` readable store tells us if we are currently waiting for a translation to load. This is useful if you want to show a loading indicator while switching languages.
 
 ```svelte
 <script>
@@ -73,3 +73,18 @@ import { locales } from "$t18s";
 
 console.log($locales); // ['en', 'de']
 ```
+
+
+## `preloadLocale`
+Preload a locale silently in the background. This is useful if you anticipate a locale change and want to preload the new locale before it is needed.
+
+A common use case is to preload the user's browser locale, since they are likely to switch to it.
+
+```ts
+import { preloadLocale } from "$t18s";
+await preloadLocale("de");
+```
+
+This does *not*:
+- Change the current locale
+- Set `$isLoading` to `true`

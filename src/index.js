@@ -8,7 +8,7 @@ import {
   VIRTUAL_MODULE_PREFIX,
   DEFAULT_CONFIG,
 } from "./constants.js";
-import { SvelteStoreAdapter } from "./adapter/svelte/store.js";
+import { SvelteStoreAdapter } from "./adapter/svelte/index.js";
 import { FileHandler } from "./file-handling/fileHandler.js";
 import { LoadingException } from "./file-handling/exception.js";
 

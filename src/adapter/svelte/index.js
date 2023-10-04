@@ -113,7 +113,7 @@ function generateDTS(localeDictionaries) {
  * TypeSafe translations for your Svelte app.
  */
 declare module '${VIRTUAL_MODULE_PREFIX}' {
-    import type { Writable } from 'svelte/store';
+    import type { Writable, Readable } from 'svelte/store';
 
     /**
      * The known locales
@@ -125,7 +125,7 @@ declare module '${VIRTUAL_MODULE_PREFIX}' {
      * 
      * Note: This store will only ever change during development, it is constant in production.
      */
-    export const locales : Writable<readonly [${locales
+    export const locales : Readable<readonly [${locales
       .map(addQuotes)
       .join(",")}]>;
       
@@ -143,7 +143,7 @@ declare module '${VIRTUAL_MODULE_PREFIX}' {
     /**
      * If the current locale is still being loaded.
      */
-    export const isLoading: Writable<boolean>;
+    export const isLoading: Readable<boolean>;
 
     /**
      * Initialize t18s.
@@ -153,9 +153,12 @@ declare module '${VIRTUAL_MODULE_PREFIX}' {
 
 
     /**
-     * Waits for the given locale to be loaded. Call this during \`load\` with the initial locale to prevent the page from rendering before the translations are loaded.
+     * Preloads the translations for the given locale. 
+     * This can be used to anticipate a locale change.
+     * 
+     * Maybe preload the locale of the user's browser, since they're likely to switch to that.
      */
-    export const loadLocale: (newLocale: Locale) => Promise<void>;
+    export const preloadLocale: (newLocale: Locale) => Promise<void>;
 
     export type Messages = {
 `;
@@ -191,11 +194,18 @@ declare module '${VIRTUAL_MODULE_PREFIX}' {
 
     code += ",\n";
   }
+
   code += "    };\n\n";
 
-  code +=
-    "    export const t : Writable<<Key extends keyof Messages>(key: Key, ...values: (Messages[Key] extends undefined ? [(undefined | {})?] : [Messages[Key]])) => string>\n";
-  code += "};\n";
+  code += `
+    /**
+     * The translation function.
+     * @param key A translation key.
+     * @param values Any values that are interpolated into the translation.
+     */
+    export const t : Writable<<Key extends keyof Messages>(key: Key, ...values: (Messages[Key] extends undefined ? [(undefined | {})?] : [Messages[Key]])) => string>;
+}
+  `;
   return code;
 }
 
@@ -219,7 +229,7 @@ export const isLoading = writable(false);
 const loaders = {
 ${locales.map(
   (locale) =>
-    `    "${locale}": async () => (await import("$t18s/messages/${locale}")).default`,
+    `    "${locale}": async () => (await import("$t18s/messages/${locale}")).default`
 )}
 }
 
@@ -251,14 +261,14 @@ export async function init(options) {
 
 //Load the given locale quietly in the background
 //May throw
-async function preloadLocale(newLocale) {
+export async function preloadLocale(newLocale) {
   const newMessages = await loaders[newLocale]();
   messages[newLocale] = newMessages;
 }
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-export async function loadLocale(newLocale) {
+async function loadLocale(newLocale) {
   let done = false;
   try {
     //To avoid showing the loading state too much, we allow a small delay before showing the loading state.
