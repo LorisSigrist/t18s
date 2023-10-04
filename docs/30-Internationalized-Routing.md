@@ -84,16 +84,22 @@ If you are switching locales, you will want to update the locale in the url to m
 
 SvelteKit currently does not offer a great way to do this without causing a full rerender of the page. It's probably best to use `history.replaceState` directly.
 
+You will need to write a url-locale-replacement function. Here is an example:
+
 ```js
 // src/routes/+layout.js
 import { locale } from "$t18s";
 import { browser } from "$app/environment";
 
+function setLocaleInUrl(url, newLocale) {
+  //up to you to implement this
+}
+
 //after init
 if (browser) {
   locale.subscribe((newLocale) => {
-    const newPath = changeLocale(
-      new URL(location.pathname, location.origin),
+    const newPath = setLocaleInUrl(
+      new URL(window.location.href),
       newLocale,
     );
     history.replaceState({}, "", newPath);
