@@ -14,7 +14,6 @@ While it is still in early development, it already has some powerful and unique 
 
 ## Documentation
 
-- [Introduction](docs/10-Introduction.md)
 - [Getting Started](docs/20-Getting-Started.md)
 - [Internationalized Routing](docs/30-Internationalized-Routing.md)
 - [API](docs/40-API.md)
