@@ -21,7 +21,8 @@
   "dependencies": {
     "@formatjs/icu-messageformat-parser": "^2.6.2",
     "js-yaml": "^4.1.0",
-    "kleur": "^4.1.5"
+    "kleur": "^4.1.5",
+    "magic-string": "^0.30.4"
   },
   "devDependencies": {
     "@formatjs/intl": "^2.9.3",

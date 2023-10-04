@@ -3,6 +3,7 @@ import { readFile } from "fs/promises";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 import { normalizePath } from "vite";
+import MagicString from "magic-string";
 
 export const VIRTUAL_MODULE_PREFIX = "virtual:t18s-toolkit:";
 
@@ -38,10 +39,12 @@ export function t18sToolkit() {
         // read file ourselves to avoid getting shut out by vites fs.allow check
         const file = cleanUrl(id);
         if (existsSync(id)) {
-          const contents = await readFile(file, "utf-8");
-          return contents;
-        } else {
-          config.logger.error(`[t18s-toolkit] failed to find file: ${id}`);
+          try {
+            const contents = await readFile(file, "utf-8");
+            return contents;
+          } catch (e) {
+            config.logger.error(`[t18s-toolkit] failed to read file: ${id}`);
+          }
         }
       }
     },
@@ -49,8 +52,13 @@ export function t18sToolkit() {
     transform(code, id, options) {
       if (options?.ssr) return;
       if (id.includes("vite/dist/client/client.mjs")) {
+        const s = new MagicString(code);
+        s.append(`\nimport('virtual:t18s-toolkit:index.js');`);
+        const map = s.generateMap();
+
         return {
-          code: `${code}\nimport('virtual:t18s-toolkit:index.js')`,
+          code: s.toString(),
+          map: map.toString(),
         };
       }
     },
@@ -65,11 +73,10 @@ function getToolkitPath() {
   );
 }
 
-const postfixRE = /[?#].*$/s;
-
 /**
  * @param {string} url
  */
 export function cleanUrl(url) {
+  const postfixRE = /[?#].*$/s;
   return url.replace(postfixRE, "");
 }

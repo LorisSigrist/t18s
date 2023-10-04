@@ -146,7 +146,7 @@ export function t18s(userConfig = {}) {
         dtsPath: resolve(resolvedConfig.root, fullUserConfig.dts),
         translationsDir: resolve(
           resolvedConfig.root,
-          fullUserConfig.translationsDir,
+          fullUserConfig.translationsDir
         ),
         verbose: fullUserConfig.verbose,
       };
@@ -161,13 +161,13 @@ export function t18s(userConfig = {}) {
       if (id.startsWith(VIRTUAL_MODULE_PREFIX)) {
         return id.replace(
           VIRTUAL_MODULE_PREFIX,
-          RESOLVED_VIRTUAL_MODULE_PREFIX,
+          RESOLVED_VIRTUAL_MODULE_PREFIX
         );
       }
     },
 
     load(id) {
-      id = id.split("?")[0] ?? ""; //Remove query parameters
+      id = cleanUrl(id);
       if (!id.startsWith(RESOLVED_VIRTUAL_MODULE_PREFIX)) return;
 
       if (id === RESOLVED_VIRTUAL_MODULE_PREFIX) {
@@ -177,7 +177,7 @@ export function t18s(userConfig = {}) {
       const locale = id.split("/")[2];
       if (!locale) return;
       return adapter.getDictionaryCode(
-        localeDictionaries.get(locale) || new Map(),
+        localeDictionaries.get(locale) || new Map()
       );
     },
 
@@ -207,9 +207,18 @@ export function t18s(userConfig = {}) {
 
       server.ws.on("t18s:test", () => {
         console.log("t18s:test");
-      })
+      });
 
       adapter.useServer(server);
     },
   };
+}
+
+/**
+ * Remove hash and query parameters from a url.
+ * @param {string} url
+ */
+export function cleanUrl(url) {
+  const postfixRE = /[?#].*$/s;
+  return url.replace(postfixRE, "");
 }
