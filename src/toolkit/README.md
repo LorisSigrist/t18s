@@ -5,3 +5,4 @@ They integrate with the core t18s plugin to provide a full suite of tools for de
 ## Structure
 - `index.js` - The main entry point for the toolkit. It's it's own vite-plugin.
 - `runtime/*` - Files that can be imported from the browser using the prefix `virtual:t18s-toolkit:/filename`
+- `runtime/index.js` - The entry point that will run in the browser during dev.
