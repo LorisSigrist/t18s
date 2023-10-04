@@ -1,4 +1,3 @@
-- [Home] (README.md)
 - [Getting Started](docs/20-Getting-Started.md)
 - [Internationalized Routing](docs/30-Internationalized-Routing.md)
 - [API](docs/40-API.md)
