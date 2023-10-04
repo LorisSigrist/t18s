@@ -42,8 +42,9 @@ export class SvelteStoreAdapter {
 
   /**
    * @param {import("../../types.js").Dictionary} dictionary
+   * @param {string | null} parentLocale
    */
-  getDictionaryCode(dictionary) {
+  getDictionaryCode(dictionary, parentLocale = null) {
     return generateDictionaryModule(dictionary);
   }
 
