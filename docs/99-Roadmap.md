@@ -10,13 +10,13 @@
 - [x] Works with SSR
 - [x] Loading Delay
 - [x] Fallback Locale
-- [ ] Sub Locales (eg EN_US, EN_UK)
+- [ ] Sub Locales (eg EN_US, EN_UK)
 - [ ] Namespaces (eg `common:greeting`)
 - [ ] Locale resolution helpers
 - [x] Locale route param matcher (`isLocale`)
 - [ ] Proper Documentation Site
 - [ ] StackBlitz Demo
-- [ ] All Common Message-File Formats
+- [ ] All Common Message-File Formats
   - [x] JSON
   - [x] YAML
   - [ ] TOML
