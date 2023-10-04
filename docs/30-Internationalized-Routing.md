@@ -26,7 +26,8 @@ export function GET() {
 }
 ```
 
-This even works with prerendering, as long as the user has JS enabled.
+> This approach does actually work with prerendering. Even if JS is disabled!
+> SvelteKit will generate an `index.html` for the root, which contains a meta refresh tag that redirects to the initial locale.
 
 ### Updating the locale client side
 `t18s` can update any translated messages in place. A page reload is not required.
@@ -102,9 +103,9 @@ In your root layout you can add this:
 <script>
     import { locales } from "$t18s"
     import { page } from "$app/stores";
-    
+
     //Your url locale replacement logic
-    import { setLocaleInUrl } from "$lib/i18n.js"; 
+    import { setLocaleInUrl } from "$lib/i18n.js";
 </script>
 
 <svelte:head>

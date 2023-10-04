@@ -36,7 +36,9 @@ You will notice that a new file will have been created. `src/t18s.d.ts`. This fi
 
 ## Your first translation
 
-We can add a locale by creating a file in the `translationsDir`. Let's create `src/translations/en.yaml`:
+We can add a locale by creating a file in the `translationsDir`.
+By default this is `src/translations`.
+Let's create `src/translations/en.yaml`:
 
 ![The en.yaml file in src/translations](./assets/fs-one-locale.png)
 
