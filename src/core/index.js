@@ -97,9 +97,14 @@ export function t18s(userConfig = {}) {
     adapter.HMRRemoveLocale(locale);
   }
 
-
-  async function addMessage() {
-    
+  /**
+   * @param {string} locale
+   * @param {string} domain
+   * @param {string} key
+   * @param {string} message
+   */
+  async function setMessage(locale, domain, key, message) {
+    console.log("setMessage", locale, domain, key, message);
   }
 
   /**
@@ -209,7 +214,7 @@ export function t18s(userConfig = {}) {
       });
 
       server.ws.on("t18s:add-message", event => {
-        console.log("t18s:add-message", event);
+        setMessage(event.locale, event.domain, event.key, event.value);
       });
 
       adapter.useServer(server);

@@ -36,7 +36,8 @@
   },
   "files": [
     "types",
-    "src"
+    "src",
+    "!**/*.test.js"
   ],
   "exports": {
     ".": {

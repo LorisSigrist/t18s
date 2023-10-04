@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { FileHandler } from "../../../src/core/file-handling/fileHandler.js";
-import { LoadingException } from "../../../src/core/file-handling/exception.js";
+import { FileHandler } from "./fileHandler.js";
+import { LoadingException } from "./exception.js";
 
 describe("FileHandler", () => {
   describe("handle", () => {
@@ -16,6 +16,7 @@ describe("FileHandler", () => {
         {
           fileExtensions: ["json"],
           load: async () => new Map(),
+          setPath: async () => { },
         },
       ]);
       await expect(handler.handle("nonexistent.json", "en")).rejects.toThrow(
@@ -35,6 +36,7 @@ describe("FileHandler", () => {
         {
           fileExtensions: ["json"],
           load: async () => new Map(),
+          setPath: async () => { },
         },
       ]);
       expect(handler.getSupportedFileExtensions()).toEqual(new Set(["json"]));
@@ -45,10 +47,12 @@ describe("FileHandler", () => {
         {
           fileExtensions: ["json"],
           load: async () => new Map(),
+          setPath: async () => { },
         },
         {
           fileExtensions: ["yaml", "yml"],
           load: async () => new Map(),
+          setPath: async () => { },
         },
       ]);
       expect(handler.getSupportedFileExtensions()).toEqual(

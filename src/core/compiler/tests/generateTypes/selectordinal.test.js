@@ -1,6 +1,6 @@
 import { it, describe } from "vitest";
-import { generateType } from "../../../../src/core/compiler/generateTypes";
-import { expectTypeDefinitionsToEqual, parseMessage } from "./utils";
+import { generateType } from "../../generateTypes.js";
+import { expectTypeDefinitionsToEqual, parseMessage } from "./utils.js";
 
 describe("selectordinal", () => {
   it("generates types for select oridinal", () => {

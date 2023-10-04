@@ -16,4 +16,5 @@ export const JsonHandler = {
       );
     }
   },
+  async setPath() { }
 };

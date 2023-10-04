@@ -1,6 +1,6 @@
 import { it, describe } from "vitest";
-import { generateType } from "../../../../src/core/compiler/generateTypes";
-import { expectTypeDefinitionsToEqual, parseMessage } from "./utils";
+import { generateType } from "../../generateTypes.js";
+import { expectTypeDefinitionsToEqual, parseMessage } from "./utils.js";
 
 describe("tag types", () => {
   it("generates a type for a tag with a string literal in it", () => {

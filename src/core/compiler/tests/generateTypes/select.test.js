@@ -1,6 +1,6 @@
 import { it, describe } from "vitest";
-import { generateType } from "../../../../src/core/compiler/generateTypes";
-import { expectNonWhitespaceToEqual, parseMessage } from "./utils";
+import { generateType } from "../../generateTypes.js";
+import { expectNonWhitespaceToEqual, parseMessage } from "./utils.js";
 
 describe("select types", () => {
   it("generates a type for a select message with no other branch", () => {
