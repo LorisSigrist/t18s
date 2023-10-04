@@ -6,8 +6,16 @@ import colors from "kleur";
  */
 export class Logger {
   #verbose = false;
+  /** @type {import("vite").ResolvedConfig} */
+  #viteConfig;
 
-  constructor(verbose = false) {
+  /**
+   *
+   * @param {import("vite").ResolvedConfig} viteConfig
+   * @param {boolean} verbose
+   */
+  constructor(viteConfig, verbose = false) {
+    this.#viteConfig = viteConfig;
     this.#verbose = verbose;
   }
 
@@ -19,7 +27,7 @@ export class Logger {
   log(msg) {
     if (!this.#verbose) return;
     msg = this.#formatMessage(msg, "ⓘ");
-    console.log(colors.cyan(msg));
+    this.#viteConfig.logger.info(colors.cyan(msg));
   }
 
   /**
@@ -30,7 +38,7 @@ export class Logger {
   warn(msg) {
     if (!this.#verbose) return;
     msg = this.#formatMessage(msg);
-    console.warn(colors.bold().yellow(msg));
+    this.#viteConfig.logger.warn(colors.bold().yellow(msg));
   }
 
   /**
@@ -39,7 +47,7 @@ export class Logger {
    */
   error(msg) {
     msg = this.#formatMessage(msg, "✗");
-    console.error(colors.bold().red(msg));
+    this.#viteConfig.logger.error(colors.bold().red(msg));
   }
 
   /**
@@ -48,7 +56,7 @@ export class Logger {
    */
   success(msg) {
     msg = this.#formatMessage(msg, "✔");
-    console.log(colors.green(msg));
+    this.#viteConfig.logger.info(colors.green(msg));
   }
 
   /**

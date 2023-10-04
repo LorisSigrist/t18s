@@ -149,7 +149,7 @@ export function t18s(userConfig = {}) {
         verbose: fullUserConfig.verbose,
       };
 
-      logger = new Logger(config.verbose);
+      logger = new Logger(resolvedConfig, config.verbose);
       adapter = new SvelteStoreAdapter(config);
 
       await loadInitialLocales(config);
