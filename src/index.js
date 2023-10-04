@@ -12,6 +12,8 @@ import { SvelteStoreAdapter } from "./adapter/svelte/index.js";
 import { FileHandler } from "./file-handling/fileHandler.js";
 import { LoadingException } from "./file-handling/exception.js";
 
+export { t18sToolkit } from "./toolkit/index.js";
+
 /**
  * @typedef {{
  *  translationsDir: string,
