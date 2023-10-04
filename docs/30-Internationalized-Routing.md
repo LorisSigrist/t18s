@@ -73,7 +73,7 @@ export function GET() {
 > This approach does actually work with prerendering. Even if JS is disabled!
 > SvelteKit will generate an `index.html` for the root, which contains a meta refresh tag that redirects to the initial locale.
 
-### Updating the locale client side - Without a page reload
+### Updating the locale client side - Without a page reload
 
 `t18s` can update any translated messages in place. A page reload is not required.
 However, depending on how complex your app is, simply doing a page reload may be the easiest solution. If you really want to avoid a page reload, read on.
@@ -132,7 +132,7 @@ export async function load({ depends }) {
 }
 ```
 
-## SEO & Prerendering
+## SEO & Prerendering
 
 ### Setting the `lang` attribute on `<html>`
 
