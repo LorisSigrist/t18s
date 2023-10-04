@@ -16,8 +16,8 @@ While it is still in early development, it already has some powerful and unique 
 
 - [Introduction](docs/10-Introduction.md)
 - [Getting Started](docs/20-Getting-Started.md)
-- [Plugin Options](docs/30-Options.md)
+- [Internationalized Routing](docs/30-Internationalized-Routing.md)
 - [API](docs/40-API.md)
-- [Advanced Usage](docs/60-Advanced-Usage.md)
 - [Precompilation](docs/80-Precompilation.md)
+- [Plugin Options](docs/90-Plugin-Options.md)
 - [Roadmap](docs/99-Roadmap.md)
