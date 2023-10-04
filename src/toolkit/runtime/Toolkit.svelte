@@ -8,7 +8,6 @@
     if (import.meta.hot) {
       import.meta.hot.send("t18s:add-message", {
         locale: get(locale),
-        domain: "default",
         key: "dynamically-added",
         value: "I'm a dynamically added message!",
       });

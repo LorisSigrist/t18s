@@ -98,13 +98,13 @@ export function t18s(userConfig = {}) {
   }
 
   /**
+   * Sets (create or overwrite) the message for a given key and locale.   * 
    * @param {string} locale
-   * @param {string} domain
    * @param {string} key
    * @param {string} message
    */
-  async function setMessage(locale, domain, key, message) {
-    console.log("setMessage", locale, domain, key, message);
+  async function setMessage(locale, key, message) {
+    console.log("setMessage", locale, key, message);
   }
 
   /**
@@ -213,8 +213,8 @@ export function t18s(userConfig = {}) {
         await invalidateTranslationFile(path);
       });
 
-      server.ws.on("t18s:add-message", event => {
-        setMessage(event.locale, event.domain, event.key, event.value);
+      server.ws.on("t18s:add-message", (event) => {
+        setMessage(event.locale, event.key, event.value);
       });
 
       adapter.useServer(server);
