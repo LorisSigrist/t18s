@@ -1,4 +1,8 @@
 <script lang="ts">
+  // @ts-expect-error missing
+import Icon from 'virtual:t18s-toolkit:Icon.svelte';
+
+
   function test() {
       if(import.meta.hot) {
         import.meta.hot.send("t18s:test", {});
@@ -9,7 +13,7 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div class="t18s-toolkit" on:click={test}>
-  t18s
+  <Icon/>
 </div>
 
 <style>
@@ -19,12 +23,11 @@
     right: 1rem;
     z-index: 10000;
 
+    font-size: 1.5rem;
 
-    width: 2rem;
-    height: 2rem;
-
-    background-color: white;
-    border: 1px solid blue;
+    padding: .5rem;
+    background-color: #ff3e00;
+    color: white;
     border-radius: 0.25rem;
   }
 </style>
