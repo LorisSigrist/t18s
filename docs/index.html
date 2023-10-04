@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta charset="UTF-8" />
     <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/themes/vue.css" />
+
 </head>
 
 <body>
@@ -14,15 +15,21 @@
         window.$docsify = {
             repo: "LorisSigrist/t18s",
             name: "T18S Documentation",
-            basePath: 'https://raw.githubusercontent.com/LorisSigrist/t18s/main/docs',
-            homepage: 'README.md',
+            basePath: 'https://raw.githubusercontent.com/LorisSigrist/t18s/main',
+            homepage: 'https://raw.githubusercontent.com/LorisSigrist/t18s/main/README.md',
             routerMode: "history",
             auto2top: true,
             subMaxLevel: 1,
 			maxLevel: 3,
+
+            //Sidebar
+            loadSidebar: "docs/_sidebar.md",            
         };
     </script>
-    <script src="https://raw.githubusercontent.com/LorisSigrist/t18s/main/README.md"></script>
+     <script src="//cdn.jsdelivr.net/npm/docsify@4"></script>
+     <script src="//unpkg.com/prismjs/components/prism-typescript.min.js"></script>
+     <script src="//unpkg.com/prismjs/components/prism-bash.min.js"></script>
+     <script src="//unpkg.com/prismjs/components/prism-yaml.min.js"></script>
 </body>
 
 </html>
