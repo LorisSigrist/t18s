@@ -1,4 +1,4 @@
-import { Dictionary } from "../../types.js";
+import { Dictionary } from "../types.js";
 import { LoadingException } from "./exception.js";
 
 export type FormatHandler = {
@@ -17,4 +17,6 @@ export type FormatHandler = {
     fileContent: string,
     locale: string,
   ) => Promise<Dictionary>;
+
+  setPath: (path: string, value: string) => Promise<void>;
 };

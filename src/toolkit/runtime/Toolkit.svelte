@@ -1,11 +1,17 @@
 <script lang="ts">
   // @ts-expect-error missing
   import Icon from "virtual:t18s-toolkit:Icon.svelte";
-  import { locales, locale } from "$t18s";
+  import { locale } from "$t18s";
+  import { get } from "svelte/store";
 
   function test() {
     if (import.meta.hot) {
-      import.meta.hot.send("t18s:test", {});
+      import.meta.hot.send("t18s:add-message", {
+        locale: get(locale),
+        domain: "default",
+        key: "dynamically-added",
+        value: "I'm a dynamically added message!",
+      });
     }
   }
 </script>

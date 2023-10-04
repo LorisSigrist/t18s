@@ -19,4 +19,5 @@ export const YamlHandler = {
       );
     }
   },
+  async setPath() { }
 };

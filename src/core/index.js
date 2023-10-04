@@ -97,9 +97,9 @@ export function t18s(userConfig = {}) {
     adapter.HMRRemoveLocale(locale);
   }
 
-  async function regenerateDTS() {
-    const dts = adapter.getTypeDefinition(localeDictionaries);
-    await writeFile(config.dtsPath, dts, { encoding: "utf-8" });
+
+  async function addMessage() {
+    
   }
 
   /**
@@ -117,6 +117,11 @@ export function t18s(userConfig = {}) {
     }
     const paths = files.map((file) => resolve(config.translationsDir, file));
     await Promise.all(paths.map(invalidateTranslationFile));
+  }
+
+  async function regenerateDTS() {
+    const dts = adapter.getTypeDefinition(localeDictionaries);
+    await writeFile(config.dtsPath, dts, { encoding: "utf-8" });
   }
 
   /**
@@ -203,8 +208,8 @@ export function t18s(userConfig = {}) {
         await invalidateTranslationFile(path);
       });
 
-      server.ws.on("t18s:test", () => {
-        console.log("t18s:test");
+      server.ws.on("t18s:add-message", event => {
+        console.log("t18s:add-message", event);
       });
 
       adapter.useServer(server);

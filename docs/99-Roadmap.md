@@ -10,8 +10,8 @@
 - [x] Works with SSR
 - [x] Loading Delay
 - [x] Fallback Locale
+- [ ] Independently loaded Message Domains (eg `common:greeting`)
 - [ ] Sub Locales (eg EN_US, EN_UK)
-- [ ] Namespaces (eg `common:greeting`) (Independently loaded)
 - [ ] Locale resolution helpers
 - [x] Locale route param matcher (`isLocale`)
 - [x] Documentation Site
