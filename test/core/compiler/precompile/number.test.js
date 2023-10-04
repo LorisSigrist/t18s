@@ -1,5 +1,5 @@
 import { expect, describe, it } from "vitest";
-import { precompile } from "../../../src/compiler/precompile.js";
+import { precompile } from "../../../../src/core/compiler/precompile.js";
 import { formatJS, parseMessage } from "./utils.js";
 
 describe("compile number format", () => {

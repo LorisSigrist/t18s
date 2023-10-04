@@ -1,5 +1,5 @@
 import { it, describe } from "vitest";
-import { generateType } from "../../../src/compiler/generateTypes";
+import { generateType } from "../../../../src/core/compiler/generateTypes";
 import { expectTypeDefinitionsToEqual, parseMessage } from "./utils";
 
 describe("plural types", () => {

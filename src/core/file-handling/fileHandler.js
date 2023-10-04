@@ -14,7 +14,7 @@ export class FileHandler {
   /**
    * @param {string} filePath Absolute path to the file that needs to be handled
    * @param {string} locale The locale for which the file should be handled
-   * @returns {Promise<import("../types.js").Dictionary>} A dictionary
+   * @returns {Promise<import("../../types.js").Dictionary>} A dictionary
    *
    * @throws {LoadingException} If the file could not be handled
    */

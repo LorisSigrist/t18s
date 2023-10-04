@@ -1,4 +1,4 @@
-import { Dictionary } from "../types.js";
+import { Dictionary } from "../../types.js";
 import { LoadingException } from "./exception.js";
 
 export type FormatHandler = {

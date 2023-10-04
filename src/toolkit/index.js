@@ -5,7 +5,7 @@ import { fileURLToPath } from "url";
 import { normalizePath } from "vite";
 import MagicString from "magic-string";
 
-export const VIRTUAL_MODULE_PREFIX = "virtual:t18s-toolkit:";
+const VIRTUAL_MODULE_PREFIX = "virtual:t18s-toolkit:";
 
 /**
  * EXPERIMENTAL Devtools for t18s.
@@ -76,7 +76,7 @@ function getToolkitPath() {
 /**
  * @param {string} url
  */
-export function cleanUrl(url) {
+function cleanUrl(url) {
   const postfixRE = /[?#].*$/s;
   return url.replace(postfixRE, "");
 }
