@@ -1,4 +1,4 @@
-# I18n + TypeScript = T18s
+# I18n + Typesafety = T18s
 
 `t18s` is a vite plugin designed to work in tandem with SvelteKit to provide a simple and powerful translation experience. It's focus is on performance, bundle size and developer experience.
 
