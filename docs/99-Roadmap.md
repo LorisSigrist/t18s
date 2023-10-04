@@ -11,7 +11,7 @@
 - [x] Loading Delay
 - [x] Fallback Locale
 - [ ] Sub Locales (eg EN_US, EN_UK)
-- [ ] Namespaces (eg `common:greeting`)
+- [ ] Namespaces (eg `common:greeting`) (Independently loaded)
 - [ ] Locale resolution helpers
 - [x] Locale route param matcher (`isLocale`)
 - [x] Documentation Site
