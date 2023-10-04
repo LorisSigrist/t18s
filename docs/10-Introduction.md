@@ -6,6 +6,6 @@
 
 - [x] Fully TypeSafe
 - [x] Precompiled translations, no runtime overhead
-- [x] Supports SSR
+- [x] Supports SSR - No client side JS required (still recommended tho)
 - [x] Full ICU MessageFormat support
 - [x] HMR: No page reload on translation changes

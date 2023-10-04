@@ -74,6 +74,14 @@ import { locales } from "$t18s";
 console.log($locales); // ['en', 'de']
 ```
 
+## Type `Locale`
+A `Locale` is a string that is a valid locale. It is a union of all available locales.
+
+```ts
+import type { Locale } from "$t18s";
+
+const locale : Locale = "en"; // Locale = "en" | "de" (or whatever locales you have)
+```
 
 ## `preloadLocale`
 Preload a locale silently in the background. This is useful if you anticipate a locale change and want to preload the new locale before it is needed.
@@ -88,3 +96,18 @@ await preloadLocale("de");
 This does *not*:
 - Change the current locale
 - Set `$isLoading` to `true`
+
+## `isLocale`
+A convenience function to check if a variable is a valid locale.
+
+This is useful when implementing internationalized routing.
+
+```ts
+import { isLocale } from "$t18s";
+
+const thing : any = "en";
+
+if(isLocale(thing)) {
+  locale.set(thing); //thing get's type-narrowed to `Locale``
+}
+```

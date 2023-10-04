@@ -160,6 +160,11 @@ declare module '${VIRTUAL_MODULE_PREFIX}' {
      */
     export const preloadLocale: (newLocale: Locale) => Promise<void>;
 
+    /**
+     * Convenience function to check if something is a valid locale.
+     */
+    export const isLocale: (locale: unknown) => locale is Locale;
+
     export type Messages = {
 `;
 
@@ -267,6 +272,10 @@ export async function preloadLocale(newLocale) {
 }
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+export function isLocale(maybeLocale) {
+  return get(locales).includes(maybeLocale);
+}
 
 async function loadLocale(newLocale) {
   let done = false;
