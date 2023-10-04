@@ -205,6 +205,10 @@ export function t18s(userConfig = {}) {
         await invalidateTranslationFile(path);
       });
 
+      server.ws.on("t18s:test", () => {
+        console.log("t18s:test");
+      })
+
       adapter.useServer(server);
     },
   };

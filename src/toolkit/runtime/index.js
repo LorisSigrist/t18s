@@ -1,5 +1,5 @@
 // @ts-expect-error missing
-import Alert from 'virtual:t18s-toolkit:Alert.svelte';
+import Toolkit from 'virtual:t18s-toolkit:Toolkit.svelte';
 
 function create_host() {
 	const id = 't18s-toolkit-host';
@@ -12,6 +12,4 @@ function create_host() {
 	return el;
 }
 
-new Alert({ target: create_host() });
-
-console.log('Hello from t18s-toolkit');
+new Toolkit({ target: create_host() });

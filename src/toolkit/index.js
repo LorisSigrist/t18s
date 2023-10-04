@@ -6,7 +6,10 @@ import { normalizePath } from "vite";
 
 export const VIRTUAL_MODULE_PREFIX = "virtual:t18s-toolkit:";
 
-/** @returns {import("vite").Plugin} */
+/**
+ * EXPERIMENTAL Devtools for t18s.
+ * @returns {import("vite").Plugin}
+ */
 export function t18sToolkit() {
   /** @type {import("vite").ResolvedConfig} */
   let config;
