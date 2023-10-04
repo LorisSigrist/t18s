@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { FileHandler } from "../../../src/file-handling/fileHandler.js";
-import { LoadingException } from "../../../src/file-handling/exception.js";
+import { FileHandler } from "../../src/file-handling/fileHandler.js";
+import { LoadingException } from "../../src/file-handling/exception.js";
 
 describe("FileHandler", () => {
   describe("handle", () => {
