@@ -14,7 +14,7 @@
 - [ ] Namespaces (eg `common:greeting`)
 - [ ] Locale resolution helpers
 - [x] Locale route param matcher (`isLocale`)
-- [ ] Proper Documentation Site
+- [x] Documentation Site
 - [ ] StackBlitz Demo
 - [ ] All Common Message-File Formats
   - [x] JSON

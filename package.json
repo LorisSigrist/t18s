@@ -10,7 +10,7 @@
     "type": "git",
     "url": "https://github.com/LorisSigrist/t18s.git"
   },
-  "homepage": "https://github.com/LorisSigrist/t18s#readme",
+  "homepage": "https://t18s.sigrist.dev",
   "license": "MIT",
   "scripts": {
     "test": "vitest run --passWithNoTests",
