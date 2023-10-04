@@ -11,10 +11,11 @@
 - [x] Loading Delay
 - [x] Fallback Locale
 - [ ] Sub Locales (eg EN_US, EN_UK)
-- [ ] Namespaces
-- [ ] Locale extraction helpers
-- [ ] Locale route param matcher
-- [ ] Documentation Site
+- [ ] Namespaces (eg `common:greeting`)
+- [ ] Locale resolution helpers
+- [x] Locale route param matcher (`isLocale`)
+- [ ] Proper Documentation Site
+- [ ] StackBlitz Demo
 - [ ] All Common Message-File Formats
   - [x] JSON
   - [x] YAML
@@ -24,5 +25,5 @@
   - [ ] PO
   - [ ] INI
   - [ ] XML
-- [ ] Edit translations inline in the browser (like [Better i18n for Svelte](https://github.com/versiobit/better-i18n-for-svelte))
 - [ ] Message Description Intellisense
+- [ ] Edit translations inline in the browser (like [Better i18n for Svelte](https://github.com/versiobit/better-i18n-for-svelte))

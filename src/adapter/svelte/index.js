@@ -163,7 +163,7 @@ declare module '${VIRTUAL_MODULE_PREFIX}' {
     /**
      * Convenience function to check if something is a valid locale.
      */
-    export const isLocale: (locale: unknown) => locale is Locale;
+    export const isLocale: (maybeLocale: unknown) => maybeLocale is Locale;
 
     export type Messages = {
 `;
@@ -234,7 +234,7 @@ export const isLoading = writable(false);
 const loaders = {
 ${locales.map(
   (locale) =>
-    `    "${locale}": async () => (await import("$t18s/messages/${locale}")).default`
+    `    "${locale}": async () => (await import("$t18s/messages/${locale}")).default`,
 )}
 }
 

@@ -1,4 +1,4 @@
-# Options
+# Plugin Options
 
 The plugin accepts the following options:
 

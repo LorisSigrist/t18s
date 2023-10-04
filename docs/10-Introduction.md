@@ -4,8 +4,8 @@
 
 ## Features
 
-- [x] Fully TypeSafe
-- [x] Precompiled translations, no runtime overhead
-- [x] Supports SSR - No client side JS required (still recommended tho)
-- [x] Full ICU MessageFormat support
+- [x] Full ICU MessageFormat support (including skeletons)
+- [x] Fully TypeSafe (both keys and arguments)
+- [x] Precompiled translations -> no runtime overhead
+- [x] Supports SSR - No client side JS required
 - [x] HMR: No page reload on translation changes

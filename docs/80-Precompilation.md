@@ -1,8 +1,10 @@
 # Precompilation
 
-Translations are written using the ICU MessageFormat syntax. This would usually require a runtime library to parse the strings and replace the placeholders with the values. This makes the bundle quite a bit larger.
+Translations are written using the ICU MessageFormat syntax. This would usually require a runtime library to parse the strings and replace the placeholders with the formatted values. This makes the bundle quite a bit larger.
 
-`t18s` compiles each message into a function at build time. This means that no runtime library is needed.
+`t18s` instead compiles each message into a function at build time. This means that no runtime library is needed.
+
+For example, this message:
 
 ```js
 "{fullName} was born on {birthday, date, long}"; //en
