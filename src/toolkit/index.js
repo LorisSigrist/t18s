@@ -18,7 +18,7 @@ export function t18sToolkit() {
 
   return {
     name: "t18s-toolkit",
-    apply: "serve",
+    apply: "serve", // only apply to dev server
     enforce: "pre",
 
     configResolved(resolvedConfig) {
@@ -69,7 +69,7 @@ function getToolkitPath() {
   const pluginPath = normalizePath(dirname(fileURLToPath(import.meta.url)));
   return pluginPath.replace(
     /\/t18s\/src\/toolkit$/,
-    "/t18s/src/toolkit/runtime/"
+    "/t18s/src/toolkit/runtime/",
   );
 }
 

@@ -124,8 +124,7 @@ helloName: Hello {name}! What a wonderful day!
 
 You will notice that the translation is updated in the browser without a refresh, and the value in the input is not lost.
 
-
-[Hot reloading in action](./assets/hmr.mp4 ':include')
+[Hot reloading in action](./assets/hmr.mp4 ":include")
 
 ## Adding another locale
 You can add another locale by creating another file in the `translationsDir`. Let's create `src/translations/de.yaml`:

@@ -16,7 +16,7 @@ describe("FileHandler", () => {
         {
           fileExtensions: ["json"],
           load: async () => new Map(),
-          setPath: async () => { },
+          setPath: async () => {},
         },
       ]);
       await expect(handler.handle("nonexistent.json", "en")).rejects.toThrow(
@@ -36,7 +36,7 @@ describe("FileHandler", () => {
         {
           fileExtensions: ["json"],
           load: async () => new Map(),
-          setPath: async () => { },
+          setPath: async () => {},
         },
       ]);
       expect(handler.getSupportedFileExtensions()).toEqual(new Set(["json"]));
@@ -47,12 +47,12 @@ describe("FileHandler", () => {
         {
           fileExtensions: ["json"],
           load: async () => new Map(),
-          setPath: async () => { },
+          setPath: async () => {},
         },
         {
           fileExtensions: ["yaml", "yml"],
           load: async () => new Map(),
-          setPath: async () => { },
+          setPath: async () => {},
         },
       ]);
       expect(handler.getSupportedFileExtensions()).toEqual(

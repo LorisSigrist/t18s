@@ -98,10 +98,7 @@ function setLocaleInUrl(url, newLocale) {
 //after init
 if (browser) {
   locale.subscribe((newLocale) => {
-    const newPath = setLocaleInUrl(
-      new URL(window.location.href),
-      newLocale,
-    );
+    const newPath = setLocaleInUrl(new URL(window.location.href), newLocale);
     history.replaceState({}, "", newPath);
   });
 }
