@@ -1,14 +1,15 @@
 import { expect, describe, it } from "vitest";
 import { precompile } from "../../precompile.js";
-import { formatJS, parseMessage } from "./utils.js";
+import { formatJS, parseMessage, evaluateFnString } from "./utils.js";
 
 describe("compile number format", () => {
   it("compiles a number with no special formatting", () => {
     let message = "{count, number}";
     let compiled = precompile(parseMessage(message), "en");
 
-    let result = eval(`(${compiled})({ count: Math.PI })`);
-    let correct = formatJS(message, { count: Math.PI });
+    const values = { count: Math.PI };
+    const result = evaluateFnString(compiled, values);
+    const correct = formatJS(message, values);
     expect(result).toMatch(correct);
   });
 
@@ -16,8 +17,9 @@ describe("compile number format", () => {
     let message = "{count, number, percent}";
     let compiled = precompile(parseMessage(message), "en");
 
-    let result = eval(`(${compiled})({ count: Math.PI })`);
-    let correct = formatJS(message, { count: Math.PI });
+    const values = { count: Math.PI };
+    const result = evaluateFnString(compiled, values);
+    const correct = formatJS(message, values);
 
     expect(result).toMatch(correct);
   });
@@ -26,18 +28,20 @@ describe("compile number format", () => {
     let message = "{name} {count, number, decimal}";
     let compiled = precompile(parseMessage(message), "en");
 
-    let result = eval(`(${compiled})({ name: "Loris", count: 100_000 })`);
-    let correct = formatJS(message, { name: "Loris", count: 100_000 });
+    const values = { name: "Loris", count: 100_000 };
+    const result = evaluateFnString(compiled, values);
+    const correct = formatJS(message, values);
 
     expect(result).toMatch(correct);
   });
 
   it("compiles a number with unit formatting", () => {
     let message = "{name} {count, number, ::unit/meter}";
-    let correct = formatJS(message, { name: "Loris", count: Math.PI });
 
     let compiled = precompile(parseMessage(message), "en");
-    let result = eval(`(${compiled})({ name: "Loris", count: Math.PI })`);
+    const values = { name: "Loris", count: Math.PI };
+    const result = evaluateFnString(compiled, values);
+    const correct = formatJS(message, values);
 
     expect(result).toMatch(correct);
   });
@@ -47,8 +51,10 @@ describe("compile number format", () => {
       "The price of this bagel is {num, number, ::sign-always compact-short currency/GBP}";
     let compiled = precompile(parseMessage(message), "en");
 
-    let result = eval(`(${compiled})({ name: "Loris", num: 100_000 })`);
-    let correct = formatJS(message, { name: "Loris", num: 100_000 });
+    const values = { num: 100_000 };
+    const result = evaluateFnString(compiled, values);
+    const correct = formatJS(message, values);
+
 
     expect(result).toMatch(correct);
   });

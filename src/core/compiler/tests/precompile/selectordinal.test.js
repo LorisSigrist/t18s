@@ -1,6 +1,6 @@
 import { precompile } from "../../precompile.js";
 import { describe, it, expect } from "vitest";
-import { formatJS, parseMessage } from "./utils.js";
+import { formatJS, parseMessage, evaluateFnString } from "./utils.js";
 
 describe("compile selectordinal", () => {
   it("compiles a selectordinal", () => {
@@ -9,8 +9,9 @@ describe("compile selectordinal", () => {
     let compiled = precompile(parseMessage(message), "en");
 
     for (let i = 1; i < 10; i++) {
-      let result = eval(`(${compiled})({ count: ${i} })`);
-      let correct = formatJS(message, { count: i });
+      const values = { count: i };
+      const result = evaluateFnString(compiled, values);
+      const correct = formatJS(message, values);
 
       expect(result).toMatch(correct);
     }

@@ -1,6 +1,6 @@
 import { precompile } from "../../precompile.js";
 import { describe, it, expect } from "vitest";
-import { formatJS, parseMessage } from "./utils.js";
+import { formatJS, parseMessage, evaluateFnString } from "./utils.js";
 
 describe("compile", () => {
   it("compiles a message with no arguments", () => {
@@ -16,9 +16,10 @@ describe("compile", () => {
     const message = "Hello {name}";
     const compiled = precompile(parseMessage(message), "en");
     const values = { name: "world" };
-    const result = eval(`(${compiled})({ name: "world" })`);
 
+    const result = evaluateFnString(compiled, values);
     const correct = formatJS(message, values);
+
     expect(result).toMatch(correct);
   });
 
@@ -29,7 +30,10 @@ describe("compile", () => {
       tag: (value) => `<bold>${value}</bold>`,
       name: "world",
     };
-    const result = eval(`(${compiled})({ tag: "bold", name: "world" })`);
+    const result = evaluateFnString(compiled, {
+      tag: "bold",
+      name: "world",
+    });
 
     const correct = formatJS(message, values);
     expect(result).toMatch(correct);
@@ -38,16 +42,18 @@ describe("compile", () => {
   it("compiles a message containing a backtick", () => {
     const message = "Hello `world` {name}";
     const compiled = precompile(parseMessage(message), "en");
-    const result = eval(`(${compiled})({name: "nick"})`);
 
-    const correct = formatJS(message, { name: "nick" });
+    const values = { name: "nick" };
+    const result = evaluateFnString(compiled, values);
+    const correct = formatJS(message, values);
+
     expect(result).toMatch(correct);
   });
 
   it("compiles a multiline message", () => {
     const message = "Hello\nworld";
     const compiled = precompile(parseMessage(message), "en");
-    const result = eval(`(${compiled})()`);
+    const result = evaluateFnString(compiled);
 
     const correct = formatJS(message);
     expect(result).toMatch(correct);

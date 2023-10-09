@@ -1,15 +1,15 @@
 import { precompile } from "../../precompile.js";
 import { describe, it, expect } from "vitest";
-import { formatJS, parseMessage } from "./utils.js";
+import { formatJS, parseMessage, evaluateFnString } from "./utils.js";
 
 describe("compile select", () => {
   it("compiles a message with a select argument into a function", () => {
     const message =
       "{gender, select, male {Herr} female {Frau} other {Person}}";
     const compiled = precompile(parseMessage(message), "en");
-
-    const result = eval(`(${compiled})({ gender: "male" })`);
-    const correct = formatJS(message, { gender: "male" });
+    const values = { gender: "male" };
+    let result = evaluateFnString(compiled, values);
+    let correct = formatJS(message, values);
     expect(result).toMatch(correct);
   });
 
@@ -17,8 +17,9 @@ describe("compile select", () => {
     const message = "{season, select, summer {Summer} winter {Winter}}";
     const compiled = precompile(parseMessage(message), "en");
 
-    const result = eval(`(${compiled})({ season: "summer" })`);
-    const correct = formatJS(message, { season: "summer" });
+    const values = { season: "summer" };
+    let result = evaluateFnString(compiled, values);
+    let correct = formatJS(message, values);
     expect(result).toMatch(correct);
   });
 
@@ -26,9 +27,9 @@ describe("compile select", () => {
     const message = "{season, select, summer {Summer {year}} winter {Winter}}";
     const compiled = precompile(parseMessage(message), "en");
 
-    const result = eval(`(${compiled})({ season: "summer", year: 2021 })`);
-    const correct = formatJS(message, { season: "summer", year: 2021 });
-
+    const values = { season: "summer", year: 2021 };
+    let result = evaluateFnString(compiled, values);
+    let correct = formatJS(message, values);
     expect(result).toMatch(correct);
   });
 
@@ -38,8 +39,9 @@ describe("compile select", () => {
 
     const compiled = precompile(parseMessage(message), "en");
 
-    const result = eval(`(${compiled})({ a: "option2", b: "a" })`);
-    const correct = formatJS(message, { a: "option2", b: "a" });
+    const values = { a: "option2", b: "a" };
+    let result = evaluateFnString(compiled, values);
+    let correct = formatJS(message, values);
 
     expect(result).toMatch(correct);
   });
@@ -48,8 +50,9 @@ describe("compile select", () => {
     const message = "{season, select, summer {# Summer} winter {Winter}}";
     const compiled = precompile(parseMessage(message), "en");
 
-    const result = eval(`(${compiled})({ season: "summer"})`);
-    const correct = formatJS(message, { season: "summer" });
+    const values = { season: "summer" };
+    let result = evaluateFnString(compiled, values);
+    let correct = formatJS(message, values);
     expect(result).toMatch(correct);
   });
 });

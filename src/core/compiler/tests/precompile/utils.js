@@ -1,5 +1,7 @@
 import { parse } from "@formatjs/icu-messageformat-parser";
 import { createIntl, defineMessage } from "@formatjs/intl";
+import { uneval } from "devalue"
+
 /**
  * See what formatJS does to the message
  *
@@ -36,4 +38,19 @@ export function parseMessage(source) {
     shouldParseSkeletons: true,
     requiresOtherClause: false,
   });
+}
+
+
+/**
+ * 
+ * @param {string} fn 
+ * @param {any} values 
+ * @returns {string}
+ */
+export function evaluateFnString(
+  fn,
+  values = undefined
+) {
+  const stringifiedValues = values !== undefined ? uneval(values) : "";
+  return eval(`(${fn})(${stringifiedValues})`);
 }

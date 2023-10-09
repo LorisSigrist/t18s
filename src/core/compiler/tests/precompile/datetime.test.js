@@ -1,6 +1,6 @@
 import { precompile } from "../../precompile.js";
 import { describe, it, expect } from "vitest";
-import { formatJS, parseMessage } from "./utils.js";
+import { formatJS, parseMessage, evaluateFnString } from "./utils.js";
 
 describe("compile date & time", () => {
   it("compiles a message with a short time argument into a function", () => {
@@ -8,9 +8,7 @@ describe("compile date & time", () => {
     const compiled = precompile(parseMessage(message), "en");
 
     const values = { time: new Date(2021, 1, 1, 12, 0, 0) };
-    const result = eval(
-      `(${compiled})({ time: new Date(2021, 1, 1, 12, 0, 0) })`,
-    );
+    const result = evaluateFnString(compiled, values);
 
     const correct = formatJS(message, values);
     expect(result).toMatch(correct);
@@ -21,9 +19,7 @@ describe("compile date & time", () => {
     const compiled = precompile(parseMessage(message), "en");
 
     const values = { time: new Date(2021, 1, 1, 12, 0, 0) };
-    const result = eval(
-      `(${compiled})({ time: new Date(2021, 1, 1, 12, 0, 0) })`,
-    );
+    const result = evaluateFnString(compiled, values);
 
     const correct = formatJS(message, values);
     expect(result).toMatch(correct);
@@ -34,9 +30,7 @@ describe("compile date & time", () => {
     const compiled = precompile(parseMessage(message), "en");
 
     const values = { time: new Date(2021, 1, 1, 12, 0, 0) };
-    const result = eval(
-      `(${compiled})({ time: new Date(2021, 1, 1, 12, 0, 0) })`,
-    );
+    const result = evaluateFnString(compiled, values);
 
     const correct = formatJS(message, values);
     expect(result).toMatch(correct);
@@ -47,9 +41,7 @@ describe("compile date & time", () => {
     const compiled = precompile(parseMessage(message), "en");
 
     const values = { date: new Date(2021, 1, 1, 12, 0, 0) };
-    const result = eval(
-      `(${compiled})({ date: new Date(2021, 1, 1, 12, 0, 0) })`,
-    );
+    const result = evaluateFnString(compiled, values);
 
     const correct = formatJS(message, values);
     expect(result).toMatch(correct);
@@ -60,9 +52,7 @@ describe("compile date & time", () => {
     const compiled = precompile(parseMessage(message), "en");
 
     const values = { date: new Date(2021, 1, 1, 12, 0, 0) };
-    const result = eval(
-      `(${compiled})({ date: new Date(2021, 1, 1, 12, 0, 0) })`,
-    );
+    const result = evaluateFnString(compiled, values);
 
     const correct = formatJS(message, values);
     expect(result).toMatch(correct);
@@ -73,9 +63,7 @@ describe("compile date & time", () => {
     const compiled = precompile(parseMessage(message), "en");
 
     const values = { date: new Date(2021, 1, 1, 12, 0, 0) };
-    const result = eval(
-      `(${compiled})({ date: new Date(2021, 1, 1, 12, 0, 0) })`,
-    );
+    const result = evaluateFnString(compiled, values);
 
     const correct = formatJS(message, values);
     expect(result).toMatch(correct);

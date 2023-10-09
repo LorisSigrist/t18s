@@ -28,6 +28,7 @@
     "@formatjs/intl": "^2.9.3",
     "@types/js-yaml": "^4.0.6",
     "@types/node": "^20.7.2",
+    "devalue": "^4.3.2",
     "dts-buddy": "^0.2.5",
     "prettier": "^3.0.3",
     "typescript": "^5.2.2",
