@@ -26,12 +26,5 @@
     bottom: 1rem;
     right: 1rem;
     z-index: 10000;
-
-    font-size: 1.5rem;
-
-    padding: 0.5rem;
-    background-color: #ff3e00;
-    color: white;
-    border-radius: 0.25rem;
   }
 </style>
