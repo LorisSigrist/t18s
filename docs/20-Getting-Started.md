@@ -4,7 +4,7 @@
 
 Since t18s is a vite-plugin, you can install it as a dev dependency:
 
-```
+```bash
 pnpm i -D t18s
 ```
 
