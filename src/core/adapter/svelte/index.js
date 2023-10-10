@@ -1,3 +1,4 @@
+import { generateDictionaryModule } from "../../codegen/dictionary.js";
 import { indent } from "../../codegen/utils/stringUtils.js";
 
 /**
@@ -238,24 +239,4 @@ if(import.meta.hot) {
   });
 }
 `;
-}
-
-/**
- * Generates the code for the `$t18s/messages/<locale>` modules.
- *
- * @param {import("../../types.js").Dictionary} dictionary
- * @returns {string}
- */
-function generateDictionaryModule(dictionary) {
-  let dictionaryBody = "";
-
-  for (const [key, func] of dictionary) {
-    dictionaryBody += `"${key}": ${func.precompiled},\n`;
-  }
-
-  let code = "";
-  code += "export default {\n";
-  code += indent(dictionaryBody);
-  code += "};";
-  return code;
 }

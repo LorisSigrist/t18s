@@ -16,9 +16,7 @@ export function generateDTS(localeDictionaries) {
 
   dts.addModule(VIRTUAL_MODULE_PREFIX, (module) => {
     module.setDescription("TypeSafe translations for your Svelte app.");
-    module.addStatement(
-      "import type { Writable, Readable } from 'svelte/store';"
-    );
+    module.addImport("import type { Writable, Readable } from 'svelte/store';");
 
     module.addStatement(
       `export type Locale = ${stringTypeUnion(locales)};`,

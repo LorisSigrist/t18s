@@ -54,6 +54,9 @@ class Module {
   /** @type {Statement[]} */
   #statements = [];
 
+  /** @type {string[]} */
+  #imports = [];
+
   /** @param {string} name */
   constructor(name) {
     this.#name = name;
@@ -79,6 +82,13 @@ class Module {
     return this;
   }
 
+
+  /** @param {string} importStatement */
+  addImport(importStatement) {
+    this.#imports.push(importStatement);
+    return this;
+  }
+
   build() {
     let code = "";
 
@@ -92,6 +102,12 @@ class Module {
     }
 
     code += `declare module "${this.#name}" {\n`;
+
+    if (this.#imports.length > 0) {
+      code += indent(this.#imports.join("\n"));
+      code += "\n\n";
+    }
+
     code += indent(this.#statements.map((s) => s.build()).join("\n\n"));
     code += "\n}";
     return code;
