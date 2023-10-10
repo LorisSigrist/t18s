@@ -11,6 +11,7 @@ import {
 import { SvelteStoreAdapter } from "./adapter/svelte/index.js";
 import { FileHandler } from "./file-handling/fileHandler.js";
 import { LoadingException } from "./file-handling/exception.js";
+import { generateDTS } from "./codegen/dts.js";
 
 /**
  * @typedef {{
@@ -121,12 +122,29 @@ export function t18s(userConfig = {}) {
       return;
     }
     const paths = files.map((file) => resolve(config.translationsDir, file));
-    await Promise.all(paths.map(invalidateTranslationFile));
+
+    /** @param {string} path */
+    async function loadFile(path) {
+      const locale = getLocale(path);
+      try {
+        const dictionary = await fileHandler.handle(path, locale);
+        localeDictionaries.set(locale, dictionary);
+      } catch (e) {
+        if (!(e instanceof LoadingException)) throw e;
+        logger.error(e.message);
+      }
+    }
+
+    //Load all locale-files
+    await Promise.all(paths.map(loadFile));
+
+    //Generate Typedef
+    await regenerateDTS();
   }
 
   async function regenerateDTS() {
-    const dts = adapter.getTypeDefinition(localeDictionaries);
-    await writeFile(config.dtsPath, dts, { encoding: "utf-8" });
+    const dts = generateDTS(localeDictionaries);
+    await writeFile(config.dtsPath, dts, { encoding: "utf-8", flag: "w" });
   }
 
   /**
@@ -154,7 +172,7 @@ export function t18s(userConfig = {}) {
         dtsPath: resolve(resolvedConfig.root, fullUserConfig.dts),
         translationsDir: resolve(
           resolvedConfig.root,
-          fullUserConfig.translationsDir,
+          fullUserConfig.translationsDir
         ),
         verbose: fullUserConfig.verbose,
       };
@@ -169,7 +187,7 @@ export function t18s(userConfig = {}) {
       if (id.startsWith(VIRTUAL_MODULE_PREFIX)) {
         return id.replace(
           VIRTUAL_MODULE_PREFIX,
-          RESOLVED_VIRTUAL_MODULE_PREFIX,
+          RESOLVED_VIRTUAL_MODULE_PREFIX
         );
       }
     },
@@ -185,7 +203,7 @@ export function t18s(userConfig = {}) {
       const locale = id.split("/")[2];
       if (!locale) return;
       return adapter.getDictionaryCode(
-        localeDictionaries.get(locale) || new Map(),
+        localeDictionaries.get(locale) || new Map()
       );
     },
 

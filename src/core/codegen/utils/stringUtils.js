@@ -18,3 +18,13 @@ export const addParentheses = (str) => `(${str})`;
  * @returns "a" | "b" | "c"
  */
 export const stringTypeUnion = (strings) => strings.map(addQuotes).join("|");
+
+/**
+ * Indents some text by one level.
+ * @param {string} text
+ */
+export function indent(text) {
+  const INDENT_SPACES = 4;
+  const lines = text.split("\n");
+  return lines.map((l) => " ".repeat(INDENT_SPACES) + l).join("\n");
+}

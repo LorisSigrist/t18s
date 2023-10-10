@@ -1,6 +1,4 @@
-import { VIRTUAL_MODULE_PREFIX } from "../../constants.js";
-import { addQuotes, stringTypeUnion } from "../../utils/stringUtils.js";
-import { generateDTS } from "../dts.js";
+import { indent } from "../../codegen/utils/stringUtils.js";
 
 /**
  * An t18s adapter that uses Svelte stores to store the translations.
@@ -22,14 +20,6 @@ export class SvelteStoreAdapter {
    */
   useServer(server) {
     this.#server = server;
-  }
-
-  /**
-   * @param {import("../../types.js").LocaleDictionaries} localeDictionaries
-   * @returns {string}
-   */
-  getTypeDefinition(localeDictionaries) {
-    return generateDTS(localeDictionaries);
   }
 
   /**
@@ -113,7 +103,7 @@ export const isLoading = writable(false);
 const loaders = {
 ${locales.map(
   (locale) =>
-    `    "${locale}": async () => (await import("$t18s/messages/${locale}")).default`,
+    `    "${locale}": async () => (await import("$t18s/messages/${locale}")).default`
 )}
 }
 
@@ -216,7 +206,7 @@ if(import.meta.hot) {
     //Force-reload the module - Add a random query parameter to bust the cache
     const newMessages = (await import(/* @vite-ignore */ "/@id/__x00__$t18s/messages/" + data.locale + "?" + Math.random())).default;
 
-    ${verbose ? ' console.info("[t18s] Adding locale " + data.locale);' : ""}
+    ${verbose ? 'console.info("[t18s] Adding locale " + data.locale);' : ""}
 
     messages[data.locale] = newMessages;
     t.set(getMessage); //update the store
@@ -257,11 +247,15 @@ if(import.meta.hot) {
  * @returns {string}
  */
 function generateDictionaryModule(dictionary) {
+  let dictionaryBody = "";
+
+  for (const [key, func] of dictionary) {
+    dictionaryBody += `"${key}": ${func.precompiled},\n`;
+  }
+
   let code = "";
   code += "export default {\n";
-  for (const [key, func] of dictionary) {
-    code += `    "${key}": ${func.precompiled},\n`;
-  }
+  code += indent(dictionaryBody);
   code += "};";
   return code;
 }

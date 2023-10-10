@@ -1,3 +1,6 @@
+import { indent } from "./stringUtils.js";
+
+
 export class DTSBuilder {
   /** @type {Set<Module>} */
   #modules = new Set();
@@ -127,14 +130,4 @@ class Statement {
     code += this.#code;
     return code;
   }
-}
-
-/**
- * Indents some text by one level.
- * @param {string} text
- */
-function indent(text) {
-  const INDENT_SPACES = 4;
-  const lines = text.split("\n");
-  return lines.map((l) => " ".repeat(INDENT_SPACES) + l).join("\n");
 }
