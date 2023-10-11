@@ -1,9 +1,7 @@
 import { parse } from "@formatjs/icu-messageformat-parser";
 import { precompile } from "./precompile.js";
 import { generateType } from "./generateTypes.js";
-import { safe } from "../utils/exception-helpers.js";
-
-const safeParse = safe(parse);
+import { ResultMatcher } from "../utils/resultMatcher.js";
 
 /**
  * @param {Map<string, string>} keyVal
@@ -22,22 +20,27 @@ export function compileToDictionary(keyVal, locale) {
   const invalidKeys = new Set();
 
   for (const [translationKey, messageSource] of keyVal.entries()) {
-    const { error, result: parsed } = safeParse(messageSource, {
-      shouldParseSkeletons: true,
-      requiresOtherClause: false,
-    });
-
-    if (error) {
+    const markKeyInvalid = () => {
       invalidKeys.add(translationKey);
-      continue;
-    }
+    };
 
-    dictionary.set(translationKey, {
-      source: messageSource,
-      description: null,
-      precompiled: precompile(parsed, locale),
-      typeDefinition: generateType(parsed),
-    });
+    /** @param {ReturnType<typeof parse>} parsed */
+    const addToDictionary = (parsed) => {
+      dictionary.set(translationKey, {
+        source: messageSource,
+        description: null,
+        precompiled: precompile(parsed, locale),
+        typeDefinition: generateType(parsed),
+      });
+    };
+
+    new ResultMatcher(parse)
+      .success(addToDictionary)
+      .rescue(Error, markKeyInvalid)
+      .call(messageSource, {
+        shouldParseSkeletons: true,
+        requiresOtherClause: false,
+      });
   }
 
   return {

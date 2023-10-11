@@ -1,5 +1,5 @@
 /**
- * The configuration for a SafetyNet Strategy.
+ * The configuration for a ResultMatcher Strategy.
  *
  * @template Prototype
  * @template ReturnType
@@ -13,26 +13,26 @@
  * Declaratively define a series of Error-Handling strategies for a given function.
  * Think of this as a `match` statement for errors.
  *
- * This follows an immutable builder pattern, so each method returns a new instance of the SafetyNet class.
+ * This follows an immutable builder pattern, so each method returns a new instance of the ResultMatcher class.
  *
  * @template {(...args: any) => any} UnsafeFunc
- * @template {any} [SuccessReturnType=void]
+ * @template {(result: ReturnType<UnsafeFunc>) => any} SuccessHandler
  * @template {Strategy<any, any>[]} [Strategies=[]]
  */
-export class SafetyNet {
+export class ResultMatcher {
   /** @type {UnsafeFunc} */
   #unsafeFunction;
 
   /** @type {Strategies} */
   #strategies;
 
-  /** @type {((result: ReturnType<UnsafeFunc>) => SuccessReturnType )| null} */
+  /** @type {SuccessHandler | null} */
   #successHandler = null;
 
   /**
    * @param {UnsafeFunc} func
    * @param {Strategies} strategies
-   * @param {((result: ReturnType<UnsafeFunc>) => SuccessReturnType )| null} successHandler
+   * @param {SuccessHandler | null} successHandler
    */
   constructor(
     func,
@@ -45,38 +45,46 @@ export class SafetyNet {
   }
 
   /**
-   * @template Prototype
+   * Defines a strategy for a given error type.
+   * 
+   * @template Prototype 
    * @template StrategyReturnType
    *
-   * @param {{ new (): Prototype;} | { prototype: Prototype; }} prototype
-   * @param {(instance: Prototype) => StrategyReturnType} handler
-   * @returns {SafetyNet<UnsafeFunc, SuccessReturnType, [...Strategies, Strategy<Prototype, StrategyReturnType>]>}
+   * @param {{ new (): Prototype;} | { prototype: Prototype; }} prototype - The error type to handle. Thrown things will be compared against this with `instanceof`.
+   * @param {(instance: Prototype) => StrategyReturnType} handler - Callback to handle the error.
+   * @returns {ResultMatcher<UnsafeFunc, SuccessHandler, [...Strategies, Strategy<Prototype, StrategyReturnType>]>}
    */
   rescue(prototype, handler) {
     const registeredStrategy = { prototype, handler };
-    return new SafetyNet(this.#unsafeFunction, [
+    return new ResultMatcher(this.#unsafeFunction, [
       ...this.#strategies,
       registeredStrategy,
     ]);
   }
 
   /**
-   * @template Return
-   * @param {(result: ReturnType<UnsafeFunc>) => Return} handler
-   * @returns {SafetyNet<UnsafeFunc, Return, Strategies>}
+   * Handle the happy path
+   * 
+   * @template {SuccessHandler} Handler
+   * @param {Handler} handler
+   * @returns {ResultMatcher<UnsafeFunc, Handler, Strategies>}
    */
   success(handler) {
-    return new SafetyNet(this.#unsafeFunction, this.#strategies, handler);
+    return new ResultMatcher(this.#unsafeFunction, this.#strategies, handler);
   }
 
   /**
+   * Calls the unsafe function with the given parameters and handles any errors that may be thrown 
+   * according to the registered strategies.
+   * 
    * @param  {Parameters<UnsafeFunc>} params
-   * @returns { SuccessReturnType | ReturnType<Strategies[number]["handler"]>}
+   * @returns { ReturnType<SuccessHandler> | ReturnType<Strategies[number]["handler"]>}
    */
   call(...params) {
     let successResult;
     try {
-      successResult = this.#unsafeFunction(params);
+      // @ts-ignore
+      successResult = this.#unsafeFunction(...params);
     } catch (e) {
       for (const strategy of this.#strategies) {
         if (e instanceof /** @type {any} */ (strategy.prototype)) {
