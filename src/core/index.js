@@ -6,7 +6,6 @@ import { Logger } from "./utils/logger.js";
 import {
   RESOLVED_VIRTUAL_MODULE_PREFIX,
   VIRTUAL_MODULE_PREFIX,
-  DEFAULT_CONFIG,
 } from "./constants.js";
 import { FileHandler } from "./file-handling/fileHandler.js";
 import { LoadingException } from "./file-handling/exception.js";
@@ -15,19 +14,11 @@ import { generateDictionaryModule } from "./codegen/dictionary.js";
 import { generateMainModuleCode } from "./codegen/main.js";
 
 /**
- * @typedef {{
- *  translationsDir: string,
- *  dts: string,
- *  verbose: boolean,
- * }} T18sUserConfig Configuration options for the t18s plugin
- */
-
-/**
  * TypeSafe translations for Svelte & SvelteKit.
- * @param {Partial<T18sUserConfig>} userConfig
+ * @param {import("../types.js").t18sFullConfig} pluginConfig
  * @returns {import("vite").Plugin}
  */
-export function t18sCore(userConfig) {
+export function t18sCore(pluginConfig) {
   /** @type {import("./types.js").ResolvedPluginConfig} */
   let config;
 
@@ -190,15 +181,13 @@ export function t18sCore(userConfig) {
     enforce: "pre",
 
     async configResolved(resolvedConfig) {
-      const fullUserConfig = { ...DEFAULT_CONFIG, ...userConfig };
-
       config = {
-        dtsPath: resolve(resolvedConfig.root, fullUserConfig.dts),
+        dtsPath: resolve(resolvedConfig.root, pluginConfig.dts),
         translationsDir: resolve(
           resolvedConfig.root,
-          fullUserConfig.translationsDir
+          pluginConfig.translationsDir
         ),
-        verbose: fullUserConfig.verbose,
+        verbose: pluginConfig.verbose,
       };
 
       logger = new Logger(resolvedConfig, config.verbose);
