@@ -1,4 +1,4 @@
-export type FormatHandler = {
+export interface FormatHandler {
   fileExtensions: string[];
 
   /**
@@ -15,4 +15,4 @@ export type FormatHandler = {
   ) => Promise<Map<string,string>>;
 
   setPath: (path: string, value: string) => Promise<void>;
-};
+}

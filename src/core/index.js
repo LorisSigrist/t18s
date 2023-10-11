@@ -12,6 +12,8 @@ import { LoadingException } from "./file-handling/exception.js";
 import { generateDTS } from "./codegen/dts.js";
 import { generateDictionaryModule } from "./codegen/dictionary.js";
 import { generateMainModuleCode } from "./codegen/main.js";
+import { compileToDictionary } from "./compiler/index.js";
+import { ErrorReporter } from "./utils/reporter.js";
 
 /**
  * TypeSafe translations for Svelte & SvelteKit.
@@ -24,6 +26,9 @@ export function t18sCore(pluginConfig) {
 
   /** @type {Logger} */
   let logger;
+
+  /** @type {ErrorReporter} */
+  let reporter;
 
   /** @type {import("vite").ViteDevServer | null}*/
   let viteDevServer = null;
@@ -41,7 +46,9 @@ export function t18sCore(pluginConfig) {
     const locale = getLocale(filePath);
 
     try {
-      const dictionary = await fileHandler.handle(filePath, locale);
+      const keyVal = await fileHandler.handle(filePath, locale);
+      const { dictionary, invalidKeys } = compileToDictionary(keyVal, locale);
+      if (invalidKeys) reporter.warnAboutInvalidKeys(filePath, invalidKeys);
       localeDictionaries.set(locale, dictionary);
     } catch (e) {
       if (!(e instanceof LoadingException)) throw e;
@@ -62,7 +69,9 @@ export function t18sCore(pluginConfig) {
     const locale = getLocale(filePath);
 
     try {
-      const dictionary = await fileHandler.handle(filePath, locale);
+      const keyVal = await fileHandler.handle(filePath, locale);
+      const { dictionary, invalidKeys } = compileToDictionary(keyVal, locale);
+      if (invalidKeys) reporter.warnAboutInvalidKeys(filePath, invalidKeys);
       localeDictionaries.set(locale, dictionary);
     } catch (e) {
       if (!(e instanceof LoadingException)) throw e;
@@ -94,10 +103,10 @@ export function t18sCore(pluginConfig) {
    * Sets (create or overwrite) the message for a given key and locale.   *
    * @param {string} locale
    * @param {string} key
-   * @param {string} message
+   * @param {string} message_src
    */
-  async function setMessage(locale, key, message) {
-    console.log("setMessage", locale, key, message);
+  async function setMessage(locale, key, message_src) {
+    console.log("setMessage", locale, key, message_src);
   }
 
   /**
@@ -119,7 +128,9 @@ export function t18sCore(pluginConfig) {
     async function loadFile(path) {
       const locale = getLocale(path);
       try {
-        const dictionary = await fileHandler.handle(path, locale);
+        const keyVal = await fileHandler.handle(path, locale);
+        const { dictionary, invalidKeys } = compileToDictionary(keyVal, locale);
+        if (invalidKeys) reporter.warnAboutInvalidKeys(path, invalidKeys);
         localeDictionaries.set(locale, dictionary);
       } catch (e) {
         if (!(e instanceof LoadingException)) throw e;
@@ -191,6 +202,7 @@ export function t18sCore(pluginConfig) {
       };
 
       logger = new Logger(resolvedConfig, config.verbose);
+      reporter = new ErrorReporter(logger);
 
       await loadInitialLocales(config);
     },

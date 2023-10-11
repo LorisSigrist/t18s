@@ -10,7 +10,6 @@ export class Logger {
   #viteConfig;
 
   /**
-   *
    * @param {import("vite").ResolvedConfig} viteConfig
    * @param {boolean} verbose
    */

@@ -1,12 +1,9 @@
 import { readFile } from "fs/promises";
 import { basename } from "path";
 import { LoadingException } from "./exception.js";
-import { precompile } from "../compiler/precompile.js";
-import { generateType } from "../compiler/generateTypes.js";
-import { parse } from "@formatjs/icu-messageformat-parser";
 
 export class FileHandler {
-  /** @type {import("./types.js").FormatHandler[]} handlers */
+  /** @type {import("./types.js").FormatHandler[]} */
   #handlers;
 
   /** @param {import("./types.js").FormatHandler[]} handlers */
@@ -17,7 +14,7 @@ export class FileHandler {
   /**
    * @param {string} filePath Absolute path to the file that needs to be handled
    * @param {string} locale The locale for which the file should be handled
-   * @returns {Promise<import("../types.js").Dictionary>} A dictionary
+   * @returns {Promise<Map<string,string>>} A Map of the Key-Value pairs in the file
    *
    * @throws {LoadingException} If the file could not be handled
    */
@@ -29,8 +26,8 @@ export class FileHandler {
       );
     const textContent = await this.#readFileContent(filePath);
     const keyVal = await handler.load(filePath, textContent, locale);
-    const dictionary = generateDictionaryFromTree(keyVal, locale);
-    return dictionary;
+
+    return keyVal;
   }
 
   /**
@@ -57,7 +54,6 @@ export class FileHandler {
    * Reads the raw text content of the given file
    * @param {string} filePath
    * @returns {Promise<string>}
-   *
    * @throws {LoadingException} If the file could not be read
    */
   async #readFileContent(filePath) {
@@ -79,32 +75,4 @@ export class FileHandler {
   getSupportedFileExtensions() {
     return new Set(this.#handlers.flatMap((h) => h.fileExtensions));
   }
-}
-
-
-
-/**
- * @param {Map<string,string>} keyVal
- * @param {string} locale
- * @returns {import("../types.js").Dictionary}
- */
-export function generateDictionaryFromTree(keyVal, locale) {
-  /** @type {import("../types.js").Dictionary} */
-  const dictionary = new Map();
-
-  for (const [translationKey, messageSource] of keyVal.entries()) {
-    const parsed = parse(messageSource, {
-      shouldParseSkeletons: true,
-      requiresOtherClause: false,
-    });
-
-    dictionary.set(translationKey, {
-      source: messageSource,
-      description: null,
-      precompiled: precompile(parsed, locale),
-      typeDefinition: generateType(parsed),
-    });
-  }
-
-  return dictionary;
 }

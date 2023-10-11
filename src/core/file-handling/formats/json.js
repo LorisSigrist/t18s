@@ -6,6 +6,8 @@ export const JsonHandler = {
   fileExtensions: ["json"],
   load: async (filePath, content, locale) => {
     try {
+      content = content.trim();
+      if (content.length === 0) return new Map();
       const tree = JSON.parse(content);
       return flattenTree(tree);
     } catch (e) {
