@@ -25,7 +25,7 @@ export class Logger {
    */
   log(msg) {
     if (!this.#verbose) return;
-    msg = this.#formatMessage(msg, "ⓘ");
+    msg = this.#formatMessage(msg, "ℹ");
     this.#viteConfig.logger.info(colors.cyan(msg));
   }
 

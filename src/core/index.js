@@ -13,7 +13,7 @@ import { generateDTS } from "./codegen/dts.js";
 import { generateDictionaryModule } from "./codegen/dictionary.js";
 import { generateMainModuleCode } from "./codegen/main.js";
 import { compileToDictionary } from "./compiler/index.js";
-import { ErrorReporter } from "./utils/reporter.js";
+import { Reporter } from "./utils/reporter.js";
 
 /**
  * TypeSafe translations for Svelte & SvelteKit.
@@ -27,7 +27,7 @@ export function t18sCore(pluginConfig) {
   /** @type {Logger} */
   let logger;
 
-  /** @type {ErrorReporter} */
+  /** @type {Reporter} */
   let reporter;
 
   /** @type {import("vite").ViteDevServer | null}*/
@@ -71,7 +71,10 @@ export function t18sCore(pluginConfig) {
     try {
       const keyVal = await fileHandler.handle(filePath, locale);
       const { dictionary, invalidKeys } = compileToDictionary(keyVal, locale);
+      
       if (invalidKeys) reporter.warnAboutInvalidKeys(filePath, invalidKeys);
+      else reporter.localeUpdated(locale);
+
       localeDictionaries.set(locale, dictionary);
     } catch (e) {
       if (!(e instanceof LoadingException)) throw e;
@@ -202,7 +205,7 @@ export function t18sCore(pluginConfig) {
       };
 
       logger = new Logger(resolvedConfig, config.verbose);
-      reporter = new ErrorReporter(logger);
+      reporter = new Reporter(logger);
 
       await loadInitialLocales(config);
     },

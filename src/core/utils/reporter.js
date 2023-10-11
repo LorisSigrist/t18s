@@ -1,9 +1,10 @@
 import { Logger } from "./logger.js";
+import kleur from "kleur";
 
 /**
  * Provides a Standard Interface for generating & displaying errors in the console.
  */
-export class ErrorReporter {
+export class Reporter {
   /**
    * @type {Logger}
    */
@@ -21,8 +22,18 @@ export class ErrorReporter {
    * @param {Set<string>} invalidKeys
    */
   warnAboutInvalidKeys(filePath, invalidKeys) {
-    const invalidKeysString = [...invalidKeys].join(", ");
-    this.#logger.error(`Invalid keys in ${filePath}: ${invalidKeysString}`);
+    let errorMessage = `Invalid ICU Messageformat Strings found in ${filePath}`
+    for (const invalidKey of invalidKeys) {
+      errorMessage += `\n· ${invalidKey}`;
+    }
+    this.#logger.error(errorMessage);
+  }
+
+  /**
+   * @param {string} locale
+   */
+  localeUpdated(locale) {
+    this.#logger.log(`Locale ${kleur.italic(locale)} updated`);
   }
 
   /**
