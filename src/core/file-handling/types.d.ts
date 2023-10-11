@@ -16,7 +16,7 @@ export type FormatHandler = {
     filePath: string,
     fileContent: string,
     locale: string,
-  ) => Promise<Dictionary>;
+  ) => Promise<Map<string,string>>;
 
   setPath: (path: string, value: string) => Promise<void>;
 };

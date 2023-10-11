@@ -1,6 +1,9 @@
 import { readFile } from "fs/promises";
 import { basename } from "path";
 import { LoadingException } from "./exception.js";
+import { precompile } from "../compiler/precompile.js";
+import { generateType } from "../compiler/generateTypes.js";
+import { parse } from "@formatjs/icu-messageformat-parser";
 
 export class FileHandler {
   /** @type {import("./types.js").FormatHandler[]} handlers */
@@ -22,11 +25,11 @@ export class FileHandler {
     const handler = this.#getHandler(filePath);
     if (!handler)
       throw new LoadingException(
-        `Could not find handler for ${filePath}. Supported file extensions are ${this.getSupportedFileExtensions()}`,
+        `Could not find handler for ${filePath}. Supported file extensions are ${this.getSupportedFileExtensions()}`
       );
     const textContent = await this.#readFileContent(filePath);
-    const dictionary = await handler.load(filePath, textContent, locale);
-
+    const keyVal = await handler.load(filePath, textContent, locale);
+    const dictionary = generateDictionaryFromTree(keyVal, locale);
     return dictionary;
   }
 
@@ -40,11 +43,11 @@ export class FileHandler {
     const fileExtension = filename.split(".").at(-1);
     if (typeof fileExtension !== "string")
       throw new LoadingException(
-        "Could not determine file extension for ${filePath}",
+        "Could not determine file extension for ${filePath}"
       );
 
     const handler = this.#handlers.find((l) =>
-      l.fileExtensions.includes(fileExtension),
+      l.fileExtensions.includes(fileExtension)
     );
 
     return handler ?? null;
@@ -76,4 +79,32 @@ export class FileHandler {
   getSupportedFileExtensions() {
     return new Set(this.#handlers.flatMap((h) => h.fileExtensions));
   }
+}
+
+
+
+/**
+ * @param {Map<string,string>} keyVal
+ * @param {string} locale
+ * @returns {import("../types.js").Dictionary}
+ */
+export function generateDictionaryFromTree(keyVal, locale) {
+  /** @type {import("../types.js").Dictionary} */
+  const dictionary = new Map();
+
+  for (const [translationKey, messageSource] of keyVal.entries()) {
+    const parsed = parse(messageSource, {
+      shouldParseSkeletons: true,
+      requiresOtherClause: false,
+    });
+
+    dictionary.set(translationKey, {
+      source: messageSource,
+      description: null,
+      precompiled: precompile(parsed, locale),
+      typeDefinition: generateType(parsed),
+    });
+  }
+
+  return dictionary;
 }

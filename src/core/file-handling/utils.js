@@ -1,17 +1,17 @@
-import { parse } from "@formatjs/icu-messageformat-parser";
-import { generateType } from "../compiler/generateTypes.js";
-import { precompile } from "../compiler/precompile.js";
-
 /**
+ * Flattens a tree of objects into a one-level map with dot-separated keys.
+ * All values are stringified.
+ *
  * @param {unknown} tree
- * @param {string} locale
- * @returns {import("../types.js").Dictionary}
+ * @returns {Map<string, string>}
  */
-export function generateDictionaryFromTree(tree, locale) {
+export function flattenTree(tree) {
   if (typeof tree !== "object") return new Map();
 
   /** @type {Map<string, string>} */
-  const keyVal = new Map();
+  const flattened = new Map();
+  flatten(tree);
+  return flattened;
 
   /**
    * @param {unknown} thing
@@ -19,12 +19,12 @@ export function generateDictionaryFromTree(tree, locale) {
    */
   function flatten(thing, path = []) {
     if (thing === null) {
-      keyVal.set(path.join("."), "");
+      flattened.set(path.join("."), "");
       return;
     }
 
     if (typeof thing === "string" || typeof thing === "number") {
-      keyVal.set(path.join("."), String(thing));
+      flattened.set(path.join("."), String(thing));
       return;
     }
 
@@ -37,25 +37,4 @@ export function generateDictionaryFromTree(tree, locale) {
 
     throw new Error("Invalid tree");
   }
-
-  flatten(tree);
-
-  /** @type {import("../types.js").Dictionary} */
-  const dictionary = new Map();
-
-  for (const [translationKey, messageSource] of keyVal.entries()) {
-    const parsed = parse(messageSource, {
-      shouldParseSkeletons: true,
-      requiresOtherClause: false,
-    });
-
-    dictionary.set(translationKey, {
-      source: messageSource,
-      description: null,
-      precompiled: precompile(parsed, locale),
-      typeDefinition: generateType(parsed),
-    });
-  }
-
-  return dictionary;
 }

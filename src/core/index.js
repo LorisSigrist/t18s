@@ -27,7 +27,7 @@ import { generateMainModuleCode } from "./codegen/main.js";
  * @param {Partial<T18sUserConfig>} userConfig
  * @returns {import("vite").Plugin}
  */
-export function t18s(userConfig = {}) {
+export function t18sCore(userConfig) {
   /** @type {import("./types.js").ResolvedPluginConfig} */
   let config;
 

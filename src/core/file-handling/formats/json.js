@@ -1,20 +1,22 @@
 import { LoadingException } from "../exception.js";
-import { generateDictionaryFromTree } from "../utils.js";
+import { flattenTree } from "../utils.js";
 
 /** @type {import("../types.js").FormatHandler} */
 export const JsonHandler = {
   fileExtensions: ["json"],
   load: async (filePath, content, locale) => {
     try {
-      const parsed = JSON.parse(content);
-      return generateDictionaryFromTree(parsed, locale);
+      const tree = JSON.parse(content);
+      return flattenTree(tree);
     } catch (e) {
       if (!(e instanceof Error)) throw e;
       throw new LoadingException(
         `Could not parse JSON file ${filePath}: ${e.message}`,
-        { cause: e },
+        { cause: e }
       );
     }
   },
-  async setPath() {},
+  async setPath() {
+    throw new Error("Not implemented");
+  },
 };
