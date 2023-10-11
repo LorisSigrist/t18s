@@ -8,10 +8,11 @@ import {
   VIRTUAL_MODULE_PREFIX,
   DEFAULT_CONFIG,
 } from "./constants.js";
-import { SvelteStoreAdapter } from "./adapter/svelte/index.js";
 import { FileHandler } from "./file-handling/fileHandler.js";
 import { LoadingException } from "./file-handling/exception.js";
 import { generateDTS } from "./codegen/dts.js";
+import { generateDictionaryModule } from "./codegen/dictionary.js";
+import { generateMainModuleCode } from "./codegen/main.js";
 
 /**
  * @typedef {{
@@ -33,13 +34,13 @@ export function t18s(userConfig = {}) {
   /** @type {Logger} */
   let logger;
 
-  /** @type {SvelteStoreAdapter} */
-  let adapter;
-
-  const fileHandler = new FileHandler([YamlHandler, JsonHandler]);
+  /** @type {import("vite").ViteDevServer | null}*/
+  let viteDevServer = null;
 
   /** @type {import("./types.js").LocaleDictionaries} */
   const localeDictionaries = new Map();
+
+  const fileHandler = new FileHandler([YamlHandler, JsonHandler]);
 
   /**
    * Register a new translation file.
@@ -57,7 +58,7 @@ export function t18s(userConfig = {}) {
     }
 
     await regenerateDTS();
-    adapter.HMRAddLocale(locale);
+    triggerHMREvent("t18s:createLocale", locale);
   }
 
   /**
@@ -78,7 +79,7 @@ export function t18s(userConfig = {}) {
     }
 
     await regenerateDTS();
-    adapter.HMRInvalidateLocale(locale);
+    triggerHMREvent("t18s:invalidateLocale", locale);
   }
 
   /**
@@ -95,7 +96,7 @@ export function t18s(userConfig = {}) {
     localeDictionaries.delete(locale);
 
     await regenerateDTS();
-    adapter.HMRRemoveLocale(locale);
+    triggerHMREvent("t18s:removeLocale", locale);
   }
 
   /**
@@ -161,6 +162,29 @@ export function t18s(userConfig = {}) {
     return locale;
   };
 
+  /**
+   * Triggers a HMR event, causing the browser to react to translation changes.
+   *
+   * @param {"t18s:createLocale" | "t18s:invalidateLocale" | "t18s:removeLocale"} event
+   * @param {string} locale
+   * @returns {void}
+   */
+  function triggerHMREvent(event, locale) {
+    if (viteDevServer) {
+      viteDevServer.ws.send({
+        type: "custom",
+        event,
+        data: {
+          locale,
+        },
+      });
+    } else {
+      logger.error(
+        `Could not trigger HMR event '${event}' for locale '${locale}' beacuase the viteDevServer is not available. This should never happen.`
+      );
+    }
+  }
+
   return {
     name: "t18s",
     enforce: "pre",
@@ -178,7 +202,6 @@ export function t18s(userConfig = {}) {
       };
 
       logger = new Logger(resolvedConfig, config.verbose);
-      adapter = new SvelteStoreAdapter(config);
 
       await loadInitialLocales(config);
     },
@@ -197,14 +220,17 @@ export function t18s(userConfig = {}) {
       if (!id.startsWith(RESOLVED_VIRTUAL_MODULE_PREFIX)) return;
 
       if (id === RESOLVED_VIRTUAL_MODULE_PREFIX) {
-        return adapter.getMainCode(localeDictionaries);
+        const locales = [...localeDictionaries.keys()];
+        return generateMainModuleCode(locales, config.verbose);
       }
 
       const locale = id.split("/")[2];
       if (!locale) return;
-      return adapter.getDictionaryCode(
-        localeDictionaries.get(locale) || new Map()
-      );
+
+      const dictionary = localeDictionaries.get(locale);
+      if (!dictionary) return;
+
+      return generateDictionaryModule(dictionary);
     },
 
     configureServer(server) {
@@ -235,7 +261,7 @@ export function t18s(userConfig = {}) {
         setMessage(event.locale, event.key, event.value);
       });
 
-      adapter.useServer(server);
+      viteDevServer = server;
     },
   };
 }
