@@ -36,7 +36,7 @@ export function compileToDictionary(keyVal, locale) {
 
     new ResultMatcher(parse)
       .success(addToDictionary)
-      .rescue(Error, markKeyInvalid)
+      .rescueAll(markKeyInvalid)
       .call(messageSource, {
         shouldParseSkeletons: true,
         requiresOtherClause: false,
