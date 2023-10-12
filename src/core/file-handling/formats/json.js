@@ -1,6 +1,6 @@
 import { ResultMatcher } from "../../utils/resultMatcher.js";
 import { LoadingException } from "../exception.js";
-import { flattenTree } from "../utils.js";
+import { flattenTree, setPathOnTree } from "../utils.js";
 
 /** @type {import("../types.js").FormatHandler} */
 export const JsonHandler = {
@@ -28,29 +28,7 @@ export const JsonHandler = {
     const obj = JSON.parse(oldJSON);
 
     const path = key.split(".");
-
-    /**
-     * @param {any} tree
-     * @param {string[]} path
-     * @param {string} value
-     * @returns
-     */
-    function setOnTree(tree, path, value) {
-      //Split the path into the current level and the rest of the path
-      const [current, ...rest] = path;
-      if (!current)
-        throw new Error("There must be at least one level in the path");
-
-      if (rest.length === 0) {
-        tree[current] = value;
-        return;
-      }
-
-      if (!tree[current]) tree[current] = {};
-      setOnTree(tree[current], rest, value);
-    }
-
-    setOnTree(obj, path, value);
+    setPathOnTree(obj, path, value);
 
     const newJSON = JSON.stringify(obj);
     return newJSON;
