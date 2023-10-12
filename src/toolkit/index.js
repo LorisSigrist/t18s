@@ -18,7 +18,7 @@ export function t18sToolkit() {
 
   return {
     name: "t18s-toolkit",
-    apply: "serve", // only apply to dev server
+    //apply: "serve", // only apply to dev server
     enforce: "pre",
 
     configResolved(resolvedConfig) {
@@ -26,7 +26,7 @@ export function t18sToolkit() {
     },
 
     resolveId(id, _, options) {
-      if (options?.ssr) return;
+      //if (options?.ssr) return;
 
       if (id.startsWith(VIRTUAL_MODULE_PREFIX)) {
         return id.replace(VIRTUAL_MODULE_PREFIX, toolkitPath);
@@ -34,7 +34,7 @@ export function t18sToolkit() {
     },
 
     async load(id, options) {
-      if (options?.ssr) return;
+      //if (options?.ssr) return;
       if (id.startsWith(toolkitPath)) {
         // read file ourselves to avoid getting shut out by vites fs.allow check
         const file = cleanUrl(id);

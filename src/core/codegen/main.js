@@ -9,6 +9,7 @@ export function generateMainModuleCode(localesIterable, verbose) {
 
   return `
   import { writable, get } from 'svelte/store';
+  export { T } from "$t18s/runtime";
   
   const messages = {}
   

@@ -73,6 +73,7 @@ class Module {
    */
   addStatement(code, statementBuilder = undefined) {
     const statement = new Statement(code);
+    
     if (statementBuilder) {
       statementBuilder(statement);
     }

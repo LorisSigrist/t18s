@@ -14,10 +14,16 @@ export const addParentheses = (str) => `(${str})`;
 
 /**
  * Returns a type union of the given strings
- * @param {string[]} strings ["a","b","c"]
+ * @param {Iterable<string>} strings The strings to union (e.g. ["a", "b", "c"])
  * @returns "a" | "b" | "c"
  */
-export const stringTypeUnion = (strings) => strings.map(addQuotes).join("|");
+export const stringTypeUnion = (strings) => {
+  let union = "";
+  for (const str of strings) {
+    union += `"${str}"|`;
+  }
+  return union.slice(0, -1);
+}
 
 /**
  * Indents some text by one level.

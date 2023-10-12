@@ -1,5 +1,5 @@
-import { basename, resolve } from "path";
-import { readdir, writeFile } from "fs/promises";
+import { basename, dirname, resolve } from "node:path";
+import { readdir, writeFile } from "node:fs/promises";
 import { YamlHandler } from "./file-handling/formats/yaml.js";
 import { JsonHandler } from "./file-handling/formats/json.js";
 import { Logger } from "./utils/logger.js";
@@ -17,6 +17,8 @@ import { Reporter } from "./utils/reporter.js";
 import { ResultMatcher } from "./utils/resultMatcher.js";
 import { buffer } from "./utils/bufferPromise.js";
 import { LocaleRegistry, LocaleNotFoundException } from "./localeRegistry.js";
+import { normalizePath } from "vite";
+import { fileURLToPath } from "node:url";
 
 /**
  * TypeSafe translations for Svelte & SvelteKit.
@@ -40,16 +42,16 @@ export function t18sCore(pluginConfig) {
 
   registry.addEventListener("changed", async () => await regenerateDTS());
   registry.addEventListener("locale_added", (e) => {
-    triggerHMREvent("t18s:createLocale", e.detail.locale);
     reporter.localeCreated(e.detail.locale);
+    triggerHMREvent("t18s:createLocale", e.detail.locale);
   });
   registry.addEventListener("locale_removed", (e) => {
-    triggerHMREvent("t18s:removeLocale", e.detail.locale);
     reporter.localeDeleted(e.detail.locale);
+    triggerHMREvent("t18s:removeLocale", e.detail.locale);
   });
   registry.addEventListener("locale_updated", (e) => {
-    triggerHMREvent("t18s:invalidateLocale", e.detail.locale);
     reporter.localeUpdated(e.detail.locale);
+    triggerHMREvent("t18s:invalidateLocale", e.detail.locale);
   });
 
   /** Handles interactions with translation files */
@@ -240,6 +242,12 @@ export function t18sCore(pluginConfig) {
       id = cleanUrl(id);
       if (!id.startsWith(RESOLVED_VIRTUAL_MODULE_PREFIX)) return;
 
+      //Runtime entry
+      if (id === RESOLVED_VIRTUAL_MODULE_PREFIX + "/runtime") {
+        const runtimeEntryPath = getRuntimeEntryPath();
+        return `export * from '${runtimeEntryPath}';`;
+      }
+
       if (id === RESOLVED_VIRTUAL_MODULE_PREFIX) {
         const locales = registry.getLocales();
         return generateMainModuleCode(locales, config.verbose);
@@ -286,6 +294,15 @@ export function t18sCore(pluginConfig) {
     },
   };
 }
+
+function getRuntimeEntryPath() {
+  const thisModulePath = normalizePath(dirname(fileURLToPath(import.meta.url)));
+  return thisModulePath.replace(
+    /\/t18s\/src\/core$/,
+    "/t18s/src/core/runtime/index.js",
+  );
+}
+
 
 /**
  * Remove hash and query parameters from a url.
