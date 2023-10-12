@@ -86,7 +86,6 @@ export function t18sCore(pluginConfig) {
       })
       .run();
 
-
     const { dictionary, invalidKeys } = compileToDictionary(keyVal, locale);
 
     if (invalidKeys) reporter.warnAboutInvalidKeys(filePath, invalidKeys);
@@ -202,7 +201,7 @@ export function t18sCore(pluginConfig) {
       });
     } else {
       logger.error(
-        `Could not trigger HMR event '${event}' for locale '${locale}' because the viteDevServer is not available. This should never happen.`
+        `Could not trigger HMR event '${event}' for locale '${locale}' because the viteDevServer is not available. This should never happen.`,
       );
     }
   }
@@ -216,7 +215,7 @@ export function t18sCore(pluginConfig) {
         dtsPath: resolve(resolvedConfig.root, pluginConfig.dts),
         translationsDir: resolve(
           resolvedConfig.root,
-          pluginConfig.translationsDir
+          pluginConfig.translationsDir,
         ),
         verbose: pluginConfig.verbose,
       };
@@ -231,7 +230,7 @@ export function t18sCore(pluginConfig) {
       if (id.startsWith(VIRTUAL_MODULE_PREFIX)) {
         return id.replace(
           VIRTUAL_MODULE_PREFIX,
-          RESOLVED_VIRTUAL_MODULE_PREFIX
+          RESOLVED_VIRTUAL_MODULE_PREFIX,
         );
       }
     },
