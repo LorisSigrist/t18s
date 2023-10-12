@@ -14,6 +14,8 @@ import { generateDictionaryModule } from "./codegen/dictionary.js";
 import { generateMainModuleCode } from "./codegen/main.js";
 import { compileToDictionary } from "./compiler/index.js";
 import { Reporter } from "./utils/reporter.js";
+import { ResultMatcher } from "./utils/resultMatcher.js";
+import { buffer } from "./utils/bufferPromise.js";
 
 /**
  * TypeSafe translations for Svelte & SvelteKit.
@@ -36,6 +38,7 @@ export function t18sCore(pluginConfig) {
   /** @type {import("./types.js").LocaleDictionaries} */
   const localeDictionaries = new Map();
 
+  /** Handles interactions with translation files */
   const fileHandler = new FileHandler([YamlHandler, JsonHandler]);
 
   /**
@@ -45,15 +48,19 @@ export function t18sCore(pluginConfig) {
   async function addTranslationFile(filePath) {
     const locale = getLocale(filePath);
 
-    try {
-      const keyVal = await fileHandler.handle(filePath);
-      const { dictionary, invalidKeys } = compileToDictionary(keyVal, locale);
-      if (invalidKeys) reporter.warnAboutInvalidKeys(filePath, invalidKeys);
-      localeDictionaries.set(locale, dictionary);
-    } catch (e) {
-      if (!(e instanceof LoadingException)) throw e;
-      logger.error(e.message);
-    }
+    //Try to read the file & buffer the result
+    const bufferedFileRead = await buffer(fileHandler.read(filePath));
+
+    const keyVal = new ResultMatcher(bufferedFileRead)
+      .catch(LoadingException, (e) => {
+        logger.error(e.message);
+        return new Map();
+      })
+      .run();
+
+    const { dictionary, invalidKeys } = compileToDictionary(keyVal, locale);
+    if (invalidKeys) reporter.warnAboutInvalidKeys(filePath, invalidKeys);
+    localeDictionaries.set(locale, dictionary);
 
     await regenerateDTS();
     triggerHMREvent("t18s:createLocale", locale);
@@ -69,18 +76,23 @@ export function t18sCore(pluginConfig) {
   async function invalidateTranslationFile(filePath) {
     const locale = getLocale(filePath);
 
-    try {
-      const keyVal = await fileHandler.handle(filePath);
-      const { dictionary, invalidKeys } = compileToDictionary(keyVal, locale);
+    //Try to read the file & buffer the result
+    const bufferedFileRead = await buffer(fileHandler.read(filePath));
 
-      if (invalidKeys) reporter.warnAboutInvalidKeys(filePath, invalidKeys);
-      else reporter.localeUpdated(locale);
+    const keyVal = new ResultMatcher(bufferedFileRead)
+      .catch(LoadingException, (e) => {
+        logger.error(e.message);
+        return new Map();
+      })
+      .run();
 
-      localeDictionaries.set(locale, dictionary);
-    } catch (e) {
-      if (!(e instanceof LoadingException)) throw e;
-      logger.error(e.message);
-    }
+
+    const { dictionary, invalidKeys } = compileToDictionary(keyVal, locale);
+
+    if (invalidKeys) reporter.warnAboutInvalidKeys(filePath, invalidKeys);
+    else reporter.localeUpdated(locale);
+
+    localeDictionaries.set(locale, dictionary);
 
     await regenerateDTS();
     triggerHMREvent("t18s:invalidateLocale", locale);
@@ -119,28 +131,31 @@ export function t18sCore(pluginConfig) {
    * @param { import("./types.js").ResolvedPluginConfig} config
    */
   async function loadInitialLocales(config) {
-    /** @type {string[]} */
-    let files = [];
-    try {
-      files = await readdir(config.translationsDir);
-    } catch (e) {
-      logger.error("Could not read translation directory\n" + e);
-      return;
-    }
+    const readdirResult = await buffer(readdir(config.translationsDir));
+
+    const files = new ResultMatcher(readdirResult)
+      .catch(LoadingException, (e) => {
+        logger.error("Could not read translation directory\n" + e);
+        return [];
+      })
+      .run();
+
     const paths = files.map((file) => resolve(config.translationsDir, file));
 
     /** @param {string} path */
     async function loadFile(path) {
       const locale = getLocale(path);
-      try {
-        const keyVal = await fileHandler.handle(path);
-        const { dictionary, invalidKeys } = compileToDictionary(keyVal, locale);
-        if (invalidKeys) reporter.warnAboutInvalidKeys(path, invalidKeys);
-        localeDictionaries.set(locale, dictionary);
-      } catch (e) {
-        if (!(e instanceof LoadingException)) throw e;
-        logger.error(e.message);
-      }
+      const readResult = await buffer(fileHandler.read(path));
+      const keyVal = new ResultMatcher(readResult)
+        .catch(LoadingException, (e) => {
+          logger.error(e.message);
+          return new Map();
+        })
+        .run();
+
+      const { dictionary, invalidKeys } = compileToDictionary(keyVal, locale);
+      if (invalidKeys) reporter.warnAboutInvalidKeys(path, invalidKeys);
+      localeDictionaries.set(locale, dictionary);
     }
 
     //Load all locale-files
@@ -187,7 +202,7 @@ export function t18sCore(pluginConfig) {
       });
     } else {
       logger.error(
-        `Could not trigger HMR event '${event}' for locale '${locale}' because the viteDevServer is not available. This should never happen.`,
+        `Could not trigger HMR event '${event}' for locale '${locale}' because the viteDevServer is not available. This should never happen.`
       );
     }
   }
@@ -201,7 +216,7 @@ export function t18sCore(pluginConfig) {
         dtsPath: resolve(resolvedConfig.root, pluginConfig.dts),
         translationsDir: resolve(
           resolvedConfig.root,
-          pluginConfig.translationsDir,
+          pluginConfig.translationsDir
         ),
         verbose: pluginConfig.verbose,
       };
@@ -216,7 +231,7 @@ export function t18sCore(pluginConfig) {
       if (id.startsWith(VIRTUAL_MODULE_PREFIX)) {
         return id.replace(
           VIRTUAL_MODULE_PREFIX,
-          RESOLVED_VIRTUAL_MODULE_PREFIX,
+          RESOLVED_VIRTUAL_MODULE_PREFIX
         );
       }
     },

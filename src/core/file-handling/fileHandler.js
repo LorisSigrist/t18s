@@ -1,4 +1,4 @@
-import { readFile } from "fs/promises";
+import { readFile, writeFile } from "fs/promises";
 import { basename } from "path";
 import { LoadingException } from "./exception.js";
 import { ResultMatcher } from "../utils/resultMatcher.js";
@@ -17,16 +17,35 @@ export class FileHandler {
    * @returns {Promise<Map<string,string>>} A Map of the Key-Value pairs in the file
    * @throws {LoadingException} If the file could not be handled
    */
-  async handle(filePath) {
+  async read(filePath) {
     const handler = this.#getHandler(filePath);
     if (!handler)
       throw new LoadingException(
-        `Could not find handler for ${filePath}. Supported file extensions are ${this.getSupportedFileExtensions()}`,
+        `Could not find handler for ${filePath}. Supported file extensions are ${this.getSupportedFileExtensions()}`
       );
     const textContent = await this.#readFileContent(filePath);
     const keyVal = handler.load(filePath, textContent);
 
     return keyVal;
+  }
+
+  /**
+   * @param {string} filePath Absolute path to the file that needs to be handled
+   * @param {string} key
+   * @param {string} value
+   * @returns {Promise<void>} A Map of the Key-Value pairs in the file
+   * @throws {LoadingException} If the file could not be handled
+   */
+  async setPath(filePath, key, value) {
+    const handler = this.#getHandler(filePath);
+    if (!handler)
+      throw new LoadingException(
+        `Could not find handler for ${filePath}. Supported file extensions are ${this.getSupportedFileExtensions()}`
+      );
+
+    const textContent = await this.#readFileContent(filePath);
+    const newContent = handler.setPath(textContent, key, value);
+    await writeFile(filePath, newContent, { encoding: "utf-8" });
   }
 
   /**
@@ -39,11 +58,11 @@ export class FileHandler {
     const fileExtension = filename.split(".").at(-1);
     if (typeof fileExtension !== "string")
       throw new LoadingException(
-        "Could not determine file extension for ${filePath}",
+        "Could not determine file extension for ${filePath}"
       );
 
     const handler = this.#handlers.find((l) =>
-      l.fileExtensions.includes(fileExtension),
+      l.fileExtensions.includes(fileExtension)
     );
 
     return handler ?? null;
