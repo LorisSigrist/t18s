@@ -68,7 +68,6 @@ describe("ResultMatcher", () => {
     expect(runUnhandled).toThrow(new SyntaxError("error"));
   });
 
-
   it("Works with no success handler", () => {
     const mockFunc = () => "success";
 

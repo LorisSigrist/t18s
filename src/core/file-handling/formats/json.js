@@ -14,7 +14,7 @@ export const JsonHandler = {
       if (!(e instanceof Error)) throw e;
       throw new LoadingException(
         `Could not parse JSON file ${filePath}: ${e.message}`,
-        { cause: e }
+        { cause: e },
       );
     }
   },

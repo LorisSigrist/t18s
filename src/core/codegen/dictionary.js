@@ -8,16 +8,15 @@ import { indent } from "./utils/stringUtils.js";
  * @returns {string}
  */
 export function generateDictionaryModule(dictionary) {
-    let dictionaryBody = "";
-  
-    for (const [key, func] of dictionary) {
-      dictionaryBody += `"${key}": ${func.precompiled},\n`;
-    }
-  
-    let code = "";
-    code += "export default {\n";
-    code += indent(dictionaryBody);
-    code += "};";
-    return code;
+  let dictionaryBody = "";
+
+  for (const [key, func] of dictionary) {
+    dictionaryBody += `"${key}": ${func.precompiled},\n`;
   }
-  
+
+  let code = "";
+  code += "export default {\n";
+  code += indent(dictionaryBody);
+  code += "};";
+  return code;
+}

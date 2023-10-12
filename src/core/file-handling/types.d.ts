@@ -12,7 +12,7 @@ export interface FormatHandler {
     filePath: string,
     fileContent: string,
     locale: string,
-  ) => Promise<Map<string,string>>;
+  ) => Promise<Map<string, string>>;
 
   setPath: (path: string, value: string) => Promise<void>;
 }

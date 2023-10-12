@@ -1,6 +1,5 @@
 import { indent } from "./stringUtils.js";
 
-
 export class DTSBuilder {
   /** @type {Set<Module>} */
   #modules = new Set();
@@ -81,7 +80,6 @@ class Module {
     this.#statements.push(statement);
     return this;
   }
-
 
   /** @param {string} importStatement */
   addImport(importStatement) {

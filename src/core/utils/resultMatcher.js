@@ -41,7 +41,7 @@ export class ResultMatcher {
     func,
     strategies = /** @type {any} */ ([]),
     successHandler = /** @type {any} */ (identity),
-    fallbackHandler = /** @type {any} */ (raise)
+    fallbackHandler = /** @type {any} */ (raise),
   ) {
     this.#unsafeFunction = func;
     this.#strategies = strategies;
@@ -65,7 +65,7 @@ export class ResultMatcher {
       this.#unsafeFunction,
       [...this.#strategies, registeredStrategy],
       this.#successHandler,
-      this.#fallbackHandler
+      this.#fallbackHandler,
     );
   }
 
@@ -80,7 +80,7 @@ export class ResultMatcher {
       this.#unsafeFunction,
       this.#strategies,
       this.#successHandler,
-      handler
+      handler,
     );
   }
 
@@ -96,7 +96,7 @@ export class ResultMatcher {
       this.#unsafeFunction,
       this.#strategies,
       handler,
-      this.#fallbackHandler
+      this.#fallbackHandler,
     );
   }
 

@@ -15,7 +15,7 @@ export const YamlHandler = {
       if (!(e instanceof Error)) throw e;
       throw new LoadingException(
         `Could not parse YAML file ${filePath}: ${e.message}`,
-        { cause: e }
+        { cause: e },
       );
     }
   },

@@ -22,7 +22,7 @@ export class Reporter {
    * @param {Set<string>} invalidKeys
    */
   warnAboutInvalidKeys(filePath, invalidKeys) {
-    let errorMessage = `Invalid ICU Messageformat Strings found in ${filePath}`
+    let errorMessage = `Invalid ICU Messageformat Strings found in ${filePath}`;
     for (const invalidKey of invalidKeys) {
       errorMessage += `\n· ${invalidKey}`;
     }
@@ -43,8 +43,8 @@ export class Reporter {
   warnAboutDuplicateLocaleFiles(locale, filePaths) {
     this.#logger.error(
       `Multiple files for locale ${locale} found:\n    ${filePaths.join(
-        "\n    "
-      )}`
+        "\n    ",
+      )}`,
     );
   }
 }

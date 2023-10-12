@@ -55,7 +55,6 @@ describe("compile number format", () => {
     const result = evaluateFnString(compiled, values);
     const correct = formatJS(message, values);
 
-
     expect(result).toMatch(correct);
   });
 });
