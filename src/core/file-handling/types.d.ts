@@ -11,8 +11,10 @@ export interface FormatHandler {
   load: (
     filePath: string,
     fileContent: string,
-    locale: string,
-  ) => Promise<Map<string, string>>;
+  ) =>Map<string, string>;
 
-  setPath: (path: string, value: string) => Promise<void>;
+  /**
+   * Modifies the file content so that the given key has the given value.
+   */
+  setPath: (oldContent: string, key:string, value:string) => string;
 }

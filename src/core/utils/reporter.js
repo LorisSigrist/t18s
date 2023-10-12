@@ -38,13 +38,27 @@ export class Reporter {
 
   /**
    * @param {string} locale
+   */
+  localeDeleted(locale) {
+    this.#logger.warn(`Locale ${kleur.italic(locale)} deleted`);
+  }
+
+  /**
+   * @param {string} locale
+   */
+  localeCreated(locale) {
+    this.#logger.success(`Locale ${kleur.italic(locale)} created`);
+  }
+
+  /**
+   * @param {string} locale
    * @param {string[]} filePaths
    */
   warnAboutDuplicateLocaleFiles(locale, filePaths) {
     this.#logger.error(
       `Multiple files for locale ${locale} found:\n    ${filePaths.join(
-        "\n    ",
-      )}`,
+        "\n    "
+      )}`
     );
   }
 }

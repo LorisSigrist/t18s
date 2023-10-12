@@ -1,25 +1,27 @@
-import { load as loadYaml } from "js-yaml";
+import { load as loadYaml, YAMLException } from "js-yaml";
 import { flattenTree } from "../utils.js";
 import { LoadingException } from "../exception.js";
+import { ResultMatcher } from "../../utils/resultMatcher.js";
 
 /** @type {import("../types.js").FormatHandler} */
 export const YamlHandler = {
   fileExtensions: ["yaml", "yml"],
-  load: async (filePath, content, locale) => {
-    try {
-      const tree = loadYaml(content, {
-        filename: filePath,
-      });
-      return flattenTree(tree);
-    } catch (e) {
-      if (!(e instanceof Error)) throw e;
+  load: (filePath, content) => {
+    
+    /** @param {YAMLException} e */
+    const raiseLoadingException = (e) => {
       throw new LoadingException(
         `Could not parse YAML file ${filePath}: ${e.message}`,
-        { cause: e },
+        { cause: e }
       );
     }
+    
+    return new ResultMatcher(loadYaml)
+      .ok(flattenTree)
+      .catch(YAMLException, raiseLoadingException)
+      .run(content, { filename: filePath });
   },
-  async setPath() {
+  setPath() {
     throw new Error("Not implemented");
   },
 };

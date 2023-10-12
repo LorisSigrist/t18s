@@ -46,7 +46,7 @@ export function t18sCore(pluginConfig) {
     const locale = getLocale(filePath);
 
     try {
-      const keyVal = await fileHandler.handle(filePath, locale);
+      const keyVal = await fileHandler.handle(filePath);
       const { dictionary, invalidKeys } = compileToDictionary(keyVal, locale);
       if (invalidKeys) reporter.warnAboutInvalidKeys(filePath, invalidKeys);
       localeDictionaries.set(locale, dictionary);
@@ -57,6 +57,7 @@ export function t18sCore(pluginConfig) {
 
     await regenerateDTS();
     triggerHMREvent("t18s:createLocale", locale);
+    reporter.localeCreated(locale);
   }
 
   /**
@@ -69,7 +70,7 @@ export function t18sCore(pluginConfig) {
     const locale = getLocale(filePath);
 
     try {
-      const keyVal = await fileHandler.handle(filePath, locale);
+      const keyVal = await fileHandler.handle(filePath);
       const { dictionary, invalidKeys } = compileToDictionary(keyVal, locale);
 
       if (invalidKeys) reporter.warnAboutInvalidKeys(filePath, invalidKeys);
@@ -100,6 +101,7 @@ export function t18sCore(pluginConfig) {
 
     await regenerateDTS();
     triggerHMREvent("t18s:removeLocale", locale);
+    reporter.localeDeleted(locale);
   }
 
   /**
@@ -131,7 +133,7 @@ export function t18sCore(pluginConfig) {
     async function loadFile(path) {
       const locale = getLocale(path);
       try {
-        const keyVal = await fileHandler.handle(path, locale);
+        const keyVal = await fileHandler.handle(path);
         const { dictionary, invalidKeys } = compileToDictionary(keyVal, locale);
         if (invalidKeys) reporter.warnAboutInvalidKeys(path, invalidKeys);
         localeDictionaries.set(locale, dictionary);
@@ -185,7 +187,7 @@ export function t18sCore(pluginConfig) {
       });
     } else {
       logger.error(
-        `Could not trigger HMR event '${event}' for locale '${locale}' beacuase the viteDevServer is not available. This should never happen.`,
+        `Could not trigger HMR event '${event}' for locale '${locale}' beacuase the viteDevServer is not available. This should never happen.`
       );
     }
   }
@@ -199,7 +201,7 @@ export function t18sCore(pluginConfig) {
         dtsPath: resolve(resolvedConfig.root, pluginConfig.dts),
         translationsDir: resolve(
           resolvedConfig.root,
-          pluginConfig.translationsDir,
+          pluginConfig.translationsDir
         ),
         verbose: pluginConfig.verbose,
       };
@@ -214,7 +216,7 @@ export function t18sCore(pluginConfig) {
       if (id.startsWith(VIRTUAL_MODULE_PREFIX)) {
         return id.replace(
           VIRTUAL_MODULE_PREFIX,
-          RESOLVED_VIRTUAL_MODULE_PREFIX,
+          RESOLVED_VIRTUAL_MODULE_PREFIX
         );
       }
     },

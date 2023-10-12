@@ -1,4 +1,4 @@
-import colors from "kleur";
+import kleur from "kleur";
 
 /**
  * Log Messages to the console in a standard format.
@@ -26,7 +26,7 @@ export class Logger {
   log(msg) {
     if (!this.#verbose) return;
     msg = this.#formatMessage(msg, "ℹ");
-    this.#viteConfig.logger.info(colors.cyan(msg));
+    this.#viteConfig.logger.info(kleur.cyan(msg));
   }
 
   /**
@@ -36,8 +36,8 @@ export class Logger {
    */
   warn(msg) {
     if (!this.#verbose) return;
-    msg = this.#formatMessage(msg);
-    this.#viteConfig.logger.warn(colors.bold().yellow(msg));
+    msg = this.#formatMessage(msg, "★");
+    this.#viteConfig.logger.warn(kleur.bold().yellow(msg));
   }
 
   /**
@@ -46,7 +46,7 @@ export class Logger {
    */
   error(msg) {
     msg = this.#formatMessage(msg, "✗");
-    this.#viteConfig.logger.error(colors.bold().red(msg));
+    this.#viteConfig.logger.error(kleur.bold().red(msg));
   }
 
   /**
@@ -55,7 +55,7 @@ export class Logger {
    */
   success(msg) {
     msg = this.#formatMessage(msg, "✔");
-    this.#viteConfig.logger.info(colors.green(msg));
+    this.#viteConfig.logger.info(kleur.bold().green(msg));
   }
 
   /**

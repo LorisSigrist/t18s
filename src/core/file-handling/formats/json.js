@@ -1,24 +1,30 @@
+import { ResultMatcher } from "../../utils/resultMatcher.js";
 import { LoadingException } from "../exception.js";
 import { flattenTree } from "../utils.js";
 
 /** @type {import("../types.js").FormatHandler} */
 export const JsonHandler = {
   fileExtensions: ["json"],
-  load: async (filePath, content, locale) => {
-    try {
-      content = content.trim();
-      if (content.length === 0) return new Map();
-      const tree = JSON.parse(content);
-      return flattenTree(tree);
-    } catch (e) {
-      if (!(e instanceof Error)) throw e;
+  load: (filePath, content) => {
+    content = content.trim();
+    if (content.length === 0) return new Map();
+
+    /** @param {Error} e */
+    const raiseLoadingException = e => {
+      console.warn("Raising loading exception");
       throw new LoadingException(
         `Could not parse JSON file ${filePath}: ${e.message}`,
         { cause: e },
       );
     }
+
+    return new ResultMatcher(JSON.parse)
+      .ok(flattenTree)
+      .catch(SyntaxError, raiseLoadingException)
+      .run(content);
+      
   },
-  async setPath() {
+  setPath() {
     throw new Error("Not implemented");
   },
 };

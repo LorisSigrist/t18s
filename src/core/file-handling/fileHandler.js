@@ -1,6 +1,7 @@
 import { readFile } from "fs/promises";
 import { basename } from "path";
 import { LoadingException } from "./exception.js";
+import { ResultMatcher } from "../utils/resultMatcher.js";
 
 export class FileHandler {
   /** @type {import("./types.js").FormatHandler[]} */
@@ -13,19 +14,17 @@ export class FileHandler {
 
   /**
    * @param {string} filePath Absolute path to the file that needs to be handled
-   * @param {string} locale The locale for which the file should be handled
    * @returns {Promise<Map<string,string>>} A Map of the Key-Value pairs in the file
-   *
    * @throws {LoadingException} If the file could not be handled
    */
-  async handle(filePath, locale) {
+  async handle(filePath) {
     const handler = this.#getHandler(filePath);
     if (!handler)
       throw new LoadingException(
         `Could not find handler for ${filePath}. Supported file extensions are ${this.getSupportedFileExtensions()}`,
       );
     const textContent = await this.#readFileContent(filePath);
-    const keyVal = await handler.load(filePath, textContent, locale);
+    const keyVal = handler.load(filePath, textContent);
 
     return keyVal;
   }

@@ -6,21 +6,19 @@ describe("FileHandler", () => {
   describe("handle", () => {
     it("throws LoadingException if no handler is found", async () => {
       const handler = new FileHandler([]);
-      await expect(handler.handle("foo.bar", "en")).rejects.toThrow(
-        LoadingException,
-      );
+      await expect(handler.handle("foo.bar")).rejects.toThrow(LoadingException);
     });
 
     it("throws LoadingException if the file cannot be read", async () => {
       const handler = new FileHandler([
         {
           fileExtensions: ["json"],
-          load: async () => new Map(),
-          setPath: async () => {},
+          load: () => new Map(),
+          setPath: () => "",
         },
       ]);
-      await expect(handler.handle("nonexistent.json", "en")).rejects.toThrow(
-        LoadingException,
+      await expect(handler.handle("nonexistent.json")).rejects.toThrow(
+        LoadingException
       );
     });
   });
@@ -35,8 +33,8 @@ describe("FileHandler", () => {
       const handler = new FileHandler([
         {
           fileExtensions: ["json"],
-          load: async () => new Map(),
-          setPath: async () => {},
+          load: () => new Map(),
+          setPath: () => "",
         },
       ]);
       expect(handler.getSupportedFileExtensions()).toEqual(new Set(["json"]));
@@ -46,17 +44,17 @@ describe("FileHandler", () => {
       const handler = new FileHandler([
         {
           fileExtensions: ["json"],
-          load: async () => new Map(),
-          setPath: async () => {},
+          load: () => new Map(),
+          setPath: () => "",
         },
         {
           fileExtensions: ["yaml", "yml"],
-          load: async () => new Map(),
-          setPath: async () => {},
+          load: () => new Map(),
+          setPath: () => "",
         },
       ]);
       expect(handler.getSupportedFileExtensions()).toEqual(
-        new Set(["json", "yaml", "yml"]),
+        new Set(["json", "yaml", "yml"])
       );
     });
   });
