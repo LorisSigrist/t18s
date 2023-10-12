@@ -16,6 +16,7 @@ import { compileToDictionary } from "./compiler/index.js";
 import { Reporter } from "./utils/reporter.js";
 import { ResultMatcher } from "./utils/resultMatcher.js";
 import { buffer } from "./utils/bufferPromise.js";
+import { LocaleRegistry } from "./localeRegistry.js";
 
 /**
  * TypeSafe translations for Svelte & SvelteKit.
@@ -35,8 +36,7 @@ export function t18sCore(pluginConfig) {
   /** @type {import("vite").ViteDevServer | null}*/
   let viteDevServer = null;
 
-  /** @type {import("./types.js").LocaleDictionaries} */
-  const localeDictionaries = new Map();
+  const registry = new LocaleRegistry();
 
   /** Handles interactions with translation files */
   const fileHandler = new FileHandler([YamlHandler, JsonHandler]);
@@ -47,6 +47,13 @@ export function t18sCore(pluginConfig) {
    */
   async function addTranslationFile(filePath) {
     const locale = getLocale(filePath);
+
+    if (registry.hasLocale(locale)) {
+      logger.error(
+        `Locale ${locale} already exists. Skipping file ${filePath}`
+      );
+      return;
+    }
 
     //Try to read the file & buffer the result
     const bufferedFileRead = await buffer(fileHandler.read(filePath));
@@ -60,7 +67,9 @@ export function t18sCore(pluginConfig) {
 
     const { dictionary, invalidKeys } = compileToDictionary(keyVal, locale);
     if (invalidKeys) reporter.warnAboutInvalidKeys(filePath, invalidKeys);
-    localeDictionaries.set(locale, dictionary);
+
+    registry.registerLocale(locale, filePath);
+    registry.setDictionary(locale, dictionary);
 
     await regenerateDTS();
     triggerHMREvent("t18s:createLocale", locale);
@@ -91,7 +100,7 @@ export function t18sCore(pluginConfig) {
     if (invalidKeys) reporter.warnAboutInvalidKeys(filePath, invalidKeys);
     else reporter.localeUpdated(locale);
 
-    localeDictionaries.set(locale, dictionary);
+    registry.setDictionary(locale, dictionary);
 
     await regenerateDTS();
     triggerHMREvent("t18s:invalidateLocale", locale);
@@ -108,7 +117,7 @@ export function t18sCore(pluginConfig) {
     const locale = filename.split(".")[0];
 
     if (!locale) throw new Error("Could not determine locale for ${filePath}");
-    localeDictionaries.delete(locale);
+    registry.unregisterLocale(locale);
 
     await regenerateDTS();
     triggerHMREvent("t18s:removeLocale", locale);
@@ -122,7 +131,8 @@ export function t18sCore(pluginConfig) {
    * @param {string} message_src
    */
   async function setMessage(locale, key, message_src) {
-    console.log("setMessage", locale, key, message_src);
+    const filePath = registry.getFile(locale);
+    fileHandler.setPath(filePath, key, message_src);
   }
 
   /**
@@ -154,7 +164,9 @@ export function t18sCore(pluginConfig) {
 
       const { dictionary, invalidKeys } = compileToDictionary(keyVal, locale);
       if (invalidKeys) reporter.warnAboutInvalidKeys(path, invalidKeys);
-      localeDictionaries.set(locale, dictionary);
+
+      registry.registerLocale(locale, path);
+      registry.setDictionary(locale, dictionary);
     }
 
     //Load all locale-files
@@ -165,7 +177,7 @@ export function t18sCore(pluginConfig) {
   }
 
   async function regenerateDTS() {
-    const dts = generateDTS(localeDictionaries);
+    const dts = generateDTS(registry.getDictionaries());
     await writeFile(config.dtsPath, dts, { encoding: "utf-8", flag: "w" });
   }
 
@@ -201,7 +213,7 @@ export function t18sCore(pluginConfig) {
       });
     } else {
       logger.error(
-        `Could not trigger HMR event '${event}' for locale '${locale}' because the viteDevServer is not available. This should never happen.`,
+        `Could not trigger HMR event '${event}' for locale '${locale}' because the viteDevServer is not available. This should never happen.`
       );
     }
   }
@@ -215,7 +227,7 @@ export function t18sCore(pluginConfig) {
         dtsPath: resolve(resolvedConfig.root, pluginConfig.dts),
         translationsDir: resolve(
           resolvedConfig.root,
-          pluginConfig.translationsDir,
+          pluginConfig.translationsDir
         ),
         verbose: pluginConfig.verbose,
       };
@@ -230,7 +242,7 @@ export function t18sCore(pluginConfig) {
       if (id.startsWith(VIRTUAL_MODULE_PREFIX)) {
         return id.replace(
           VIRTUAL_MODULE_PREFIX,
-          RESOLVED_VIRTUAL_MODULE_PREFIX,
+          RESOLVED_VIRTUAL_MODULE_PREFIX
         );
       }
     },
@@ -240,14 +252,14 @@ export function t18sCore(pluginConfig) {
       if (!id.startsWith(RESOLVED_VIRTUAL_MODULE_PREFIX)) return;
 
       if (id === RESOLVED_VIRTUAL_MODULE_PREFIX) {
-        const locales = [...localeDictionaries.keys()];
+        const locales = registry.getLocales();
         return generateMainModuleCode(locales, config.verbose);
       }
 
       const locale = id.split("/")[2];
       if (!locale) return;
 
-      const dictionary = localeDictionaries.get(locale);
+      const dictionary = registry.getDictionary(locale);
       if (!dictionary) return;
 
       return generateDictionaryModule(dictionary);

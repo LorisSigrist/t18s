@@ -1,10 +1,12 @@
 /**
  * Generates the code for the "$t18s" module
- * @param {string[]} locales
+ * @param {Iterable<string>} localesIterable
  * @param {boolean} verbose
  * @returns {string}
  */
-export function generateMainModuleCode(locales, verbose) {
+export function generateMainModuleCode(localesIterable, verbose) {
+  const locales = Array.from(localesIterable);
+
   return `
   import { writable, get } from 'svelte/store';
   
