@@ -1,7 +1,30 @@
-export class LocaleRegistry {
+import { TypedEventTarget } from "typescript-event-target";
+
+/** @typedef {import("./types.js").Dictionary} Dictionary */
+
+/**
+ * The valid events that may be emitted by a locale registry.
+ *
+ * @typedef {{
+ *  "locale_added": CustomEvent<{ locale: string, dictionary: Dictionary }>,
+ *  "locale_removed": CustomEvent<{ locale: string }>,
+ *  "locale_updated": CustomEvent<{ locale: string, dictionary: Dictionary }>,
+ *  "changed": CustomEvent<{}>;
+ * }} LocaleRegistryEventMap
+ */
+
+/**
+ * @template P
+ * @typedef {{ new(): P }} Class
+ */
+
+/** @type {Class<TypedEventTarget<LocaleRegistryEventMap>>} */
+const LocaleRegistryEventTarget = /** @type {any} */ (TypedEventTarget);
+
+export class LocaleRegistry extends LocaleRegistryEventTarget {
   /**
    * Map locales to their dictionaries.
-   * @type {Map<string, import("./types.js").Dictionary>}
+   * @type {Map<string, Dictionary>}
    */
   #dictionaries = new Map();
 
@@ -15,10 +38,14 @@ export class LocaleRegistry {
    * Register a new locale.
    * @param {string} locale
    * @param {string} filePath
+   * @param {Dictionary} dictionary
    */
-  registerLocale(locale, filePath) {
+  registerLocale(locale, filePath, dictionary) {
     this.#files.set(locale, filePath);
-    this.#dictionaries.set(locale, new Map());
+    this.#dictionaries.set(locale, dictionary);
+
+    this.#dispatch("locale_added", { locale, dictionary });
+    this.#dispatch("changed", {});
   }
 
   /**
@@ -28,29 +55,33 @@ export class LocaleRegistry {
   unregisterLocale(locale) {
     this.#dictionaries.delete(locale);
     this.#files.delete(locale);
+
+    this.#dispatch("locale_removed", { locale });
+    this.#dispatch("changed", {});
   }
 
   /**
    * @param {string} locale
-   * @param {import("./types.js").Dictionary} dictionary
+   * @param {Dictionary} dictionary
    *
    * @throws {LocaleNotFoundException} If the locale is not registered.
    */
   setDictionary(locale, dictionary) {
     if (!this.#files.has(locale)) throw new LocaleNotFoundException(locale);
     this.#dictionaries.set(locale, dictionary);
+    this.#dispatch("changed", {});
+    this.#dispatch("locale_updated", { locale, dictionary });
   }
 
   /**
    * @param {string} locale
-   * @returns {import("./types.js").Dictionary}
+   * @returns {Dictionary}
    *
    * @throws {LocaleNotFoundException} If the locale is not registered.
    */
   getDictionary(locale) {
     if (!this.#dictionaries.has(locale))
       throw new LocaleNotFoundException(locale);
-
     return this.#dictionaries.get(locale) ?? new Map();
   }
 
@@ -62,7 +93,6 @@ export class LocaleRegistry {
    */
   getFile(locale) {
     if (!this.#files.has(locale)) throw new LocaleNotFoundException(locale);
-
     return this.#files.get(locale) ?? "";
   }
 
@@ -84,6 +114,19 @@ export class LocaleRegistry {
    */
   hasLocale(locale) {
     return this.#dictionaries.has(locale);
+  }
+
+  /**
+   * Dispatches an event of the given type with the given details.
+   * @template {keyof LocaleRegistryEventMap} E
+   *
+   * @param {E} event_name
+   * @param {LocaleRegistryEventMap[E] extends CustomEvent<infer D> ? D : never} details
+   */
+  #dispatch(event_name, details) {
+    /** @type {CustomEvent} */
+    const event = new CustomEvent(event_name, { detail: details });
+    this.dispatchTypedEvent(event_name, event);
   }
 }
 

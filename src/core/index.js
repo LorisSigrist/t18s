@@ -38,6 +38,20 @@ export function t18sCore(pluginConfig) {
 
   const registry = new LocaleRegistry();
 
+  registry.addEventListener("changed", async () => await regenerateDTS());
+  registry.addEventListener("locale_added", (e) => {
+    triggerHMREvent("t18s:createLocale", e.detail.locale);
+    reporter.localeCreated(e.detail.locale);
+  });
+  registry.addEventListener("locale_removed", (e) => {
+    triggerHMREvent("t18s:removeLocale", e.detail.locale);
+    reporter.localeDeleted(e.detail.locale);
+  });
+  registry.addEventListener("locale_updated", (e) => {
+    triggerHMREvent("t18s:invalidateLocale", e.detail.locale);
+    reporter.localeUpdated(e.detail.locale);
+  });
+
   /** Handles interactions with translation files */
   const fileHandler = new FileHandler([YamlHandler, JsonHandler]);
 
@@ -67,13 +81,7 @@ export function t18sCore(pluginConfig) {
 
     const { dictionary, invalidKeys } = compileToDictionary(keyVal, locale);
     if (invalidKeys) reporter.warnAboutInvalidKeys(filePath, invalidKeys);
-
-    registry.registerLocale(locale, filePath);
-    registry.setDictionary(locale, dictionary);
-
-    await regenerateDTS();
-    triggerHMREvent("t18s:createLocale", locale);
-    reporter.localeCreated(locale);
+    registry.registerLocale(locale, filePath, dictionary);
   }
 
   /**
@@ -98,12 +106,7 @@ export function t18sCore(pluginConfig) {
     const { dictionary, invalidKeys } = compileToDictionary(keyVal, locale);
 
     if (invalidKeys) reporter.warnAboutInvalidKeys(filePath, invalidKeys);
-    else reporter.localeUpdated(locale);
-
     registry.setDictionary(locale, dictionary);
-
-    await regenerateDTS();
-    triggerHMREvent("t18s:invalidateLocale", locale);
   }
 
   /**
@@ -118,10 +121,6 @@ export function t18sCore(pluginConfig) {
 
     if (!locale) throw new Error("Could not determine locale for ${filePath}");
     registry.unregisterLocale(locale);
-
-    await regenerateDTS();
-    triggerHMREvent("t18s:removeLocale", locale);
-    reporter.localeDeleted(locale);
   }
 
   /**
@@ -165,15 +164,11 @@ export function t18sCore(pluginConfig) {
       const { dictionary, invalidKeys } = compileToDictionary(keyVal, locale);
       if (invalidKeys) reporter.warnAboutInvalidKeys(path, invalidKeys);
 
-      registry.registerLocale(locale, path);
-      registry.setDictionary(locale, dictionary);
+      registry.registerLocale(locale, path, dictionary);
     }
 
     //Load all locale-files
     await Promise.all(paths.map(loadFile));
-
-    //Generate Typedef
-    await regenerateDTS();
   }
 
   async function regenerateDTS() {
