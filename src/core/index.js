@@ -16,7 +16,7 @@ import { compileToDictionary } from "./compiler/index.js";
 import { Reporter } from "./utils/reporter.js";
 import { ResultMatcher } from "./utils/resultMatcher.js";
 import { buffer } from "./utils/bufferPromise.js";
-import { LocaleRegistry } from "./localeRegistry.js";
+import { LocaleRegistry, LocaleNotFoundException } from "./localeRegistry.js";
 
 /**
  * TypeSafe translations for Svelte & SvelteKit.
@@ -59,7 +59,7 @@ export function t18sCore(pluginConfig) {
    * Register a new translation file.
    * @param {string} filePath Absolute path to the file that needs to be invalidated
    */
-  async function addTranslationFile(filePath) {
+  async function registerTranslationFile(filePath) {
     const locale = getLocale(filePath);
 
     if (registry.hasLocale(locale)) {
@@ -110,17 +110,11 @@ export function t18sCore(pluginConfig) {
   }
 
   /**
-   * Remove a _translation_ file.
-   * Assumes the file is in the `translationsDir` directory.
    * @param {string} filePath Absolute path to the translation file that no longer exists
    * @returns void
    */
-  async function removeTranslationFile(filePath) {
-    const filename = basename(filePath);
-    const locale = filename.split(".")[0];
-
-    if (!locale) throw new Error("Could not determine locale for ${filePath}");
-    registry.unregisterLocale(locale);
+  function unregisterTranslationFile(filePath) {
+    registry.unregisterLocale(getLocale(filePath));
   }
 
   /**
@@ -269,19 +263,19 @@ export function t18sCore(pluginConfig) {
       const isTranslationFile = (path) =>
         path.startsWith(config.translationsDir);
 
-      server.watcher.on("unlink", async (path) => {
-        if (!isTranslationFile(path)) return;
-        await removeTranslationFile(path);
+      server.watcher.on("unlink", async (filePath) => {
+        if (!isTranslationFile(filePath)) return;
+        unregisterTranslationFile(filePath);
       });
 
-      server.watcher.on("add", async (path) => {
-        if (!isTranslationFile(path)) return;
-        await addTranslationFile(path);
+      server.watcher.on("add", async (filePath) => {
+        if (!isTranslationFile(filePath)) return;
+        await registerTranslationFile(filePath);
       });
 
-      server.watcher.on("change", async (path) => {
-        if (!isTranslationFile(path)) return;
-        await invalidateTranslationFile(path);
+      server.watcher.on("change", async (filePath) => {
+        if (!isTranslationFile(filePath)) return;
+        await invalidateTranslationFile(filePath);
       });
 
       server.ws.on("t18s:add-message", (event) => {
