@@ -6,31 +6,45 @@ import { flattenTree, setPathOnTree } from "../utils.js";
 export const JsonHandler = {
   fileExtensions: ["json"],
   load: (filePath, content) => {
-    content = content.trim();
-    if (content.length === 0) return new Map();
-
-    /** @param {Error} e */
-    const raiseLoadingException = (e) => {
-      console.warn("Raising loading exception");
-      throw new LoadingException(
-        `Could not parse JSON file ${filePath}: ${e.message}`,
-        { cause: e },
-      );
-    };
-
-    return new ResultMatcher(JSON.parse)
-      .ok(flattenTree)
-      .catch(SyntaxError, raiseLoadingException)
-      .run(content);
+    const tree = parseAsTree(content, filePath);
+    return flattenTree(tree);
   },
   setPath(oldJSON, key, value) {
-    oldJSON = oldJSON.trim().length > 0 ? oldJSON : "{}";
-    const obj = JSON.parse(oldJSON);
+    const tree = parseAsTree(oldJSON);
 
     const path = key.split(".");
-    setPathOnTree(obj, path, value);
+    setPathOnTree(tree, path, value);
 
-    const newJSON = JSON.stringify(obj);
+    const newJSON = JSON.stringify(tree);
     return newJSON;
   },
 };
+
+/**
+ * Parses a string into a POJS tree.
+ *
+ * @param {string} content
+ * @param {string|undefined} filePath
+ * @returns {unknown}
+ */
+function parseAsTree(content, filePath = undefined) {
+  content = content.trim();
+  if (content.length === 0) return {};
+
+  /** @param {Error} e */
+  const raiseLoadingException = (e) => {
+    console.warn("Raising loading exception");
+    throw new LoadingException(
+      `Could not parse JSON file ${filePath ?? ""}: ${e.message}`,
+      { cause: e }
+    );
+  };
+
+  return new ResultMatcher(JSON.parse)
+    .ok((res) => {
+      if (typeof res !== "object") return {};
+      return res;
+    })
+    .catch(SyntaxError, (e) => raiseLoadingException(e))
+    .run(content);
+}
