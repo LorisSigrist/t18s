@@ -105,7 +105,7 @@ export class ResultMatcher {
    * according to the registered strategies.
    *
    * @param  {Parameters<UnsafeFunc>} params
-   * @returns {ReturnType<SuccessHandler> | ReturnType<Strategies[number]["handler"]> | (FallbackHandler extends null ? never : ReturnType<FallbackHandler>)}
+   * @returns {ReturnType<SuccessHandler> | ReturnType<Strategies[number]["handler"]> | ReturnType<FallbackHandler>}
    */
   run(...params) {
     let successResult;

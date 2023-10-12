@@ -9,14 +9,14 @@ describe("ResultMatcher", () => {
     const result = new ResultMatcher(mockFunc)
       .ok(mockSuccessHandler)
       .catch(Error, () => "error")
-      .catchAll(() => "rescue all")
+      .catchAll(() => "catch all")
       .run();
 
     expect(mockSuccessHandler).toHaveBeenCalledWith("success");
     expect(result).toBe("return value");
   });
 
-  it("runs the rescue handler if the function throws the specified error", () => {
+  it("runs the catch handler if the function throws the specified error", () => {
     const mockFunc = () => {
       throw new SyntaxError("error");
     };
@@ -28,14 +28,14 @@ describe("ResultMatcher", () => {
       .catch(RangeError, () => "range error")
       .catch(SyntaxError, mockRescueHandler) // <-- this one
       .catch(TypeError, () => "type error")
-      .catchAll(() => "rescue all")
+      .catchAll(() => "catch all")
       .run();
 
     expect(mockRescueHandler).toHaveBeenCalledWith(new SyntaxError("error"));
     expect(result).toBe("return value");
   });
 
-  it("runs the rescueAll handler if the function throws an error that is not specified", () => {
+  it("runs the catchAll handler if the function throws an error that is not specified", () => {
     const mockFunc = () => {
       throw new SyntaxError("error");
     };
@@ -73,7 +73,7 @@ describe("ResultMatcher", () => {
     const mockFunc = () => "success";
 
     const result = new ResultMatcher(mockFunc)
-      .catchAll(() => "rescue all")
+      .catchAll(() => "catch all")
       .run();
 
     expect(result).toBe("success");
