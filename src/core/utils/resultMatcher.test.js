@@ -7,10 +7,10 @@ describe("ResultMatcher", () => {
     const mockSuccessHandler = vitest.fn(() => "return value");
 
     const result = new ResultMatcher(mockFunc)
-      .success(mockSuccessHandler)
-      .rescue(Error, () => "error")
-      .rescueAll(() => "rescue all")
-      .call();
+      .ok(mockSuccessHandler)
+      .catch(Error, () => "error")
+      .catchAll(() => "rescue all")
+      .run();
 
     expect(mockSuccessHandler).toHaveBeenCalledWith("success");
     expect(result).toBe("return value");
@@ -24,12 +24,12 @@ describe("ResultMatcher", () => {
     const mockRescueHandler = vitest.fn(() => "return value");
 
     const result = new ResultMatcher(mockFunc)
-      .success(() => "success")
-      .rescue(RangeError, () => "range error")
-      .rescue(SyntaxError, mockRescueHandler) // <-- this one
-      .rescue(TypeError, () => "type error")
-      .rescueAll(() => "rescue all")
-      .call();
+      .ok(() => "success")
+      .catch(RangeError, () => "range error")
+      .catch(SyntaxError, mockRescueHandler) // <-- this one
+      .catch(TypeError, () => "type error")
+      .catchAll(() => "rescue all")
+      .run();
 
     expect(mockRescueHandler).toHaveBeenCalledWith(new SyntaxError("error"));
     expect(result).toBe("return value");
@@ -43,11 +43,11 @@ describe("ResultMatcher", () => {
     const mockRescueAllHandler = vitest.fn(() => "return value");
 
     const result = new ResultMatcher(mockFunc)
-      .success(() => "success")
-      .rescue(RangeError, () => "range error")
-      .rescue(TypeError, () => "type error")
-      .rescueAll(mockRescueAllHandler) // <-- this one
-      .call();
+      .ok(() => "success")
+      .catch(RangeError, () => "range error")
+      .catch(TypeError, () => "type error")
+      .catchAll(mockRescueAllHandler) // <-- this one
+      .run();
 
     expect(mockRescueAllHandler).toHaveBeenCalledWith(new SyntaxError("error"));
     expect(result).toBe("return value");
@@ -60,11 +60,22 @@ describe("ResultMatcher", () => {
 
     const runUnhandled = () =>
       new ResultMatcher(mockFunc)
-        .success(() => "success")
-        .rescue(RangeError, () => "range error")
-        .rescue(TypeError, () => "type error")
-        .call();
+        .ok(() => "success")
+        .catch(RangeError, () => "range error")
+        .catch(TypeError, () => "type error")
+        .run();
 
     expect(runUnhandled).toThrow(new SyntaxError("error"));
+  });
+
+
+  it("Works with no success handler", () => {
+    const mockFunc = () => "success";
+
+    const result = new ResultMatcher(mockFunc)
+      .catchAll(() => "rescue all")
+      .run();
+
+    expect(result).toBe("success");
   });
 });

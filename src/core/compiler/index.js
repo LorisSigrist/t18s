@@ -20,9 +20,7 @@ export function compileToDictionary(keyVal, locale) {
   const invalidKeys = new Set();
 
   for (const [translationKey, messageSource] of keyVal.entries()) {
-    const markKeyInvalid = () => {
-      invalidKeys.add(translationKey);
-    };
+    const markKeyInvalid = () => void invalidKeys.add(translationKey);
 
     /** @param {ReturnType<typeof parse>} parsed */
     const addToDictionary = (parsed) => {
@@ -35,9 +33,9 @@ export function compileToDictionary(keyVal, locale) {
     };
 
     new ResultMatcher(parse)
-      .success(addToDictionary)
-      .rescueAll(markKeyInvalid)
-      .call(messageSource, {
+      .ok(addToDictionary)
+      .catchAll(markKeyInvalid)
+      .run(messageSource, {
         shouldParseSkeletons: true,
         requiresOtherClause: false,
       });

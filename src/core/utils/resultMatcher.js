@@ -14,7 +14,7 @@
  * This follows an immutable builder pattern, so each method returns a new instance of the ResultMatcher class.
  *
  * @template {(...args: any) => any} UnsafeFunc
- * @template {(result: ReturnType<UnsafeFunc>) => any} SuccessHandler
+ * @template {(result: ReturnType<UnsafeFunc>) => any} [SuccessHandler=((result: ReturnType<UnsafeFunc>) => ReturnType<UnsafeFunc>)]
  * @template {Strategy<any, any>[]} [Strategies=[]]
  * @template {((e: unknown) => any) | null} [FallbackHandler=null]
  */
@@ -25,8 +25,8 @@ export class ResultMatcher {
   /** @type {Strategies} */
   #strategies;
 
-  /** @type {SuccessHandler | null} */
-  #successHandler = null;
+  /** @type {SuccessHandler} */
+  #successHandler;
 
   /** @type {FallbackHandler} */
   #fallbackHandler;
@@ -34,13 +34,13 @@ export class ResultMatcher {
   /**
    * @param {UnsafeFunc} func
    * @param {Strategies} strategies
-   * @param {SuccessHandler | null} successHandler
+   * @param {SuccessHandler} successHandler
    * @param {FallbackHandler} fallbackHandler
    */
   constructor(
     func,
     strategies = /** @type {any} */ ([]),
-    successHandler = null,
+    successHandler = /** @type {any} */ (identity),
     fallbackHandler = /** @type {any} */ (null)
   ) {
     this.#unsafeFunction = func;
@@ -59,7 +59,7 @@ export class ResultMatcher {
    * @param {(instance: Prototype) => StrategyReturnType} handler - Callback to handle the error.
    * @returns {ResultMatcher<UnsafeFunc, SuccessHandler, [...Strategies, Strategy<Prototype, StrategyReturnType>], FallbackHandler>}
    */
-  rescue(prototype, handler) {
+  catch(prototype, handler) {
     const registeredStrategy = { prototype, handler };
     return new ResultMatcher(
       this.#unsafeFunction,
@@ -75,18 +75,18 @@ export class ResultMatcher {
    * @param {Handler} handler 
    * @returns {ResultMatcher<UnsafeFunc, SuccessHandler, Strategies, Handler>}
    */
-  rescueAll(handler) {
+  catchAll(handler) {
     return new ResultMatcher(this.#unsafeFunction, this.#strategies, this.#successHandler, handler);
   }
 
   /**
    * Handle the happy path
    *
-   * @template {SuccessHandler} Handler
+   * @template {(result: ReturnType<UnsafeFunc>) => any} Handler
    * @param {Handler} handler
    * @returns {ResultMatcher<UnsafeFunc, Handler, Strategies, FallbackHandler>}
    */
-  success(handler) {
+  ok(handler) {
     return new ResultMatcher(this.#unsafeFunction, this.#strategies, handler, this.#fallbackHandler);
   }
 
@@ -97,7 +97,7 @@ export class ResultMatcher {
    * @param  {Parameters<UnsafeFunc>} params
    * @returns {FallbackHandler extends null ? (ReturnType<SuccessHandler> | ReturnType<Strategies[number]["handler"]>) : (ReturnType<SuccessHandler> | ReturnType<Strategies[number]["handler"]>) | ReturnType<FallbackHandler> }
    */
-  call(...params) {
+  run(...params) {
     let successResult;
     try {
       // @ts-ignore
@@ -116,10 +116,15 @@ export class ResultMatcher {
       throw e;
     }
 
-    if (this.#successHandler) {
-      return this.#successHandler(successResult);
-    }
-
-    return successResult;
+    return this.#successHandler(successResult);
   }
 }
+
+
+/** 
+ * The identity function
+ * @template T
+ * @param {T} x
+ * @returns {T}
+ */
+const identity = x => x;
