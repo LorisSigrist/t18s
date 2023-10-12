@@ -6,7 +6,7 @@ describe("FileHandler", () => {
   describe("handle", () => {
     it("throws LoadingException if no handler is found", async () => {
       const handler = new FileHandler([]);
-      await expect(handler.handle("foo.bar")).rejects.toThrow(LoadingException);
+      await expect(handler.read("foo.bar")).rejects.toThrow(LoadingException);
     });
 
     it("throws LoadingException if the file cannot be read", async () => {
@@ -17,7 +17,7 @@ describe("FileHandler", () => {
           setPath: () => "",
         },
       ]);
-      await expect(handler.handle("nonexistent.json")).rejects.toThrow(
+      await expect(handler.read("nonexistent.json")).rejects.toThrow(
         LoadingException,
       );
     });
