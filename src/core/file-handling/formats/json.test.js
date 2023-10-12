@@ -69,7 +69,7 @@ describe("JsonHandler", () => {
     const newJSON = JsonHandler.setPath(
       oldJSON,
       "home.subtitle.description",
-      "Subtitle"
+      "Subtitle",
     );
     const newObject = JSON.parse(newJSON);
 

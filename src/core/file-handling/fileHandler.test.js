@@ -18,7 +18,7 @@ describe("FileHandler", () => {
         },
       ]);
       await expect(handler.handle("nonexistent.json")).rejects.toThrow(
-        LoadingException
+        LoadingException,
       );
     });
   });
@@ -54,7 +54,7 @@ describe("FileHandler", () => {
         },
       ]);
       expect(handler.getSupportedFileExtensions()).toEqual(
-        new Set(["json", "yaml", "yml"])
+        new Set(["json", "yaml", "yml"]),
       );
     });
   });

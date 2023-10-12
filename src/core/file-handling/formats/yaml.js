@@ -7,15 +7,14 @@ import { ResultMatcher } from "../../utils/resultMatcher.js";
 export const YamlHandler = {
   fileExtensions: ["yaml", "yml"],
   load: (filePath, content) => {
-    
     /** @param {YAMLException} e */
     const raiseLoadingException = (e) => {
       throw new LoadingException(
         `Could not parse YAML file ${filePath}: ${e.message}`,
-        { cause: e }
+        { cause: e },
       );
-    }
-    
+    };
+
     return new ResultMatcher(loadYaml)
       .ok(flattenTree)
       .catch(YAMLException, raiseLoadingException)

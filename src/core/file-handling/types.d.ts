@@ -8,13 +8,10 @@ export interface FormatHandler {
    * @param locale - The locale this file is for.
    * @returns A dictionary.
    */
-  load: (
-    filePath: string,
-    fileContent: string,
-  ) =>Map<string, string>;
+  load: (filePath: string, fileContent: string) => Map<string, string>;
 
   /**
    * Modifies the file content so that the given key has the given value.
    */
-  setPath: (oldContent: string, key:string, value:string) => string;
+  setPath: (oldContent: string, key: string, value: string) => string;
 }

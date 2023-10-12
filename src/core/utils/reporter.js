@@ -57,8 +57,8 @@ export class Reporter {
   warnAboutDuplicateLocaleFiles(locale, filePaths) {
     this.#logger.error(
       `Multiple files for locale ${locale} found:\n    ${filePaths.join(
-        "\n    "
-      )}`
+        "\n    ",
+      )}`,
     );
   }
 }
