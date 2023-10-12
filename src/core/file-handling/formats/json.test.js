@@ -38,4 +38,44 @@ describe("JsonHandler", () => {
 
     expect(parseInvalid).toThrow(LoadingException);
   });
+
+  it("sets a key on the top level", () => {
+    const oldObject = { key1: "value1", key2: "value2" };
+    const oldJSON = JSON.stringify(oldObject);
+
+    const newJSON = JsonHandler.setPath(oldJSON, "key3", "value3");
+    const newObject = JSON.parse(newJSON);
+
+    expect(newObject).toEqual({ ...oldObject, key3: "value3" });
+  });
+
+  it("sets a key if the original file is empty", () => {
+    const oldJSON = "";
+
+    const newJSON = JsonHandler.setPath(oldJSON, "newKey", "newValue");
+    const newObject = JSON.parse(newJSON);
+
+    expect(newObject).toEqual({ newKey: "newValue" });
+  });
+
+  it("sets a key on a deeply nested level", () => {
+    const oldObject = {
+      common: { save: "Save", cancel: "Cancel" },
+      home: { title: "Home" },
+    };
+
+    const oldJSON = JSON.stringify(oldObject);
+
+    const newJSON = JsonHandler.setPath(
+      oldJSON,
+      "home.subtitle.description",
+      "Subtitle"
+    );
+    const newObject = JSON.parse(newJSON);
+
+    expect(newObject).toEqual({
+      common: { save: "Save", cancel: "Cancel" },
+      home: { title: "Home", subtitle: { description: "Subtitle" } },
+    });
+  });
 });
