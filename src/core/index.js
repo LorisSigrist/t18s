@@ -1,5 +1,5 @@
 import { basename, dirname, resolve } from "node:path";
-import { readdir, writeFile } from "node:fs/promises";
+import { readdir, writeFile, readFile } from "node:fs/promises";
 import { YamlHandler } from "./file-handling/formats/yaml.js";
 import { JsonHandler } from "./file-handling/formats/json.js";
 import { Logger } from "./utils/logger.js";
@@ -20,6 +20,7 @@ import { LocaleRegistry, LocaleNotFoundException } from "./localeRegistry.js";
 import { normalizePath } from "vite";
 import { fileURLToPath } from "node:url";
 import { cleanUrl } from "./utils/id.js";
+import { existsSync } from "node:fs";
 
 /**
  * TypeSafe translations for Svelte & SvelteKit.
@@ -227,36 +228,43 @@ export function t18sCore(pluginConfig) {
     },
 
     resolveId(id) {
-      if (id.startsWith(VIRTUAL_MODULE_PREFIX)) {
-        return id.replace(
-          VIRTUAL_MODULE_PREFIX,
-          RESOLVED_VIRTUAL_MODULE_PREFIX,
-        );
+      id = cleanUrl(id);
+
+      const resolvers = [
+        resolveDictionaryModuleId,
+        resolveMainModuleId,
+        resolveRuntimeId
+      ]
+
+      for (const resolver of resolvers) {
+        const resolved = resolver(id);
+        if (resolved) return resolved;
       }
+        
+      return null;
     },
 
-    load(id) {
+    async load(id) {
       id = cleanUrl(id);
-      if (!id.startsWith(RESOLVED_VIRTUAL_MODULE_PREFIX)) return;
 
-      //Runtime entry
-      if (id === RESOLVED_VIRTUAL_MODULE_PREFIX + "/runtime") {
-        const runtimeEntryPath = getRuntimeEntryPath();
-        return `export * from '${runtimeEntryPath}';`;
+      const loaders = [
+        loadMainModule,
+        loadDictionaryModule,
+        loadRuntimeModule
+      ]
+
+      //Attempt to load the module from all loaders
+      const loadingPromises = loaders.map((loader) => loader(id, registry));
+      const results = await Promise.allSettled(loadingPromises);
+
+      //Pick the fulfilled result. There should only be one, otherwise we have a bug.
+      for (const result of results) {
+        if(result.status !== "fulfilled") continue;
+        if (result.value) return result.value;
       }
 
-      if (id === RESOLVED_VIRTUAL_MODULE_PREFIX) {
-        const locales = registry.getLocales();
-        return generateMainModuleCode(locales, config.verbose);
-      }
-
-      const locale = id.split("/")[2];
-      if (!locale) return;
-
-      const dictionary = registry.getDictionary(locale);
-      if (!dictionary) return;
-
-      return generateDictionaryModule(dictionary);
+      //If none of the loaders could load the module, return null.
+      return null;
     },
 
     configureServer(server) {
@@ -296,6 +304,99 @@ function getRuntimeEntryPath() {
   const thisModulePath = normalizePath(dirname(fileURLToPath(import.meta.url)));
   return thisModulePath.replace(
     /\/t18s\/src\/core$/,
-    "/t18s/src/core/runtime/index.js",
+    "/t18s/src/core/runtime/",
   );
+}
+
+
+/**
+ * Returns the code for the main module if the resolved_id is for the main module.
+ * @param {string} resolved_id 
+ * @param {LocaleRegistry} registry
+ * @returns {Promise<string | null>}
+ */
+async function loadMainModule(resolved_id, registry) {
+  if (resolved_id === RESOLVED_VIRTUAL_MODULE_PREFIX) {
+    const locales = registry.getLocales();
+    return generateMainModuleCode(locales, false);
+  }
+  return null;
+}
+
+
+/**
+ * Returns the code for the dictionary module if the resolved_id is for the main module.
+ * @param {string} resolved_id 
+ * @param {LocaleRegistry} registry
+ * @returns {Promise<string | null>}
+ */
+async function loadDictionaryModule(resolved_id, registry) {
+  if (resolved_id.startsWith(RESOLVED_VIRTUAL_MODULE_PREFIX)) {
+    const [_, ns, locale] = resolved_id.split("/");
+    if(ns !== "messages") return null;
+    if (!locale) return null;
+    const dictionary = registry.getDictionary(locale);
+    if (!dictionary) return null;
+    return generateDictionaryModule(dictionary);
+  }
+  return null;
+}
+
+/**
+ * If the id is an id for the t18s-runtime, this function will load the runtime
+ * @param {string} resolved_id 
+ * @param {LocaleRegistry} registry
+ * @returns {Promise<string | null>}
+ */
+async function loadRuntimeModule(resolved_id, registry) {
+  if (!resolved_id.startsWith(getRuntimeEntryPath())) return null;
+
+  //Manually read the file content to bypass vite's fs.allow check
+  if (existsSync(resolved_id)) {
+    try {
+      const contents = await readFile(resolved_id, "utf-8");
+      return contents;
+    } catch (e) {
+      console.error(`[t18s-runtime] failed to read file: ${resolved_id}`);
+    }
+  }
+  return null;
+}
+
+/**
+ * If the unresolved_id is for the t18s-runtime, this function will resolve it.
+ * @param {string} unresolved_id 
+ * @returns {string | null}
+ */
+function resolveRuntimeId(unresolved_id) {
+  if (unresolved_id.startsWith("$t18s-runtime:")) {
+    return unresolved_id.replace("$t18s-runtime:", getRuntimeEntryPath()); 
+  }
+  return null;
+}
+
+/**
+ * If the unresolved_id is for a t18s dictionary, this function will resolve it.
+ * Dictionary modules have the format "$t18s/messages/<locale>"
+ * 
+ * @param {string} unresolved_id 
+ * @returns {string | null}
+ */
+function resolveDictionaryModuleId(unresolved_id) {
+  if (!unresolved_id.startsWith(VIRTUAL_MODULE_PREFIX)) return null;
+  const [_, ns, locale] = unresolved_id.split("/");
+  if(ns !== "messages") return null;
+  if (!locale) return null;
+  const resolved_id = RESOLVED_VIRTUAL_MODULE_PREFIX + "/messages/" + locale;
+  return resolved_id;
+}
+
+/**
+ * If the unresolved_id is for a t18s dictionary, this function will resolve it.
+ * @param {string} unresolved_id 
+ * @returns {string | null}
+ */
+function resolveMainModuleId(unresolved_id) {
+  if (unresolved_id === VIRTUAL_MODULE_PREFIX) return RESOLVED_VIRTUAL_MODULE_PREFIX;
+  return null;
 }
