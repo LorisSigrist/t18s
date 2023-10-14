@@ -26,11 +26,11 @@ export const stringTypeUnion = (strings) => {
 }
 
 /**
- * Indents some text by one level.
+ * Indents some text by n spaces.
  * @param {string} text
- */
-export function indent(text) {
-  const INDENT_SPACES = 4;
+ * @param {number | undefined} spaces
+  */
+export function indent(text, spaces = 4) {
   const lines = text.split("\n");
-  return lines.map((l) => " ".repeat(INDENT_SPACES) + l).join("\n");
+  return lines.map((l) => " ".repeat(spaces) + l).join("\n");
 }

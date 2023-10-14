@@ -202,10 +202,6 @@ export function t18sCore(pluginConfig) {
           locale,
         },
       });
-    } else {
-      logger.error(
-        `Could not trigger HMR event '${event}' for locale '${locale}' because the viteDevServer is not available. This should never happen.`,
-      );
     }
   }
 
