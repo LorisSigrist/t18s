@@ -19,18 +19,18 @@ export function generateDTS(localeDictionaries) {
     module.addImport("import type { Writable, Readable } from 'svelte/store';");
 
     module.addStatement(
-      `export type Locale = ${stringTypeUnion(locales)};`,
-      (s) => s.setDescription("The known locales")
+      `type Locales = [${locales.map(addQuotes).join(",")}];`,
+      (s) => s.setDescription("The available locales")
     );
 
-    module.addStatement(
-      `export const locales : Readable<readonly [${locales
-        .map(addQuotes)
-        .join(",")}]>;`,
-      (s) =>
-        s.setDescription(
-          "A store containing the available locales.\n\nThis store will only ever change during development, it is constant in production."
-        )
+    module.addStatement(`export type Locale = Locales[number];`, (s) =>
+      s.setDescription("The known locales")
+    );
+
+    module.addStatement(`export const locales : Readable<Locales>;`, (s) =>
+      s.setDescription(
+        "A store containing the available locales.\n\nThis store will only ever change during development, it is constant in production."
+      )
     );
 
     module.addStatement(`export const locale: Writable<Locale>;`, (s) =>
@@ -105,14 +105,14 @@ export function generateDTS(localeDictionaries) {
         )
     );
 
-
-    // T Component 
-    module.addImport(
-      "import type { SvelteComponentTyped } from 'svelte';"
+    // T Component
+    module.addImport("import type { SvelteComponentTyped } from 'svelte';");
+    module.addStatement(
+      "export class T<Key extends keyof Messages> extends SvelteComponentTyped<Messages[Key] extends undefined ? { key: Key } : { key: Key, values: Messages[Key] }, {}, {}> { };",
+      (s) => {
+        s.setDescription("The t18s translation component.");
+      }
     );
-    module.addStatement("export class T<Key extends keyof Messages> extends SvelteComponentTyped<Messages[Key] extends undefined ? { key: Key } : { key: Key, values: Messages[Key] }, {}, {}> { };", s => {
-      s.setDescription("The t18s translation component.")
-    });
   });
 
   return dts.build();

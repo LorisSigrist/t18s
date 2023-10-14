@@ -19,6 +19,7 @@ import { buffer } from "./utils/bufferPromise.js";
 import { LocaleRegistry, LocaleNotFoundException } from "./localeRegistry.js";
 import { normalizePath } from "vite";
 import { fileURLToPath } from "node:url";
+import { cleanUrl } from "./utils/id.js";
 
 /**
  * TypeSafe translations for Svelte & SvelteKit.
@@ -297,14 +298,4 @@ function getRuntimeEntryPath() {
     /\/t18s\/src\/core$/,
     "/t18s/src/core/runtime/index.js",
   );
-}
-
-
-/**
- * Remove hash and query parameters from a url.
- * @param {string} url
- */
-function cleanUrl(url) {
-  const postfixRE = /[?#].*$/s;
-  return url.replace(postfixRE, "");
 }
