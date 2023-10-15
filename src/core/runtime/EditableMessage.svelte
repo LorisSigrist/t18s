@@ -10,7 +10,6 @@
 {:else}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <span
-    data-t18s-key={key}
     style="display: contents;"
     on:click={() => (editing = true)}
   >
