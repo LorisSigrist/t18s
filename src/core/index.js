@@ -314,8 +314,7 @@ function getRuntimeEntryPath() {
  */
 async function loadMainModule(resolved_id, Catalogue) {
   if (resolved_id === RESOLVED_VIRTUAL_MODULE_PREFIX) {
-    const locales = Catalogue.getLocales();
-    return generateMainModuleCode(locales, false);
+    return generateMainModuleCode(Catalogue, false);
   }
   return null;
 }

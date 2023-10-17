@@ -1,11 +1,13 @@
+import { MessageCatalogue } from "../MessageCatalogue.js";
+
 /**
  * Generates the code for the "$t18s" module
- * @param {Iterable<string>} localesIterable
+ * @param {MessageCatalogue} Catalogue
  * @param {boolean} verbose
  * @returns {string}
  */
-export function generateMainModuleCode(localesIterable, verbose) {
-  const locales = Array.from(localesIterable);
+export function generateMainModuleCode(Catalogue, verbose) {
+  const locales = [...Catalogue.getLocales()];
 
   return `
   import { writable, get } from 'svelte/store';
