@@ -92,14 +92,15 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
 
   /**
    * @param {string} locale
+   * @param {string} domain
    * @returns {string}
    *
    * @throws {LocaleNotFoundException} If the locale is not registered.
    */
-  getFile(locale) {
-    if (!this.#files.has(locale, "messages"))
-      throw new LocaleNotFoundException(locale);
-    return this.#files.get(locale, "messages") ?? "";
+  getFile(locale, domain) {
+    const file = this.#files.get(locale, domain);
+    if (!file) throw new LocaleNotFoundException(locale);
+    return file;
   }
 
   getDictionaries() {

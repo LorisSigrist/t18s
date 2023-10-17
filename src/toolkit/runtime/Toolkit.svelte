@@ -9,6 +9,7 @@
       import.meta.hot.send("t18s:add-message", {
         locale: get(locale),
         key: "dynamically-added",
+        domain: "messages",
         value: "I'm a dynamically added message!",
       });
     }

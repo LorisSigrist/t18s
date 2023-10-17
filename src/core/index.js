@@ -127,11 +127,12 @@ export function t18sCore(pluginConfig) {
   /**
    * Sets (create or overwrite) the message for a given key and locale.   *
    * @param {string} locale
+   * @param {string} domain
    * @param {string} key
    * @param {string} message_src
    */
-  async function setMessage(locale, key, message_src) {
-    const filePath = Catalogue.getFile(locale);
+  async function setMessage(locale, domain, key, message_src) {
+    const filePath = Catalogue.getFile(locale,domain);
     fileHandler.setPath(filePath, key, message_src);
   }
 
@@ -290,7 +291,7 @@ export function t18sCore(pluginConfig) {
       });
 
       server.ws.on("t18s:add-message", (event) => {
-        setMessage(event.locale, event.key, event.value);
+        setMessage(event.locale, event.domain, event.key, event.value);
       });
 
       viteDevServer = server;
@@ -313,10 +314,8 @@ function getRuntimeEntryPath() {
  * @returns {Promise<string | null>}
  */
 async function loadMainModule(resolved_id, Catalogue) {
-  if (resolved_id === RESOLVED_VIRTUAL_MODULE_PREFIX) {
-    return generateMainModuleCode(Catalogue, false);
-  }
-  return null;
+  if (resolved_id !== RESOLVED_VIRTUAL_MODULE_PREFIX)  return null;
+  return generateMainModuleCode(Catalogue, false);
 }
 
 /**
