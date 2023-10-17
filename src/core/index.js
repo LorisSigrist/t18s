@@ -16,7 +16,7 @@ import { compileToDictionary } from "./compiler/index.js";
 import { Reporter } from "./utils/reporter.js";
 import { ResultMatcher } from "./utils/resultMatcher.js";
 import { buffer } from "./utils/bufferPromise.js";
-import { LocaleRegistry, LocaleNotFoundException } from "./localeRegistry.js";
+import { MessageCatalogue, LocaleNotFoundException } from "./MessageCatalogue.js";
 import { normalizePath } from "vite";
 import { fileURLToPath } from "node:url";
 import { cleanUrl } from "./utils/id.js";
@@ -40,18 +40,18 @@ export function t18sCore(pluginConfig) {
   /** @type {import("vite").ViteDevServer | null}*/
   let viteDevServer = null;
 
-  const registry = new LocaleRegistry();
+  const Catalogue = new MessageCatalogue();
 
-  registry.addEventListener("changed", async () => await regenerateDTS());
-  registry.addEventListener("locale_added", (e) => {
+  Catalogue.addEventListener("changed", async () => await regenerateDTS());
+  Catalogue.addEventListener("locale_added", (e) => {
     reporter.localeCreated(e.detail.locale);
     triggerHMREvent("t18s:createLocale", e.detail.locale);
   });
-  registry.addEventListener("locale_removed", (e) => {
+  Catalogue.addEventListener("locale_removed", (e) => {
     reporter.localeDeleted(e.detail.locale);
     triggerHMREvent("t18s:removeLocale", e.detail.locale);
   });
-  registry.addEventListener("locale_updated", (e) => {
+  Catalogue.addEventListener("locale_updated", (e) => {
     reporter.localeUpdated(e.detail.locale);
     triggerHMREvent("t18s:invalidateLocale", e.detail.locale);
   });
@@ -66,7 +66,7 @@ export function t18sCore(pluginConfig) {
   async function registerTranslationFile(filePath) {
     const locale = getLocale(filePath);
 
-    if (registry.hasLocale(locale)) {
+    if (Catalogue.hasLocale(locale)) {
       logger.error(
         `Locale ${locale} already exists. Skipping file ${filePath}`,
       );
@@ -85,7 +85,7 @@ export function t18sCore(pluginConfig) {
 
     const { dictionary, invalidKeys } = compileToDictionary(keyVal, locale);
     if (invalidKeys) reporter.warnAboutInvalidKeys(filePath, invalidKeys);
-    registry.registerLocale(locale, filePath, dictionary);
+    Catalogue.registerLocale(locale, filePath, dictionary);
   }
 
   /**
@@ -110,7 +110,7 @@ export function t18sCore(pluginConfig) {
     const { dictionary, invalidKeys } = compileToDictionary(keyVal, locale);
 
     if (invalidKeys) reporter.warnAboutInvalidKeys(filePath, invalidKeys);
-    registry.setDictionary(locale, dictionary);
+    Catalogue.setDictionary(locale, dictionary);
   }
 
   /**
@@ -118,7 +118,7 @@ export function t18sCore(pluginConfig) {
    * @returns void
    */
   function unregisterTranslationFile(filePath) {
-    registry.unregisterLocale(getLocale(filePath));
+    Catalogue.unregisterLocale(getLocale(filePath));
   }
 
   /**
@@ -128,7 +128,7 @@ export function t18sCore(pluginConfig) {
    * @param {string} message_src
    */
   async function setMessage(locale, key, message_src) {
-    const filePath = registry.getFile(locale);
+    const filePath = Catalogue.getFile(locale);
     fileHandler.setPath(filePath, key, message_src);
   }
 
@@ -162,7 +162,7 @@ export function t18sCore(pluginConfig) {
       const { dictionary, invalidKeys } = compileToDictionary(keyVal, locale);
       if (invalidKeys) reporter.warnAboutInvalidKeys(path, invalidKeys);
 
-      registry.registerLocale(locale, path, dictionary);
+      Catalogue.registerLocale(locale, path, dictionary);
     }
 
     //Load all locale-files
@@ -170,7 +170,7 @@ export function t18sCore(pluginConfig) {
   }
 
   async function regenerateDTS() {
-    const dts = generateDTS(registry.getDictionaries());
+    const dts = generateDTS(Catalogue.getDictionaries());
     await writeFile(config.dtsPath, dts, { encoding: "utf-8", flag: "w" });
   }
 
@@ -254,7 +254,7 @@ export function t18sCore(pluginConfig) {
       ]
 
       //Attempt to load the module from all loaders
-      const loadingPromises = loaders.map((loader) => loader(id, registry));
+      const loadingPromises = loaders.map((loader) => loader(id, Catalogue));
       const results = await Promise.allSettled(loadingPromises);
 
       //Pick the fulfilled result. There should only be one, otherwise we have a bug.
@@ -312,7 +312,7 @@ function getRuntimeEntryPath() {
 /**
  * Returns the code for the main module if the resolved_id is for the main module.
  * @param {string} resolved_id 
- * @param {LocaleRegistry} registry
+ * @param {MessageCatalogue} registry
  * @returns {Promise<string | null>}
  */
 async function loadMainModule(resolved_id, registry) {
@@ -327,7 +327,7 @@ async function loadMainModule(resolved_id, registry) {
 /**
  * Returns the code for the dictionary module if the resolved_id is for the main module.
  * @param {string} resolved_id 
- * @param {LocaleRegistry} registry
+ * @param {MessageCatalogue} registry
  * @returns {Promise<string | null>}
  */
 async function loadDictionaryModule(resolved_id, registry) {
@@ -345,7 +345,7 @@ async function loadDictionaryModule(resolved_id, registry) {
 /**
  * If the id is an id for the t18s-runtime, this function will load the runtime
  * @param {string} resolved_id 
- * @param {LocaleRegistry} registry
+ * @param {MessageCatalogue} registry
  * @returns {Promise<string | null>}
  */
 async function loadRuntimeModule(resolved_id, registry) {

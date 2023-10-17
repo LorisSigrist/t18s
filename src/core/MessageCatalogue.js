@@ -1,4 +1,5 @@
 import { TypedEventTarget } from "typescript-event-target";
+import { DoubleKeyedMap } from "./utils/DoubleKeyedMap.js";
 
 /** @typedef {import("./types.js").Dictionary} Dictionary */
 
@@ -19,9 +20,9 @@ import { TypedEventTarget } from "typescript-event-target";
  */
 
 /** @type {Class<TypedEventTarget<LocaleRegistryEventMap>>} */
-const LocaleRegistryEventTarget = /** @type {any} */ (TypedEventTarget);
+const MessageCatalogueEventTarget = /** @type {any} */ (TypedEventTarget);
 
-export class LocaleRegistry extends LocaleRegistryEventTarget {
+export class MessageCatalogue extends MessageCatalogueEventTarget {
   /**
    * Map locales to their dictionaries.
    * @type {Map<string, Dictionary>}
@@ -29,10 +30,12 @@ export class LocaleRegistry extends LocaleRegistryEventTarget {
   #dictionaries = new Map();
 
   /**
-   * Maps locales to the files where they are defined.
-   * @type {Map<string, string>}
+   * Maps locales & domains to the files where they are defined.
+   * - Key1: locale
+   * - Key2: domain
+   * @type {DoubleKeyedMap<string>}
    */
-  #files = new Map();
+  #files = new DoubleKeyedMap();
 
   /**
    * Register a new locale.
@@ -41,7 +44,7 @@ export class LocaleRegistry extends LocaleRegistryEventTarget {
    * @param {Dictionary} dictionary
    */
   registerLocale(locale, filePath, dictionary) {
-    this.#files.set(locale, filePath);
+    this.#files.set(locale, "messages", filePath);
     this.#dictionaries.set(locale, dictionary);
 
     this.#dispatch("locale_added", { locale, dictionary });
@@ -54,7 +57,7 @@ export class LocaleRegistry extends LocaleRegistryEventTarget {
    */
   unregisterLocale(locale) {
     this.#dictionaries.delete(locale);
-    this.#files.delete(locale);
+    this.#files.delete(locale, "messages");
 
     this.#dispatch("locale_removed", { locale });
     this.#dispatch("changed", {});
@@ -67,7 +70,7 @@ export class LocaleRegistry extends LocaleRegistryEventTarget {
    * @throws {LocaleNotFoundException} If the locale is not registered.
    */
   setDictionary(locale, dictionary) {
-    if (!this.#files.has(locale)) throw new LocaleNotFoundException(locale);
+    if (!this.#files.has(locale, "messages")) throw new LocaleNotFoundException(locale);
     this.#dictionaries.set(locale, dictionary);
     this.#dispatch("changed", {});
     this.#dispatch("locale_updated", { locale, dictionary });
@@ -92,8 +95,8 @@ export class LocaleRegistry extends LocaleRegistryEventTarget {
    * @throws {LocaleNotFoundException} If the locale is not registered.
    */
   getFile(locale) {
-    if (!this.#files.has(locale)) throw new LocaleNotFoundException(locale);
-    return this.#files.get(locale) ?? "";
+    if (!this.#files.has(locale,"messages")) throw new LocaleNotFoundException(locale);
+    return this.#files.get(locale, "messages") ?? "";
   }
 
   getDictionaries() {
