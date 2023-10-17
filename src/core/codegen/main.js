@@ -128,9 +128,8 @@ export function generateMainModuleCode(Catalogue, verbose) {
     }
   });
   
-  if(import.meta.hot) { 
-  
-    import.meta.hot.on("t18s:createLocale", async (data) => {
+  if(import.meta.hot) {
+    import.meta.hot.on("t18s:addDictionary", async (data) => {
       locales.update((locales) => [...locales, data.locale]);
   
       //Force-reload the module - Add a random query parameter to bust the cache
@@ -142,7 +141,7 @@ export function generateMainModuleCode(Catalogue, verbose) {
       t.set(getMessage); //update the store
     });
   
-    import.meta.hot.on("t18s:invalidateLocale", async (data) => {
+    import.meta.hot.on("t18s:reloadDictionary", async (data) => {
       //Force-reload the module - Add a random query parameter to bust the cache
       const newMessages = (await import(/* @vite-ignore */ "/@id/__x00__t18s-dictionary:" + data.locale + ":messages" + "?" + Math.random())).default;
      
@@ -154,7 +153,7 @@ export function generateMainModuleCode(Catalogue, verbose) {
       t.set(getMessage); //update the store
     });
     
-    import.meta.hot.on("t18s:removeLocale", async (data) => {
+    import.meta.hot.on("t18s:removeDictionary", async (data) => {
       ${
         verbose
           ? 'console.info("[t18s] Removing locale " + data.locale);\n'

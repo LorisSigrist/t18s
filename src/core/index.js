@@ -55,17 +55,20 @@ export function t18sCore(pluginConfig) {
   const Catalogue = new MessageCatalogue();
 
   Catalogue.addEventListener("changed", async () => await regenerateDTS());
-  Catalogue.addEventListener("locale_added", (e) => {
+  Catalogue.addEventListener("dictionary_added", (e) => {
     reporter.localeCreated(e.detail.locale);
-    dispatch("t18s:createLocale", { locale: e.detail.locale });
+    dispatch("t18s:addDictionary", {
+      locale: e.detail.locale,
+      domain: e.detail.domain,
+    });
   });
-  Catalogue.addEventListener("locale_removed", (e) => {
+  Catalogue.addEventListener("dictionary_removed", (e) => {
     reporter.localeDeleted(e.detail.locale);
-    dispatch("t18s:removeLocale", { locale: e.detail.locale });
+    dispatch("t18s:removeDictionary", { locale: e.detail.locale, domain: e.detail.domain });
   });
-  Catalogue.addEventListener("locale_updated", (e) => {
+  Catalogue.addEventListener("dictionary_changed", (e) => {
     reporter.localeUpdated(e.detail.locale);
-    dispatch("t18s:invalidateLocale", { locale: e.detail.locale });
+    dispatch("t18s:reloadDictionary", { locale: e.detail.locale, domain: e.detail.domain });
   });
 
   /** Handles interactions with translation files */

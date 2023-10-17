@@ -7,9 +7,9 @@ import { DoubleKeyedMap } from "./utils/DoubleKeyedMap.js";
  * The valid events that may be emitted by a locale registry.
  *
  * @typedef {{
- *  "locale_added": CustomEvent<{ locale: string, dictionary: Dictionary }>,
- *  "locale_removed": CustomEvent<{ locale: string }>,
- *  "locale_updated": CustomEvent<{ locale: string, dictionary: Dictionary }>,
+ *  "dictionary_added": CustomEvent<{ locale: string, domain: string, dictionary: Dictionary }>,
+ *  "dictionary_removed": CustomEvent<{ locale: string, domain:string }>,
+ *  "dictionary_changed": CustomEvent<{ locale: string, domain: string, dictionary: Dictionary }>,
  *  "changed": CustomEvent<{}>;
  * }} LocaleRegistryEventMap
  */
@@ -48,7 +48,7 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
     this.#files.set(locale, domain, filePath);
     this.#dictionaries.set(locale, domain, dictionary);
 
-    this.#dispatch("locale_added", { locale, dictionary });
+    this.#dispatch("dictionary_added", { locale, domain, dictionary });
     this.#dispatch("changed", {});
   }
 
@@ -61,7 +61,7 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
     this.#dictionaries.delete(locale, domain);
     this.#files.delete(locale, domain);
 
-    this.#dispatch("locale_removed", { locale });
+    this.#dispatch("dictionary_removed", { locale, domain });
     this.#dispatch("changed", {});
   }
 
@@ -77,7 +77,7 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
       throw new LocaleNotFoundException(locale);
     this.#dictionaries.set(locale, domain, dictionary);
     this.#dispatch("changed", {});
-    this.#dispatch("locale_updated", { locale, dictionary });
+    this.#dispatch("dictionary_changed", { locale, domain, dictionary });
   }
 
   /**
