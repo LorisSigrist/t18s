@@ -70,12 +70,12 @@ export class DoubleKeyedMap {
         return keys;
     }
 
-    [Symbol.iterator]() {
-        /** @type {[string, string, T][]} */
-        const entries = [];
+    entries() {
+        /** @type {Set<[string, string, T]>} */
+        const entries = new Set();
         for (const [key1, inner] of this.#map) {
             for (const [key2, value] of inner.entries()) {
-                entries.push([key1, key2, value]);
+                entries.add([key1, key2, value]);
             }
         }
         return entries[Symbol.iterator]();

@@ -15,7 +15,8 @@ export function generateDTS(Catalogue) {
    */
   const localeDictionaries = new Map();
   
-  for (const [locale, domain, dict] of Catalogue.getDictionaries()) {
+  const dictionaries = Catalogue.getDictionaries();
+  for (const [locale, domain, dict] of dictionaries.entries()) {
     localeDictionaries.set(locale, dict);
   }
 

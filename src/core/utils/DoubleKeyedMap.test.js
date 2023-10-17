@@ -48,7 +48,7 @@ describe("DoubleKeyedMap", () => {
         map.set("foo2", "bar", "baz3");
         map.set("foo2", "bar2", "baz4");
         
-        const triplets = new Set(map);
+        const triplets = new Set(map.entries());
         expect (triplets.size).toBe(4);
     })
 });
