@@ -43,6 +43,7 @@ export function t18sCore(pluginConfig) {
   /** @type {import("vite").ViteDevServer | null}*/
   let viteDevServer = null;
 
+  /** Keeps track of the messages that exist & where to find them */
   const Catalogue = new MessageCatalogue();
 
   Catalogue.addEventListener("changed", async () => await regenerateDTS());
@@ -67,9 +68,9 @@ export function t18sCore(pluginConfig) {
    * @param {string} filePath Absolute path to the file that needs to be invalidated
    */
   async function registerTranslationFile(filePath) {
-    const locale = getLocale(filePath);
+    const { locale, domain } = categorizeFile(filePath);
 
-    if (Catalogue.hasLocale(locale)) {
+    if (Catalogue.hasDictionary(locale, "messages")) {
       logger.error(
         `Locale ${locale} already exists. Skipping file ${filePath}`
       );
@@ -98,7 +99,7 @@ export function t18sCore(pluginConfig) {
    * @param {string} filePath Absolute path to the file that needs to be invalidated
    */
   async function invalidateTranslationFile(filePath) {
-    const locale = getLocale(filePath);
+    const { locale, domain } = categorizeFile(filePath);
 
     //Try to read the file & buffer the result
     const bufferedFileRead = await buffer(fileHandler.read(filePath));
@@ -121,7 +122,7 @@ export function t18sCore(pluginConfig) {
    * @returns void
    */
   const unregisterTranslationFile = (filePath) =>
-    Catalogue.unregisterLocale(getLocale(filePath));
+    Catalogue.unregisterLocale(categorizeFile(filePath).locale);
 
   /**
    * Sets (create or overwrite) the message for a given key and locale.   *
@@ -152,7 +153,7 @@ export function t18sCore(pluginConfig) {
 
     /** @param {string} path */
     async function loadFile(path) {
-      const locale = getLocale(path);
+      const { locale, domain } = categorizeFile(path);
       const readResult = await buffer(fileHandler.read(path));
       const keyVal = new ResultMatcher(readResult)
         .catch(LoadingException, (e) => {
@@ -177,17 +178,16 @@ export function t18sCore(pluginConfig) {
   }
 
   /**
-   * Resolves the locale a given path belongs to.
+   * Categorizes to which locale & domain a given file belongs.
    * @param {string} path
-   * @returns {string}
-   *
-   * @throws {Error} If the path does not belong to any locale
+   * @returns {{locale: string, domain: string}}
    */
-  const getLocale = (path) => {
+  const categorizeFile = (path) => {
     const filename = basename(path);
-    const [locale] = filename.split(".");
-    if (!locale) throw new Error("Could not determine locale for ${filePath}");
-    return locale;
+    const [first, second] = filename.split(".");
+    if (!first) throw new Error(`Could not determine locale for ${path}`);
+    if (!second) return { locale: first, domain: "messages" };
+    return { locale: first, domain: second };
   };
 
   /**
@@ -381,7 +381,7 @@ function resolveDictionaryModuleId(unresolved_id) {
   if (!unresolved_id.startsWith("t18s-dictionary:")) return null;
   const [_, locale, domain] = unresolved_id.split(":");
   if (!locale || !domain) return null;
-  const resolved_id = `\0t18s-dictionary:${locale}:${domain}`;
+  const resolved_id = "\0" + unresolved_id;
   return resolved_id;
 }
 

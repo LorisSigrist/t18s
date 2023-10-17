@@ -120,11 +120,12 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
   }
 
   /**
-   * @param {string} locale
+   * @param {string} locale 
+   * @param {string} domain 
    * @returns {boolean}
    */
-  hasLocale(locale) {
-    return this.#dictionaries.has(locale, "messages");
+  hasDictionary(locale, domain) {
+    return this.#dictionaries.has(locale, domain);
   }
 
   /**

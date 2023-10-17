@@ -122,7 +122,7 @@ export function generateMainModuleCode(localesIterable, verbose) {
       locales.update((locales) => [...locales, data.locale]);
   
       //Force-reload the module - Add a random query parameter to bust the cache
-      const newMessages = (await import(/* @vite-ignore */ "/@id/__x00__t18s-dictionary:" + data.locale + "messages" + "?" + Math.random())).default;
+      const newMessages = (await import(/* @vite-ignore */ "/@id/__x00__t18s-dictionary:" + data.locale + ":messages" + "?" + Math.random())).default;
   
       ${verbose ? 'console.info("[t18s] Adding locale " + data.locale);' : ""}
   
@@ -132,7 +132,7 @@ export function generateMainModuleCode(localesIterable, verbose) {
   
     import.meta.hot.on("t18s:invalidateLocale", async (data) => {
       //Force-reload the module - Add a random query parameter to bust the cache
-      const newMessages = (await import(/* @vite-ignore */ "/@id/__x00__t18s-dictionary:" + data.locale + "messages" + + "?" + Math.random())).default;
+      const newMessages = (await import(/* @vite-ignore */ "/@id/__x00__t18s-dictionary:" + data.locale + ":messages" + "?" + Math.random())).default;
      
       ${
         verbose ? 'console.info("[t18s] Reloading locale " + data.locale);' : ""
