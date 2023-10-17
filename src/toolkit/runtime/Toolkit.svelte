@@ -1,25 +1,29 @@
 <script lang="ts">
   // @ts-expect-error missing
   import Icon from "virtual:t18s-toolkit:Icon.svelte";
-  import { locale } from "$t18s";
-  import { get } from "svelte/store";
+  import CustomCursor from "./CustomCursor.svelte";
 
-  function test() {
-    if (import.meta.hot) {
-      import.meta.hot.send("t18s:add-message", {
-        locale: get(locale),
-        key: "dynamically-added",
-        domain: "messages",
-        value: "I'm a dynamically added message!",
-      });
-    }
+  let active = false;
+
+  function deactivate(e) {
+    active = false;
+    e.preventDefault();
   }
+
 </script>
 
+<svelte:window 
+  on:keydown={active ? deactivate : undefined}
+/>
+
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div class="t18s-toolkit" on:click={test}>
+<div class="t18s-toolkit" on:click={() => (active = !active)}>
   <Icon />
 </div>
+
+{#if active} 
+  <CustomCursor />
+{/if}
 
 <style>
   .t18s-toolkit {
