@@ -6,7 +6,6 @@
  * }} HMREventMap
  */
 
-
 /**
  * @typedef {<E extends keyof HMREventMap>(event: E, data: HMREventMap[E]) => void} HMREventDispatcher
  */

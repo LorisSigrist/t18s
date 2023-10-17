@@ -1,7 +1,6 @@
 import { readFile, writeFile } from "fs/promises";
 import { basename } from "path";
 import { LoadingException } from "./exception.js";
-import { ResultMatcher } from "../utils/resultMatcher.js";
 
 export class FileHandler {
   /** @type {import("./types.js").FormatHandler[]} */

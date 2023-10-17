@@ -4,6 +4,7 @@ import { YamlHandler } from "./file-handling/formats/yaml.js";
 import { JsonHandler } from "./file-handling/formats/json.js";
 import { Logger } from "./utils/logger.js";
 import {
+  DEFAULT_DOMAIN,
   RESOLVED_VIRTUAL_MODULE_PREFIX,
   VIRTUAL_MODULE_PREFIX,
 } from "./constants.js";
@@ -44,7 +45,10 @@ export function t18sCore(pluginConfig) {
   /** @type {import("vite").ViteDevServer | null}*/
   let viteDevServer = null;
 
-  /** @type {import("./HMR.js").HMREventDispatcher} */
+  /**
+   * Dispatch an HMR event to the client.
+   * @type {import("./HMR.js").HMREventDispatcher}
+   */
   let dispatch = () => {};
 
   /** Keeps track of the messages that exist & where to find them */
@@ -128,8 +132,7 @@ export function t18sCore(pluginConfig) {
   const unregisterTranslationFile = (filePath) => {
     const { locale, domain } = categorizeFile(filePath);
     Catalogue.unregisterDictionary(locale, domain);
-  }
-   
+  };
 
   /**
    * Sets (create or overwrite) the message for a given key and locale.   *
@@ -194,7 +197,7 @@ export function t18sCore(pluginConfig) {
 
     const [first, second] = filename.split(".");
     if (!first) throw new Error(`Could not determine locale for ${path}`);
-    if (!second) return { locale: first, domain: "messages" };
+    if (!second) return { locale: first, domain: DEFAULT_DOMAIN };
     return { locale: second, domain: first };
   };
 
@@ -353,10 +356,8 @@ async function loadRuntimeModule(resolved_id, Catalogue) {
  * @returns {string | null}
  */
 function resolveRuntimeId(unresolved_id) {
-  if (unresolved_id.startsWith("$t18s-runtime:")) {
-    return unresolved_id.replace("$t18s-runtime:", getRuntimeEntryPath());
-  }
-  return null;
+  if (!unresolved_id.startsWith("$t18s-runtime:")) return null;
+  return unresolved_id.replace("$t18s-runtime:", getRuntimeEntryPath());
 }
 
 /**
@@ -368,8 +369,10 @@ function resolveRuntimeId(unresolved_id) {
  */
 function resolveDictionaryModuleId(unresolved_id) {
   if (!unresolved_id.startsWith("t18s-dictionary:")) return null;
+
   const [_, locale, domain] = unresolved_id.split(":");
   if (!locale || !domain) return null;
+
   const resolved_id = "\0" + unresolved_id;
   return resolved_id;
 }
@@ -380,7 +383,6 @@ function resolveDictionaryModuleId(unresolved_id) {
  * @returns {string | null}
  */
 function resolveMainModuleId(unresolved_id) {
-  if (unresolved_id === VIRTUAL_MODULE_PREFIX)
-    return RESOLVED_VIRTUAL_MODULE_PREFIX;
-  return null;
+  if (unresolved_id !== VIRTUAL_MODULE_PREFIX) return null;
+  return RESOLVED_VIRTUAL_MODULE_PREFIX;
 }

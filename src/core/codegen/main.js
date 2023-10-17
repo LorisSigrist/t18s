@@ -1,4 +1,5 @@
 import { MessageCatalogue } from "../MessageCatalogue.js";
+import { DEFAULT_DOMAIN } from "../constants.js";
 
 /**
  * Generates the code for the "$t18s" module
@@ -59,6 +60,10 @@ export function generateMainModuleCode(Catalogue, verbose) {
   export async function preloadLocale(newLocale) {
     const newMessages = await loaders[newLocale]();
     messages[newLocale] = newMessages;
+  }
+
+  export async function preload(newLocale, domain = null) {
+    domain = domain ?? "${DEFAULT_DOMAIN}";
   }
   
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));

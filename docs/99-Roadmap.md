@@ -12,7 +12,7 @@
 - [x] Fallback Locale
 - [ ] Independently loaded Message Domains (eg `common:greeting`)
 - [ ] Sub Locales (eg EN_US, EN_UK)
-- [ ] Locale resolution helpers
+- [ ] Internationalized Routing
 - [x] Locale route param matcher (`isLocale`)
 - [x] Documentation Site
 - [ ] StackBlitz Demo
@@ -26,4 +26,4 @@
   - [ ] INI
   - [ ] XML
 - [ ] Message Description Intellisense
-- [ ] Edit translations inline in the browser (like [Better i18n for Svelte](https://github.com/versiobit/better-i18n-for-svelte))
+- [ ] Edit translations inline in the browser (like [Better i18n for Svelte](https://github.com/versiobit/better-i18n-for-svelte)) Or at least open the translation file in the editor.
