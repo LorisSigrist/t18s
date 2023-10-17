@@ -330,7 +330,7 @@ async function loadDictionaryModule(resolved_id, Catalogue) {
   if (resolved_id.startsWith("\0t18s-dictionary:")) {
     const [_, locale, domain] = resolved_id.split(":");
     if (!locale || !domain) return null;
-    const dictionary = Catalogue.getDictionary(locale);
+    const dictionary = Catalogue.getDictionary(locale, domain);
     if (!dictionary) return null;
     return generateDictionaryModule(dictionary);
   }
