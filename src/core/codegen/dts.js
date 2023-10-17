@@ -1,12 +1,24 @@
 import { addQuotes, stringTypeUnion } from "./utils/stringUtils.js";
 import { DTSBuilder } from "./utils/dtsBuilder.js";
 import { VIRTUAL_MODULE_PREFIX } from "../constants.js";
+import { MessageCatalogue } from "../MessageCatalogue.js";
 
 /**
- * @param {import("../types.js").LocaleDictionaries} localeDictionaries
+ * @param {MessageCatalogue} Catalogue
  */
-export function generateDTS(localeDictionaries) {
-  const locales = [...localeDictionaries.keys()];
+export function generateDTS(Catalogue) {
+
+  const locales = Catalogue.getLocales();
+
+  /**
+   * @type {Map<string, import("../types.js").Dictionary>}
+   */
+  const localeDictionaries = new Map();
+  
+  for (const [locale, domain, dict] of Catalogue.getDictionaries()) {
+    localeDictionaries.set(locale, dict);
+  }
+
   const messagesTypeMap = generateTypeMapForDictionaries(localeDictionaries);
 
   const dts = new DTSBuilder();
@@ -19,7 +31,7 @@ export function generateDTS(localeDictionaries) {
     module.addImport("import type { Writable, Readable } from 'svelte/store';");
 
     module.addStatement(
-      `type Locales = [${locales.map(addQuotes).join(",")}];`,
+      `type Locales = [${[...locales].map(addQuotes).join(",")}];`,
       (s) => s.setDescription("The available locales")
     );
 

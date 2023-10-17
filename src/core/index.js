@@ -170,7 +170,7 @@ export function t18sCore(pluginConfig) {
   }
 
   async function regenerateDTS() {
-    const dts = generateDTS(Catalogue.getDictionaries());
+    const dts = generateDTS(Catalogue);
     await writeFile(config.dtsPath, dts, { encoding: "utf-8", flag: "w" });
   }
 

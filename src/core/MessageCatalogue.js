@@ -25,9 +25,9 @@ const MessageCatalogueEventTarget = /** @type {any} */ (TypedEventTarget);
 export class MessageCatalogue extends MessageCatalogueEventTarget {
   /**
    * Map locales to their dictionaries.
-   * @type {Map<string, Dictionary>}
+   * @type {DoubleKeyedMap<Dictionary>}
    */
-  #dictionaries = new Map();
+  #dictionaries = new DoubleKeyedMap();
 
   /**
    * Maps locales & domains to the files where they are defined.
@@ -45,7 +45,7 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
    */
   registerLocale(locale, filePath, dictionary) {
     this.#files.set(locale, "messages", filePath);
-    this.#dictionaries.set(locale, dictionary);
+    this.#dictionaries.set(locale, "messages", dictionary);
 
     this.#dispatch("locale_added", { locale, dictionary });
     this.#dispatch("changed", {});
@@ -56,7 +56,7 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
    * @param {string} locale
    */
   unregisterLocale(locale) {
-    this.#dictionaries.delete(locale);
+    this.#dictionaries.delete(locale, "messages");
     this.#files.delete(locale, "messages");
 
     this.#dispatch("locale_removed", { locale });
@@ -71,7 +71,7 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
    */
   setDictionary(locale, dictionary) {
     if (!this.#files.has(locale, "messages")) throw new LocaleNotFoundException(locale);
-    this.#dictionaries.set(locale, dictionary);
+    this.#dictionaries.set(locale, "messages", dictionary);
     this.#dispatch("changed", {});
     this.#dispatch("locale_updated", { locale, dictionary });
   }
@@ -83,9 +83,9 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
    * @throws {LocaleNotFoundException} If the locale is not registered.
    */
   getDictionary(locale) {
-    if (!this.#dictionaries.has(locale))
+    if (!this.#dictionaries.has(locale, "messages"))
       throw new LocaleNotFoundException(locale);
-    return this.#dictionaries.get(locale) ?? new Map();
+    return this.#dictionaries.get(locale, "messages") ?? new Map();
   }
 
   /**
@@ -108,7 +108,12 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
    * @returns {Set<string>}
    */
   getLocales() {
-    return new Set(this.#dictionaries.keys());
+    const keys = this.#dictionaries.keys();
+    const locales = new Set();
+    for (const [locale] of keys) {
+      locales.add(locale);
+    }
+    return locales;
   }
 
   /**
@@ -116,7 +121,7 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
    * @returns {boolean}
    */
   hasLocale(locale) {
-    return this.#dictionaries.has(locale);
+    return this.#dictionaries.has(locale, "messages");
   }
 
   /**

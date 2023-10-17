@@ -40,4 +40,15 @@ describe("DoubleKeyedMap", () => {
         map.delete("foo", "bar");
         expect(map.has("foo", "bar")).toBe(false);
     });
+
+    it("iterates over it's key-key-value triplets", () => {
+        const map = new DoubleKeyedMap();
+        map.set("foo", "bar", "baz");
+        map.set("foo", "bar2", "baz2");
+        map.set("foo2", "bar", "baz3");
+        map.set("foo2", "bar2", "baz4");
+        
+        const triplets = new Set(map);
+        expect (triplets.size).toBe(4);
+    })
 });
