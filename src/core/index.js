@@ -70,7 +70,7 @@ export function t18sCore(pluginConfig) {
   async function registerTranslationFile(filePath) {
     const { locale, domain } = categorizeFile(filePath);
 
-    if (Catalogue.hasDictionary(locale, "messages")) {
+    if (Catalogue.hasDictionary(locale, domain)) {
       logger.error(
         `Locale ${locale} already exists. Skipping file ${filePath}`,
       );

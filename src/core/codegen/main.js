@@ -88,13 +88,17 @@ export function generateMainModuleCode(Catalogue, verbose) {
     }
   
     if(messages[currentLocale] && messages[currentLocale][key]) {
-      return messages[currentLocale][key](values);
+      const message = messages[currentLocale][key];
+      if(typeof message === "string") return message;
+      else return message(values);
     } else if (fallbackLocale && messages[fallbackLocale] && messages[fallbackLocale][key]) {
       ${
         verbose
           ? 'console.debug("[t18s] Translation for key " + key + " not found in locale " + currentLocale +". Using fallback locale " + fallbackLocale);'
           : ""
       }
+      const fallbackMessage = messages[fallbackLocale][key];
+      if(typeof fallbackMessage === "string") return fallbackMessage;
       return messages[fallbackLocale][key](values);
     }  else {
     ${

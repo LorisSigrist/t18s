@@ -6,7 +6,7 @@ describe("compile", () => {
   it("compiles a message with no arguments", () => {
     const message = "Hello world";
     const compiled = precompile(parseMessage(message), "en");
-    const result = eval(`(${compiled})()`);
+    const result = eval(`${compiled}`);
 
     const correct = formatJS(message);
     expect(result).toMatch(correct);
@@ -53,9 +53,7 @@ describe("compile", () => {
   it("compiles a multiline message", () => {
     const message = "Hello\nworld";
     const compiled = precompile(parseMessage(message), "en");
-    const result = evaluateFnString(compiled);
-
     const correct = formatJS(message);
-    expect(result).toMatch(correct);
+    expect(compiled).toMatch(correct);
   });
 });
