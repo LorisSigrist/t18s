@@ -19,6 +19,12 @@ export type t18sUserConfig = {
    * @default true
    */
   verbose?: boolean;
+
+  /**
+   * The default domain which will be used when no domain is specified.
+   * @default "messages"
+   */
+  defaultDomain?: string;
 };
 
 export type t18sFullConfig = Required<t18sUserConfig>;

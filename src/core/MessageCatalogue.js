@@ -142,8 +142,8 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
 
     /** @type {Set<string>} */
     const domains = new Set();
-    for (const [locale, domain] of this.#files.keys()) {
-      if (locale === locale) domains.add(domain);
+    for (const [loc, domain] of this.#files.keys()) {
+      if (loc === locale) domains.add(domain);
     }
 
     return domains;

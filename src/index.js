@@ -6,6 +6,7 @@ const DEFAULT_CONFIG = {
   translationsDir: "src/translations",
   dts: "src/$t18s.d.ts",
   verbose: true,
+  defaultDomain: "messages",
 };
 
 /**

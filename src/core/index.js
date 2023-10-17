@@ -4,7 +4,6 @@ import { YamlHandler } from "./file-handling/formats/yaml.js";
 import { JsonHandler } from "./file-handling/formats/json.js";
 import { Logger } from "./utils/logger.js";
 import {
-  DEFAULT_DOMAIN,
   RESOLVED_VIRTUAL_MODULE_PREFIX,
   VIRTUAL_MODULE_PREFIX,
 } from "./constants.js";
@@ -56,7 +55,7 @@ export function t18sCore(pluginConfig) {
 
   Catalogue.addEventListener(
     "messages_changed",
-    async () => await regenerateDTS(),
+    async () => await regenerateDTS()
   );
   Catalogue.addEventListener("dictionary_added", (e) => {
     reporter.localeCreated(e.detail.locale);
@@ -92,7 +91,7 @@ export function t18sCore(pluginConfig) {
 
     if (Catalogue.hasDictionary(locale, domain)) {
       logger.error(
-        `Locale ${locale} already exists. Skipping file ${filePath}`,
+        `Locale ${locale} already exists. Skipping file ${filePath}`
       );
       return;
     }
@@ -198,7 +197,7 @@ export function t18sCore(pluginConfig) {
   }
 
   async function regenerateDTS() {
-    await writeFile(config.dtsPath, generateDTS(Catalogue));
+    await writeFile(config.dtsPath, generateDTS(config, Catalogue));
   }
 
   /**
@@ -211,7 +210,7 @@ export function t18sCore(pluginConfig) {
 
     const [first, second] = filename.split(".");
     if (!first) throw new Error(`Could not determine locale for ${path}`);
-    if (!second) return { locale: first, domain: DEFAULT_DOMAIN };
+    if (!second) return { locale: first, domain: config.defaultDomain };
     return { locale: second, domain: first };
   };
 
@@ -224,9 +223,10 @@ export function t18sCore(pluginConfig) {
         dtsPath: resolve(resolvedConfig.root, pluginConfig.dts),
         translationsDir: resolve(
           resolvedConfig.root,
-          pluginConfig.translationsDir,
+          pluginConfig.translationsDir
         ),
         verbose: pluginConfig.verbose,
+        defaultDomain: pluginConfig.defaultDomain,
       };
 
       logger = new Logger(resolvedConfig, config.verbose);
@@ -258,7 +258,7 @@ export function t18sCore(pluginConfig) {
       const loaders = [loadMainModule, loadDictionaryModule, loadRuntimeModule];
 
       //Attempt to load the module from all loaders
-      const loadingPromises = loaders.map((loader) => loader(id, Catalogue));
+      const loadingPromises = loaders.map((loader) => loader(id, config, Catalogue));
       const results = await Promise.allSettled(loadingPromises);
 
       //Pick the fulfilled result. There should only be one, otherwise we have a bug.
@@ -309,28 +309,30 @@ function getRuntimeEntryPath() {
   const thisModulePath = normalizePath(dirname(fileURLToPath(import.meta.url)));
   return thisModulePath.replace(
     /\/t18s\/src\/core$/,
-    "/t18s/src/core/runtime/",
+    "/t18s/src/core/runtime/"
   );
 }
 
 /**
  * Returns the code for the main module if the resolved_id is for the main module.
  * @param {string} resolved_id
+ * @param {import("./types.js").ResolvedPluginConfig} config
  * @param {MessageCatalogue} Catalogue
  * @returns {Promise<string | null>}
  */
-async function loadMainModule(resolved_id, Catalogue) {
+async function loadMainModule(resolved_id, config, Catalogue) {
   if (resolved_id !== RESOLVED_VIRTUAL_MODULE_PREFIX) return null;
-  return generateMainModuleCode(Catalogue, false);
+  return generateMainModuleCode(config, Catalogue);
 }
 
 /**
  * Returns the code for the dictionary module if the resolved_id is for the main module.
  * @param {string} resolved_id
+ * @param {import("./types.js").ResolvedPluginConfig} config
  * @param {MessageCatalogue} Catalogue
  * @returns {Promise<string | null>}
  */
-async function loadDictionaryModule(resolved_id, Catalogue) {
+async function loadDictionaryModule(resolved_id, config, Catalogue) {
   if (!resolved_id.startsWith("\0t18s-dictionary:")) return null;
 
   const [_, locale, domain] = resolved_id.split(":");
@@ -346,10 +348,12 @@ async function loadDictionaryModule(resolved_id, Catalogue) {
 /**
  * If the id is an id for the t18s-runtime, this function will load the runtime
  * @param {string} resolved_id
+ *  @param {import("./types.js").ResolvedPluginConfig} config
+
  * @param {MessageCatalogue} Catalogue
  * @returns {Promise<string | null>}
  */
-async function loadRuntimeModule(resolved_id, Catalogue) {
+async function loadRuntimeModule(resolved_id, config, Catalogue) {
   if (!resolved_id.startsWith(getRuntimeEntryPath())) return null;
 
   //Manually read the file content to bypass vite's fs.allow check

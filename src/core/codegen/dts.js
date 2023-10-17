@@ -1,14 +1,15 @@
 import { addQuotes, stringTypeUnion } from "./utils/stringUtils.js";
 import { DTSBuilder } from "./utils/dtsBuilder.js";
-import { DEFAULT_DOMAIN, VIRTUAL_MODULE_PREFIX } from "../constants.js";
+import { VIRTUAL_MODULE_PREFIX } from "../constants.js";
 import { MessageCatalogue } from "../MessageCatalogue.js";
 
 /**
+ * @param {import("../types.js").ResolvedPluginConfig} config
  * @param {MessageCatalogue} Catalogue
  */
-export function generateDTS(Catalogue) {
+export function generateDTS(config, Catalogue) {
   const locales = Catalogue.getLocales();
-  const messagesTypeMap = generateMessagesTypeMap(Catalogue);
+  const messagesTypeMap = generateMessagesTypeMap(config, Catalogue);
 
   const dts = new DTSBuilder();
   dts.setDisclaimer(
@@ -120,10 +121,11 @@ export function generateDTS(Catalogue) {
 }
 
 /**
+ * @param {import("../types.js").ResolvedPluginConfig} config
  * @param {MessageCatalogue} Catalogue
  * @returns {Map<string, string>}
  */
-function generateMessagesTypeMap(Catalogue) {
+function generateMessagesTypeMap(config, Catalogue) {
   /**
    * Maps a key to it's set of messages across all locales
    * @type {Map<string, Set<import("../types.js").Message>>}
@@ -133,7 +135,7 @@ function generateMessagesTypeMap(Catalogue) {
   for (const [_, domain, dictionary] of Catalogue.getDictionaries().entries()) {
     for (const [messageKey, message] of dictionary.entries()) {
       const key =
-        domain === DEFAULT_DOMAIN ? messageKey : `${domain}:${messageKey}`;
+        domain === config.defaultDomain ? messageKey : `${domain}:${messageKey}`;
       if (!key2messages.has(key)) key2messages.set(key, new Set());
       key2messages.get(key)?.add(message);
     }

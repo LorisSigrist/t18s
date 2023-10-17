@@ -1,16 +1,15 @@
 import { MessageCatalogue } from "../MessageCatalogue.js";
-import { DEFAULT_DOMAIN } from "../constants.js";
 
 /**
  * Generates the code for the "$t18s" module
+ * @param {import("../types.js").ResolvedPluginConfig} config
  * @param {MessageCatalogue} Catalogue
- * @param {boolean} verbose
  * @returns {string}
  */
-export function generateMainModuleCode(Catalogue, verbose) {
+export function generateMainModuleCode(config, Catalogue) {
   const locales = [...Catalogue.getLocales()];
 
-  return `
+  const code =  `
   import { writable, get } from 'svelte/store';
   export { default as T } from "$t18s-runtime:T.svelte";
 
@@ -40,8 +39,8 @@ export function generateMainModuleCode(Catalogue, verbose) {
 
   //List of domains that should be loaded eagerly when a new locale is loaded
   const eagerlyLoadedDomains = new Set();
-  eagerlyLoadedDomains.add("${DEFAULT_DOMAIN}");
-  
+  eagerlyLoadedDomains.add("${config.defaultDomain}");
+
   let fallbackLocale = undefined;
   let loadingDelay = 200;
 
@@ -71,7 +70,10 @@ export function generateMainModuleCode(Catalogue, verbose) {
   //Load the given locale quietly in the background
   //May throw
   export async function preloadLocale(newLocale) {
-    eagerlyLoadedDomains.forEach(async (domain) => {
+    const domains = [...eagerlyLoadedDomains];
+
+    for(const domain of domains) {
+      if(!loaders[newLocale] || !loaders[newLocale][domain]) continue;
       const newDictionary = await loaders[newLocale][domain]();
       if(!(newLocale in Catalogue)) Catalogue[newLocale] = {};
       Catalogue[newLocale][domain] = newDictionary;
@@ -112,7 +114,7 @@ export function generateMainModuleCode(Catalogue, verbose) {
   function parseKey(key) {
     const [first, second] = key.split(":");
     if(!first) throw new Error("[t18s] Invalid key: " + key);
-    if(!second) return {domain: "${DEFAULT_DOMAIN}", key: first};
+    if(!second) return {domain: "${config.defaultDomain}", key: first};
     else return {domain: first, key: second};
   }
   
@@ -196,4 +198,5 @@ export function generateMainModuleCode(Catalogue, verbose) {
     });
   }
   `;
+  return code;
 }
