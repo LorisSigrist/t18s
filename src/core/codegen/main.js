@@ -21,7 +21,7 @@ export function generateMainModuleCode(localesIterable, verbose) {
   const loaders = {
   ${locales.map(
     (locale) =>
-      `    "${locale}": async () => (await import("$t18s/messages/${locale}")).default`,
+      `    "${locale}": async () => (await import("t18s-dictionary:${locale}:messages")).default`,
   )}
   }
   
@@ -122,7 +122,7 @@ export function generateMainModuleCode(localesIterable, verbose) {
       locales.update((locales) => [...locales, data.locale]);
   
       //Force-reload the module - Add a random query parameter to bust the cache
-      const newMessages = (await import(/* @vite-ignore */ "/@id/__x00__$t18s/messages/" + data.locale + "?" + Math.random())).default;
+      const newMessages = (await import(/* @vite-ignore */ "/@id/__x00__t18s-dictionary:" + data.locale + "messages" + "?" + Math.random())).default;
   
       ${verbose ? 'console.info("[t18s] Adding locale " + data.locale);' : ""}
   
@@ -132,9 +132,8 @@ export function generateMainModuleCode(localesIterable, verbose) {
   
     import.meta.hot.on("t18s:invalidateLocale", async (data) => {
       //Force-reload the module - Add a random query parameter to bust the cache
-      const newMessages = (await import(/* @vite-ignore */ "/@id/__x00__$t18s/messages/" + data.locale + "?" + Math.random())).default;
+      const newMessages = (await import(/* @vite-ignore */ "/@id/__x00__t18s-dictionary:" + data.locale + "messages" + + "?" + Math.random())).default;
      
-  
       ${
         verbose ? 'console.info("[t18s] Reloading locale " + data.locale);' : ""
       }
@@ -144,8 +143,7 @@ export function generateMainModuleCode(localesIterable, verbose) {
     });
     
     import.meta.hot.on("t18s:removeLocale", async (data) => {
-      ${verbose ? 'console.info("[t18s] Removing locale " + data.locale);' : ""}
-  
+      ${verbose ? 'console.info("[t18s] Removing locale " + data.locale);\n' : ""}
       delete messages[data.locale];
   
       locales.update((locales) => locales.filter((l) => l !==  data.locale));

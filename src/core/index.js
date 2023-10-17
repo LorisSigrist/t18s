@@ -16,7 +16,10 @@ import { compileToDictionary } from "./compiler/index.js";
 import { Reporter } from "./utils/reporter.js";
 import { ResultMatcher } from "./utils/resultMatcher.js";
 import { buffer } from "./utils/bufferPromise.js";
-import { MessageCatalogue, LocaleNotFoundException } from "./MessageCatalogue.js";
+import {
+  MessageCatalogue,
+  LocaleNotFoundException,
+} from "./MessageCatalogue.js";
 import { normalizePath } from "vite";
 import { fileURLToPath } from "node:url";
 import { cleanUrl } from "./utils/id.js";
@@ -68,7 +71,7 @@ export function t18sCore(pluginConfig) {
 
     if (Catalogue.hasLocale(locale)) {
       logger.error(
-        `Locale ${locale} already exists. Skipping file ${filePath}`,
+        `Locale ${locale} already exists. Skipping file ${filePath}`
       );
       return;
     }
@@ -117,9 +120,8 @@ export function t18sCore(pluginConfig) {
    * @param {string} filePath Absolute path to the translation file that no longer exists
    * @returns void
    */
-  function unregisterTranslationFile(filePath) {
+  const unregisterTranslationFile = (filePath) =>
     Catalogue.unregisterLocale(getLocale(filePath));
-  }
 
   /**
    * Sets (create or overwrite) the message for a given key and locale.   *
@@ -183,7 +185,7 @@ export function t18sCore(pluginConfig) {
    */
   const getLocale = (path) => {
     const filename = basename(path);
-    const locale = filename.split(".")[0];
+    const [locale] = filename.split(".");
     if (!locale) throw new Error("Could not determine locale for ${filePath}");
     return locale;
   };
@@ -216,7 +218,7 @@ export function t18sCore(pluginConfig) {
         dtsPath: resolve(resolvedConfig.root, pluginConfig.dts),
         translationsDir: resolve(
           resolvedConfig.root,
-          pluginConfig.translationsDir,
+          pluginConfig.translationsDir
         ),
         verbose: pluginConfig.verbose,
       };
@@ -233,25 +235,21 @@ export function t18sCore(pluginConfig) {
       const resolvers = [
         resolveDictionaryModuleId,
         resolveMainModuleId,
-        resolveRuntimeId
-      ]
+        resolveRuntimeId,
+      ];
 
       for (const resolver of resolvers) {
         const resolved = resolver(id);
         if (resolved) return resolved;
       }
-        
+
       return null;
     },
 
     async load(id) {
       id = cleanUrl(id);
 
-      const loaders = [
-        loadMainModule,
-        loadDictionaryModule,
-        loadRuntimeModule
-      ]
+      const loaders = [loadMainModule, loadDictionaryModule, loadRuntimeModule];
 
       //Attempt to load the module from all loaders
       const loadingPromises = loaders.map((loader) => loader(id, Catalogue));
@@ -259,7 +257,7 @@ export function t18sCore(pluginConfig) {
 
       //Pick the fulfilled result. There should only be one, otherwise we have a bug.
       for (const result of results) {
-        if(result.status !== "fulfilled") continue;
+        if (result.status !== "fulfilled") continue;
         if (result.value) return result.value;
       }
 
@@ -304,38 +302,35 @@ function getRuntimeEntryPath() {
   const thisModulePath = normalizePath(dirname(fileURLToPath(import.meta.url)));
   return thisModulePath.replace(
     /\/t18s\/src\/core$/,
-    "/t18s/src/core/runtime/",
+    "/t18s/src/core/runtime/"
   );
 }
 
-
 /**
  * Returns the code for the main module if the resolved_id is for the main module.
- * @param {string} resolved_id 
- * @param {MessageCatalogue} registry
+ * @param {string} resolved_id
+ * @param {MessageCatalogue} Catalogue
  * @returns {Promise<string | null>}
  */
-async function loadMainModule(resolved_id, registry) {
+async function loadMainModule(resolved_id, Catalogue) {
   if (resolved_id === RESOLVED_VIRTUAL_MODULE_PREFIX) {
-    const locales = registry.getLocales();
+    const locales = Catalogue.getLocales();
     return generateMainModuleCode(locales, false);
   }
   return null;
 }
 
-
 /**
  * Returns the code for the dictionary module if the resolved_id is for the main module.
- * @param {string} resolved_id 
- * @param {MessageCatalogue} registry
+ * @param {string} resolved_id
+ * @param {MessageCatalogue} Catalogue
  * @returns {Promise<string | null>}
  */
-async function loadDictionaryModule(resolved_id, registry) {
-  if (resolved_id.startsWith(RESOLVED_VIRTUAL_MODULE_PREFIX)) {
-    const [_, ns, locale] = resolved_id.split("/");
-    if(ns !== "messages") return null;
-    if (!locale) return null;
-    const dictionary = registry.getDictionary(locale);
+async function loadDictionaryModule(resolved_id, Catalogue) {
+  if (resolved_id.startsWith("\0t18s-dictionary:")) {
+    const [_, locale, domain] = resolved_id.split(":");
+    if (!locale || !domain) return null;
+    const dictionary = Catalogue.getDictionary(locale);
     if (!dictionary) return null;
     return generateDictionaryModule(dictionary);
   }
@@ -344,11 +339,11 @@ async function loadDictionaryModule(resolved_id, registry) {
 
 /**
  * If the id is an id for the t18s-runtime, this function will load the runtime
- * @param {string} resolved_id 
- * @param {MessageCatalogue} registry
+ * @param {string} resolved_id
+ * @param {MessageCatalogue} Catalogue
  * @returns {Promise<string | null>}
  */
-async function loadRuntimeModule(resolved_id, registry) {
+async function loadRuntimeModule(resolved_id, Catalogue) {
   if (!resolved_id.startsWith(getRuntimeEntryPath())) return null;
 
   //Manually read the file content to bypass vite's fs.allow check
@@ -365,38 +360,38 @@ async function loadRuntimeModule(resolved_id, registry) {
 
 /**
  * If the unresolved_id is for the t18s-runtime, this function will resolve it.
- * @param {string} unresolved_id 
+ * @param {string} unresolved_id
  * @returns {string | null}
  */
 function resolveRuntimeId(unresolved_id) {
   if (unresolved_id.startsWith("$t18s-runtime:")) {
-    return unresolved_id.replace("$t18s-runtime:", getRuntimeEntryPath()); 
+    return unresolved_id.replace("$t18s-runtime:", getRuntimeEntryPath());
   }
   return null;
 }
 
 /**
  * If the unresolved_id is for a t18s dictionary, this function will resolve it.
- * Dictionary modules have the format "$t18s/messages/<locale>"
- * 
- * @param {string} unresolved_id 
+ * Dictionary modules have the format "t18s-dictionary:<locale>:<domain>"
+ *
+ * @param {string} unresolved_id
  * @returns {string | null}
  */
 function resolveDictionaryModuleId(unresolved_id) {
-  if (!unresolved_id.startsWith(VIRTUAL_MODULE_PREFIX)) return null;
-  const [_, ns, locale] = unresolved_id.split("/");
-  if(ns !== "messages") return null;
-  if (!locale) return null;
-  const resolved_id = RESOLVED_VIRTUAL_MODULE_PREFIX + "/messages/" + locale;
+  if (!unresolved_id.startsWith("t18s-dictionary:")) return null;
+  const [_, locale, domain] = unresolved_id.split(":");
+  if (!locale || !domain) return null;
+  const resolved_id = `\0t18s-dictionary:${locale}:${domain}`;
   return resolved_id;
 }
 
 /**
  * If the unresolved_id is for a t18s dictionary, this function will resolve it.
- * @param {string} unresolved_id 
+ * @param {string} unresolved_id
  * @returns {string | null}
  */
 function resolveMainModuleId(unresolved_id) {
-  if (unresolved_id === VIRTUAL_MODULE_PREFIX) return RESOLVED_VIRTUAL_MODULE_PREFIX;
+  if (unresolved_id === VIRTUAL_MODULE_PREFIX)
+    return RESOLVED_VIRTUAL_MODULE_PREFIX;
   return null;
 }

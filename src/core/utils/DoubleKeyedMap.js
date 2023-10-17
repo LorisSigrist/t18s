@@ -56,20 +56,6 @@ export class DoubleKeyedMap {
         inner.delete(key2);
     }
 
-    /**
-     * @returns {Iterable<[string, string]>}
-     */
-    keys() {
-        /** @type {[string, string][]} */
-        const keys = [];
-        for (const [key1, inner] of this.#map) {
-            for (const key2 of inner.keys()) {
-                keys.push([key1, key2]);
-            }
-        }
-        return keys;
-    }
-
     entries() {
         /** @type {Set<[string, string, T]>} */
         const entries = new Set();
@@ -79,5 +65,17 @@ export class DoubleKeyedMap {
             }
         }
         return entries[Symbol.iterator]();
+    }
+
+
+    keys() {
+        /** @type {Set<[string,string]>} */
+        const keys = new Set();
+        for (const [key1, inner] of this.#map) {
+            for (const [key2, value] of inner.entries()) {
+                keys.add([key1, key2]);
+            }
+        }
+        return keys[Symbol.iterator]();
     }
 }
