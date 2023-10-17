@@ -54,7 +54,10 @@ export function t18sCore(pluginConfig) {
   /** Keeps track of the messages that exist & where to find them */
   const Catalogue = new MessageCatalogue();
 
-  Catalogue.addEventListener("messages_changed", async () => await regenerateDTS());
+  Catalogue.addEventListener(
+    "messages_changed",
+    async () => await regenerateDTS(),
+  );
   Catalogue.addEventListener("dictionary_added", (e) => {
     reporter.localeCreated(e.detail.locale);
     dispatch("t18s:addDictionary", {
@@ -64,11 +67,17 @@ export function t18sCore(pluginConfig) {
   });
   Catalogue.addEventListener("dictionary_removed", (e) => {
     reporter.localeDeleted(e.detail.locale);
-    dispatch("t18s:removeDictionary", { locale: e.detail.locale, domain: e.detail.domain });
+    dispatch("t18s:removeDictionary", {
+      locale: e.detail.locale,
+      domain: e.detail.domain,
+    });
   });
   Catalogue.addEventListener("dictionary_changed", (e) => {
     reporter.localeUpdated(e.detail.locale);
-    dispatch("t18s:reloadDictionary", { locale: e.detail.locale, domain: e.detail.domain });
+    dispatch("t18s:reloadDictionary", {
+      locale: e.detail.locale,
+      domain: e.detail.domain,
+    });
   });
 
   /** Handles interactions with translation files */
@@ -83,7 +92,7 @@ export function t18sCore(pluginConfig) {
 
     if (Catalogue.hasDictionary(locale, domain)) {
       logger.error(
-        `Locale ${locale} already exists. Skipping file ${filePath}`
+        `Locale ${locale} already exists. Skipping file ${filePath}`,
       );
       return;
     }
@@ -215,7 +224,7 @@ export function t18sCore(pluginConfig) {
         dtsPath: resolve(resolvedConfig.root, pluginConfig.dts),
         translationsDir: resolve(
           resolvedConfig.root,
-          pluginConfig.translationsDir
+          pluginConfig.translationsDir,
         ),
         verbose: pluginConfig.verbose,
       };
@@ -300,7 +309,7 @@ function getRuntimeEntryPath() {
   const thisModulePath = normalizePath(dirname(fileURLToPath(import.meta.url)));
   return thisModulePath.replace(
     /\/t18s\/src\/core$/,
-    "/t18s/src/core/runtime/"
+    "/t18s/src/core/runtime/",
   );
 }
 

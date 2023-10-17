@@ -1,6 +1,6 @@
 import { addQuotes, stringTypeUnion } from "./utils/stringUtils.js";
 import { DTSBuilder } from "./utils/dtsBuilder.js";
-import { VIRTUAL_MODULE_PREFIX } from "../constants.js";
+import { DEFAULT_DOMAIN, VIRTUAL_MODULE_PREFIX } from "../constants.js";
 import { MessageCatalogue } from "../MessageCatalogue.js";
 
 /**
@@ -8,18 +8,7 @@ import { MessageCatalogue } from "../MessageCatalogue.js";
  */
 export function generateDTS(Catalogue) {
   const locales = Catalogue.getLocales();
-
-  /**
-   * @type {Map<string, import("../types.js").Dictionary>}
-   */
-  const localeDictionaries = new Map();
-
-  const dictionaries = Catalogue.getDictionaries();
-  for (const [locale, domain, dict] of dictionaries.entries()) {
-    localeDictionaries.set(locale, dict);
-  }
-
-  const messagesTypeMap = generateTypeMapForDictionaries(localeDictionaries);
+  const messagesTypeMap = generateMessagesTypeMap(Catalogue);
 
   const dts = new DTSBuilder();
   dts.setDisclaimer(
@@ -131,44 +120,40 @@ export function generateDTS(Catalogue) {
 }
 
 /**
- * @param {import("../types.js").LocaleDictionaries} localeDictionaries
+ * @param {MessageCatalogue} Catalogue
  * @returns {Map<string, string>}
  */
-function generateTypeMapForDictionaries(localeDictionaries) {
-  const locales = [...localeDictionaries.keys()];
-  const messageKeys = new Set();
+function generateMessagesTypeMap(Catalogue) {
+  /**
+   * Maps a key to it's set of messages across all locales
+   * @type {Map<string, Set<import("../types.js").Message>>}
+   */
+  const key2messages = new Map();
 
-  for (const dictionary of localeDictionaries.values()) {
-    for (const key of dictionary.keys()) {
-      messageKeys.add(key);
+  for (const [_, domain, dictionary] of Catalogue.getDictionaries().entries()) {
+    for (const [messageKey, message] of dictionary.entries()) {
+      const key =
+        domain === DEFAULT_DOMAIN ? messageKey : `${domain}:${messageKey}`;
+      if (!key2messages.has(key)) key2messages.set(key, new Set());
+      key2messages.get(key)?.add(message);
     }
   }
 
-  const typeMap = new Map();
+  const messagesTypeMap = new Map();
+  for (const [key, messages] of key2messages.entries()) {
+    /** @type {Set<string>} */
+    const types = new Set();
 
-  for (const key of messageKeys) {
-    let type = "";
-
-    let messages = [];
-
-    for (const locale of locales) {
-      const dictionary = localeDictionaries.get(locale);
-      if (!dictionary) continue;
-      const message = dictionary.get(key);
-      if (message && message.typeDefinition) {
-        messages.push(message);
-      }
+    for (const message of messages) {
+      if (message.typeDefinition) types.add(message.typeDefinition);
     }
 
-    if (messages.length === 0) {
-      type += "undefined";
+    if (types.size === 0) {
+      messagesTypeMap.set(key, "undefined");
     } else {
-      type += messages
-        .map((message) => `(${message.typeDefinition})`)
-        .join(" & ");
+      messagesTypeMap.set(key, [...types].join(" & "));
     }
-
-    typeMap.set(key, type);
   }
-  return typeMap;
+
+  return messagesTypeMap;
 }

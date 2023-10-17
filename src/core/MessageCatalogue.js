@@ -132,17 +132,16 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
     return this.#locales;
   }
 
-
   /**
    * Get all domains that are registered for the given locale.
-   * 
-   * @param {string} locale 
+   *
+   * @param {string} locale
    */
   getDomains(locale) {
     if (!this.hasLocale(locale)) throw new LocaleNotFoundException(locale);
-    
+
     /** @type {Set<string>} */
-    const domains = new Set ();
+    const domains = new Set();
     for (const [locale, domain] of this.#files.keys()) {
       if (locale === locale) domains.add(domain);
     }

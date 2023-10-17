@@ -37,10 +37,14 @@ export function generateMainModuleCode(Catalogue, verbose) {
       return code + "\n}";
     })}
   };
+
+  //List of domains that should be loaded eagerly when a new locale is loaded
+  const eagerlyLoadedDomains = new Set();
+  eagerlyLoadedDomains.add("${DEFAULT_DOMAIN}");
   
   let fallbackLocale = undefined;
   let loadingDelay = 200;
-  
+
   export async function init(options) {
     
     if(!options.initialLocale) throw new Error("[t18s] No initial locale provided when calling \`init\`");
@@ -66,10 +70,23 @@ export function generateMainModuleCode(Catalogue, verbose) {
   
   //Load the given locale quietly in the background
   //May throw
-  export async function preloadLocale(newLocale, domain = "${DEFAULT_DOMAIN}") {
-    const newDictionary = await loaders[newLocale][domain]();
-    if(!(newLocale in Catalogue)) Catalogue[newLocale] = {};
-    Catalogue[newLocale][domain] = newDictionary;
+  export async function preloadLocale(newLocale) {
+    eagerlyLoadedDomains.forEach(async (domain) => {
+      const newDictionary = await loaders[newLocale][domain]();
+      if(!(newLocale in Catalogue)) Catalogue[newLocale] = {};
+      Catalogue[newLocale][domain] = newDictionary;
+    }
+  }
+
+  export async function loadDomain(domain) {
+    eagerlyLoadedDomains.add(domain);
+
+    //Load the domain for the current locale if it's available
+    if(loaders[get(locale)][domain]) {
+      const dictionary = await loaders[get(locale)][domain]();
+      if(!(get(locale) in Catalogue)) Catalogue[get(locale)] = {};
+      Catalogue[get(locale)][domain] = dictionary;
+    }
   }
 
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
