@@ -13,21 +13,30 @@ export function generateMainModuleCode(Catalogue, verbose) {
   return `
   import { writable, get } from 'svelte/store';
   export { default as T } from "$t18s-runtime:T.svelte";
-  
-  const messages = {}
-  const Catalogue = {};
+
+  //Keeps track of the current catalogue of dictionaries. Double-Keyed by locale and domain
+  const Catalogue = {}
   
   export const locales = writable(${JSON.stringify(locales)});
   export const locale = writable(null);
   export const setLocale = locale.set;
   export const isLoading = writable(false);
   
+  //Functions to load dictionaries. Double-Keyed by locale and domain
+  //We need to explicitly list each import here to make sure none of 
+  //the dictionaries are accidentally removed by tree-shaking
   const loaders = {
-  ${locales.map(
-    (locale) =>
-      `    "${locale}": async () => (await import("t18s-dictionary:${locale}:messages")).default`,
-  )}
-  }
+    ${locales.map((loc) => {
+      const domains = Catalogue.getDomains(loc);
+      let code = `"${loc}" : {\n`;
+
+      domains.forEach((domain) => {
+        code += `      "${domain}": async () => (await import("t18s-dictionary:${loc}:${domain}")).default,\n`;
+      });
+
+      return code + "\n}";
+    })}
+  };
   
   let fallbackLocale = undefined;
   let loadingDelay = 200;
@@ -57,15 +66,12 @@ export function generateMainModuleCode(Catalogue, verbose) {
   
   //Load the given locale quietly in the background
   //May throw
-  export async function preloadLocale(newLocale) {
-    const newMessages = await loaders[newLocale]();
-    messages[newLocale] = newMessages;
+  export async function preloadLocale(newLocale, domain = "${DEFAULT_DOMAIN}") {
+    const newDictionary = await loaders[newLocale][domain]();
+    if(!(newLocale in Catalogue)) Catalogue[newLocale] = {};
+    Catalogue[newLocale][domain] = newDictionary;
   }
 
-  export async function preload(newLocale, domain = null) {
-    domain = domain ?? "${DEFAULT_DOMAIN}";
-  }
-  
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
   
   export function isLocale(maybeLocale) {
@@ -85,33 +91,30 @@ export function generateMainModuleCode(Catalogue, verbose) {
       done = true;
     }
   }
+
+  function parseKey(key) {
+    const [first, second] = key.split(":");
+    if(!first) throw new Error("[t18s] Invalid key: " + key);
+    if(!second) return {domain: "${DEFAULT_DOMAIN}", key: first};
+    else return {domain: first, key: second};
+  }
   
-  const getMessage = (key, values = undefined) => {
+  const getMessage = (keyString, values = undefined) => {
     const currentLocale = get(locale);
   
     if(currentLocale === null) {
       throw new Error("[t18s] No locale set. Did you forget to call \`init\`?");
     }
-  
-    if(messages[currentLocale] && messages[currentLocale][key]) {
-      const message = messages[currentLocale][key];
-      if(typeof message === "string") return message;
-      else return message(values);
-    } else if (fallbackLocale && messages[fallbackLocale] && messages[fallbackLocale][key]) {
-      ${
-        verbose
-          ? 'console.debug("[t18s] Translation for key " + key + " not found in locale " + currentLocale +". Using fallback locale " + fallbackLocale);'
-          : ""
-      }
-      const fallbackMessage = messages[fallbackLocale][key];
-      if(typeof fallbackMessage === "string") return fallbackMessage;
-      return messages[fallbackLocale][key](values);
-    }  else {
-    ${
-      verbose
-        ? 'console.warn("[t18s] Translation for key " + key + " not found in locale " + currentLocale);'
-        : ""
-    }
+
+    const { domain, key } = parseKey(keyString);
+    if(Catalogue[currentLocale] && Catalogue[currentLocale][domain] && Catalogue[currentLocale][domain][key]) {
+      const message = Catalogue[currentLocale][domain][key];
+      return typeof message === "string" ? message : message(values);
+    } else if (fallbackLocale && Catalogue[fallbackLocale] && Catalogue[fallbackLocale][domain] && Catalogue[fallbackLocale][domain][key]) {
+      const fallbackMessage = Catalogue[fallbackLocale][domain][key];
+      return typeof fallbackMessage === "string" ? fallbackMessage : fallbackMessage(values);
+    } else {
+      console.warn("[t18s] Translation for key " + key + " not found in locale " + currentLocale);
       return key;
     }
   }
@@ -121,7 +124,7 @@ export function generateMainModuleCode(Catalogue, verbose) {
   //Update the store when the locale changes
   locale.subscribe((newLocale) => {
     if(newLocale === null) return;
-    if(newLocale in messages) {
+    if(newLocale in Catalogue) {
       t.set(getMessage)
     } else {
       loadLocale(newLocale).then(() => t.set(getMessage));
@@ -129,45 +132,50 @@ export function generateMainModuleCode(Catalogue, verbose) {
   });
   
   if(import.meta.hot) {
-    import.meta.hot.on("t18s:addDictionary", async (data) => {
-      locales.update((locales) => [...locales, data.locale]);
-  
-      //Force-reload the module - Add a random query parameter to bust the cache
-      const newMessages = (await import(/* @vite-ignore */ "/@id/__x00__t18s-dictionary:" + data.locale + ":messages" + "?" + Math.random())).default;
-  
-      ${verbose ? 'console.info("[t18s] Adding locale " + data.locale);' : ""}
-  
-      messages[data.locale] = newMessages;
+    import.meta.hot.on("t18s:addDictionary", async (data) => { 
+      //Force-reload the dictionary - Add a random query parameter to bust the cache
+      const dictionary = (await import(/* @vite-ignore */ "/@id/__x00__t18s-dictionary:" + data.locale + ":" + data.domain + "?" + Math.random())).default;
+
+      Catalogue[data.locale] = Catalogue[data.locale] ?? {};
+      Catalogue[data.locale][data.domain] = dictionary;
+
       t.set(getMessage); //update the store
     });
   
     import.meta.hot.on("t18s:reloadDictionary", async (data) => {
-      //Force-reload the module - Add a random query parameter to bust the cache
-      const newMessages = (await import(/* @vite-ignore */ "/@id/__x00__t18s-dictionary:" + data.locale + ":messages" + "?" + Math.random())).default;
-     
-      ${
-        verbose ? 'console.info("[t18s] Reloading locale " + data.locale);' : ""
-      }
-  
-      messages[data.locale] = newMessages;
+      //Force-reload the dictionary - Add a random query parameter to bust the cache
+      const dictionary = (await import(/* @vite-ignore */ "/@id/__x00__t18s-dictionary:" + data.locale + ":" + data.domain + "?" + Math.random())).default;
+      
+      Catalogue[data.locale] = Catalogue[data.locale] ?? {};
+      Catalogue[data.locale][data.domain] = dictionary;
+
       t.set(getMessage); //update the store
     });
     
     import.meta.hot.on("t18s:removeDictionary", async (data) => {
-      ${
-        verbose
-          ? 'console.info("[t18s] Removing locale " + data.locale);\n'
-          : ""
+      if(Catalogue[data.locale] && Catalogue[data.locale][data.domain]) {
+        delete Catalogue[data.locale][data.domain];
       }
-      delete messages[data.locale];
-  
+
+      if(Object.keys(Catalogue[data.locale]).length === 0) {
+        delete Catalogue[data.locale];
+      }
+ 
+      t.set(getMessage); //update the store
+    });
+
+    import.meta.hot.on("t18s:addLocale", async (data) => {
+      locales.update((locales) => [...locales, data.locale]);
+    });
+
+    import.meta.hot.on("t18s:removeLocale", async (data) => {
       locales.update((locales) => locales.filter((l) => l !==  data.locale));
-  
+      
+      //Switch locale if the current locale was removed
       if(data.locale === get(locale)) {
         locale.set(get(locales)[0]);
+        t.set(getMessage); //rerender the component
       }
-  
-      t.set(getMessage); //update the store
     });
   }
   `;

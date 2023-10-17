@@ -54,7 +54,7 @@ export function t18sCore(pluginConfig) {
   /** Keeps track of the messages that exist & where to find them */
   const Catalogue = new MessageCatalogue();
 
-  Catalogue.addEventListener("changed", async () => await regenerateDTS());
+  Catalogue.addEventListener("messages_changed", async () => await regenerateDTS());
   Catalogue.addEventListener("dictionary_added", (e) => {
     reporter.localeCreated(e.detail.locale);
     dispatch("t18s:addDictionary", {
@@ -101,6 +101,7 @@ export function t18sCore(pluginConfig) {
     const { dictionary, invalidKeys } = compileToDictionary(keyVal, locale);
     if (invalidKeys) reporter.warnAboutInvalidKeys(filePath, invalidKeys);
     Catalogue.registerDictionary(locale, domain, filePath, dictionary);
+    Catalogue.addLocale(locale);
   }
 
   /**
@@ -180,6 +181,7 @@ export function t18sCore(pluginConfig) {
       if (invalidKeys) reporter.warnAboutInvalidKeys(path, invalidKeys);
 
       Catalogue.registerDictionary(locale, domain, path, dictionary);
+      Catalogue.addLocale(locale);
     }
 
     //Load all locale-files

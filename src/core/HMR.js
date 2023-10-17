@@ -3,6 +3,8 @@
  *  "t18s:addDictionary":     { locale: string, domain: string }
  *  "t18s:removeDictionary":     { locale: string, domain: string }
  *  "t18s:reloadDictionary": { locale: string, domain: string }
+ *  "t18s:addLocale": { locale: string }
+ *  "t18s:removeLocale": { locale: string }
  * }} HMREventMap
  */
 
