@@ -90,7 +90,7 @@ export function generateDTS(Catalogue) {
         ),
     );
 
-    let messagesType = "export type Messages = {\n";
+    let messagesType = "type Messages = {\n";
     //Loop over all keys, and generate a type for each key.
     //The type of a key is the intersection of the types of the key in each locale.
     //Make sure to handle empty types (i.e. {}) correctly.

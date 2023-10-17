@@ -24,6 +24,7 @@ import { normalizePath } from "vite";
 import { fileURLToPath } from "node:url";
 import { cleanUrl } from "./utils/id.js";
 import { existsSync } from "node:fs";
+import { createHMRDispatcher } from "./HMR.js";
 
 /**
  * TypeSafe translations for Svelte & SvelteKit.
@@ -43,21 +44,24 @@ export function t18sCore(pluginConfig) {
   /** @type {import("vite").ViteDevServer | null}*/
   let viteDevServer = null;
 
+  /** @type {import("./HMR.js").HMREventDispatcher} */
+  let dispatch = () => {};
+
   /** Keeps track of the messages that exist & where to find them */
   const Catalogue = new MessageCatalogue();
 
   Catalogue.addEventListener("changed", async () => await regenerateDTS());
   Catalogue.addEventListener("locale_added", (e) => {
     reporter.localeCreated(e.detail.locale);
-    triggerHMREvent("t18s:createLocale", e.detail.locale);
+    dispatch("t18s:createLocale", { locale: e.detail.locale });
   });
   Catalogue.addEventListener("locale_removed", (e) => {
     reporter.localeDeleted(e.detail.locale);
-    triggerHMREvent("t18s:removeLocale", e.detail.locale);
+    dispatch("t18s:removeLocale", { locale: e.detail.locale });
   });
   Catalogue.addEventListener("locale_updated", (e) => {
     reporter.localeUpdated(e.detail.locale);
-    triggerHMREvent("t18s:invalidateLocale", e.detail.locale);
+    dispatch("t18s:invalidateLocale", { locale: e.detail.locale });
   });
 
   /** Handles interactions with translation files */
@@ -72,7 +76,7 @@ export function t18sCore(pluginConfig) {
 
     if (Catalogue.hasDictionary(locale, domain)) {
       logger.error(
-        `Locale ${locale} already exists. Skipping file ${filePath}`,
+        `Locale ${locale} already exists. Skipping file ${filePath}`
       );
       return;
     }
@@ -132,7 +136,7 @@ export function t18sCore(pluginConfig) {
    * @param {string} message_src
    */
   async function setMessage(locale, domain, key, message_src) {
-    const filePath = Catalogue.getFile(locale,domain);
+    const filePath = Catalogue.getFile(locale, domain);
     fileHandler.setPath(filePath, key, message_src);
   }
 
@@ -191,25 +195,6 @@ export function t18sCore(pluginConfig) {
     return { locale: first, domain: second };
   };
 
-  /**
-   * Triggers a HMR event, causing the browser to react to translation changes.
-   *
-   * @param {"t18s:createLocale" | "t18s:invalidateLocale" | "t18s:removeLocale"} event
-   * @param {string} locale
-   * @returns {void}
-   */
-  function triggerHMREvent(event, locale) {
-    if (viteDevServer) {
-      viteDevServer.ws.send({
-        type: "custom",
-        event,
-        data: {
-          locale,
-        },
-      });
-    }
-  }
-
   return {
     name: "t18s",
     enforce: "pre",
@@ -219,7 +204,7 @@ export function t18sCore(pluginConfig) {
         dtsPath: resolve(resolvedConfig.root, pluginConfig.dts),
         translationsDir: resolve(
           resolvedConfig.root,
-          pluginConfig.translationsDir,
+          pluginConfig.translationsDir
         ),
         verbose: pluginConfig.verbose,
       };
@@ -272,21 +257,21 @@ export function t18sCore(pluginConfig) {
        * @param {string} path
        * @returns {boolean}
        */
-      const isTranslationFile = (path) =>
+      const fileInTranslationDir = (path) =>
         path.startsWith(config.translationsDir);
 
       server.watcher.on("unlink", async (filePath) => {
-        if (!isTranslationFile(filePath)) return;
+        if (!fileInTranslationDir(filePath)) return;
         unregisterTranslationFile(filePath);
       });
 
       server.watcher.on("add", async (filePath) => {
-        if (!isTranslationFile(filePath)) return;
+        if (!fileInTranslationDir(filePath)) return;
         await registerTranslationFile(filePath);
       });
 
       server.watcher.on("change", async (filePath) => {
-        if (!isTranslationFile(filePath)) return;
+        if (!fileInTranslationDir(filePath)) return;
         await invalidateTranslationFile(filePath);
       });
 
@@ -295,6 +280,7 @@ export function t18sCore(pluginConfig) {
       });
 
       viteDevServer = server;
+      dispatch = createHMRDispatcher(server);
     },
   };
 }
@@ -303,7 +289,7 @@ function getRuntimeEntryPath() {
   const thisModulePath = normalizePath(dirname(fileURLToPath(import.meta.url)));
   return thisModulePath.replace(
     /\/t18s\/src\/core$/,
-    "/t18s/src/core/runtime/",
+    "/t18s/src/core/runtime/"
   );
 }
 
@@ -314,7 +300,7 @@ function getRuntimeEntryPath() {
  * @returns {Promise<string | null>}
  */
 async function loadMainModule(resolved_id, Catalogue) {
-  if (resolved_id !== RESOLVED_VIRTUAL_MODULE_PREFIX)  return null;
+  if (resolved_id !== RESOLVED_VIRTUAL_MODULE_PREFIX) return null;
   return generateMainModuleCode(Catalogue, false);
 }
 
