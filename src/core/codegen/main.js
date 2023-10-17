@@ -143,7 +143,11 @@ export function generateMainModuleCode(localesIterable, verbose) {
     });
     
     import.meta.hot.on("t18s:removeLocale", async (data) => {
-      ${verbose ? 'console.info("[t18s] Removing locale " + data.locale);\n' : ""}
+      ${
+        verbose
+          ? 'console.info("[t18s] Removing locale " + data.locale);\n'
+          : ""
+      }
       delete messages[data.locale];
   
       locales.update((locales) => locales.filter((l) => l !==  data.locale));

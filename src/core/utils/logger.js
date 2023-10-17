@@ -69,7 +69,7 @@ export class Logger {
   #formatMessage(msg, icon = null) {
     if (msg.trim().length === 0) return msg; //Ignore empty messages
     const prefix = `${icon ?? " "} [t18s] `;
-    msg = indent(msg, prefix.length); 
+    msg = indent(msg, prefix.length);
     msg = prefix + msg.slice(prefix.length);
     return msg;
   }

@@ -23,13 +23,13 @@ export const stringTypeUnion = (strings) => {
     union += `"${str}"|`;
   }
   return union.slice(0, -1);
-}
+};
 
 /**
  * Indents some text by n spaces.
  * @param {string} text
  * @param {number | undefined} spaces
-  */
+ */
 export function indent(text, spaces = 4) {
   const lines = text.split("\n");
   return lines.map((l) => " ".repeat(spaces) + l).join("\n");
