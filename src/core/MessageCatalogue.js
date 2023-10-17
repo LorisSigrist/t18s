@@ -40,12 +40,13 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
   /**
    * Register a new locale.
    * @param {string} locale
+   * @param {string} domain
    * @param {string} filePath
    * @param {Dictionary} dictionary
    */
-  registerLocale(locale, filePath, dictionary) {
-    this.#files.set(locale, "messages", filePath);
-    this.#dictionaries.set(locale, "messages", dictionary);
+  registerDictionary(locale, domain, filePath, dictionary) {
+    this.#files.set(locale, domain, filePath);
+    this.#dictionaries.set(locale, domain, dictionary);
 
     this.#dispatch("locale_added", { locale, dictionary });
     this.#dispatch("changed", {});
@@ -54,10 +55,11 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
   /**
    * Unregister a locale.
    * @param {string} locale
+   * @param {string} domain
    */
-  unregisterLocale(locale) {
-    this.#dictionaries.delete(locale, "messages");
-    this.#files.delete(locale, "messages");
+  unregisterDictionary(locale, domain) {
+    this.#dictionaries.delete(locale, domain);
+    this.#files.delete(locale, domain);
 
     this.#dispatch("locale_removed", { locale });
     this.#dispatch("changed", {});
@@ -65,14 +67,15 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
 
   /**
    * @param {string} locale
+   * @param {string} domain
    * @param {Dictionary} dictionary
    *
    * @throws {LocaleNotFoundException} If the locale is not registered.
    */
-  setDictionary(locale, dictionary) {
-    if (!this.#files.has(locale, "messages"))
+  setDictionary(locale, domain, dictionary) {
+    if (!this.#files.has(locale, domain))
       throw new LocaleNotFoundException(locale);
-    this.#dictionaries.set(locale, "messages", dictionary);
+    this.#dictionaries.set(locale, domain, dictionary);
     this.#dispatch("changed", {});
     this.#dispatch("locale_updated", { locale, dictionary });
   }
@@ -80,14 +83,10 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
   /**
    * @param {string} locale
    * @param {string} domain
-   * @returns {Dictionary}
-   *
-   * @throws {LocaleNotFoundException} If the locale is not registered.
+   * @returns {Dictionary | undefined}
    */
   getDictionary(locale, domain) {
-    const dictionary = this.#dictionaries.get(locale, domain);
-    if (!dictionary) throw new LocaleNotFoundException(locale);
-    return dictionary;
+    return this.#dictionaries.get(locale, domain);
   }
 
   /**

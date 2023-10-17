@@ -93,7 +93,7 @@ export function t18sCore(pluginConfig) {
 
     const { dictionary, invalidKeys } = compileToDictionary(keyVal, locale);
     if (invalidKeys) reporter.warnAboutInvalidKeys(filePath, invalidKeys);
-    Catalogue.registerLocale(locale, filePath, dictionary);
+    Catalogue.registerDictionary(locale, domain, filePath, dictionary);
   }
 
   /**
@@ -118,15 +118,18 @@ export function t18sCore(pluginConfig) {
     const { dictionary, invalidKeys } = compileToDictionary(keyVal, locale);
 
     if (invalidKeys) reporter.warnAboutInvalidKeys(filePath, invalidKeys);
-    Catalogue.setDictionary(locale, dictionary);
+    Catalogue.setDictionary(locale, domain, dictionary);
   }
 
   /**
    * @param {string} filePath Absolute path to the translation file that no longer exists
    * @returns void
    */
-  const unregisterTranslationFile = (filePath) =>
-    Catalogue.unregisterLocale(categorizeFile(filePath).locale);
+  const unregisterTranslationFile = (filePath) => {
+    const { locale, domain } = categorizeFile(filePath);
+    Catalogue.unregisterDictionary(locale, domain);
+  }
+   
 
   /**
    * Sets (create or overwrite) the message for a given key and locale.   *
@@ -148,8 +151,8 @@ export function t18sCore(pluginConfig) {
     const readdirResult = await buffer(readdir(config.translationsDir));
 
     const files = new ResultMatcher(readdirResult)
-      .catch(LoadingException, (e) => {
-        logger.error("Could not read translation directory\n" + e);
+      .catchAll((e) => {
+        logger.warn("Could not read translation directory\n" + e);
         return [];
       })
       .run();
@@ -170,7 +173,7 @@ export function t18sCore(pluginConfig) {
       const { dictionary, invalidKeys } = compileToDictionary(keyVal, locale);
       if (invalidKeys) reporter.warnAboutInvalidKeys(path, invalidKeys);
 
-      Catalogue.registerLocale(locale, path, dictionary);
+      Catalogue.registerDictionary(locale, domain, path, dictionary);
     }
 
     //Load all locale-files
@@ -178,8 +181,7 @@ export function t18sCore(pluginConfig) {
   }
 
   async function regenerateDTS() {
-    const dts = generateDTS(Catalogue);
-    await writeFile(config.dtsPath, dts, { encoding: "utf-8", flag: "w" });
+    await writeFile(config.dtsPath, generateDTS(Catalogue));
   }
 
   /**
@@ -188,11 +190,12 @@ export function t18sCore(pluginConfig) {
    * @returns {{locale: string, domain: string}}
    */
   const categorizeFile = (path) => {
-    const filename = basename(path);
+    const filename = basename(path).split(".").slice(0, -1).join(".");
+
     const [first, second] = filename.split(".");
     if (!first) throw new Error(`Could not determine locale for ${path}`);
     if (!second) return { locale: first, domain: "messages" };
-    return { locale: first, domain: second };
+    return { locale: second, domain: first };
   };
 
   return {
@@ -311,14 +314,16 @@ async function loadMainModule(resolved_id, Catalogue) {
  * @returns {Promise<string | null>}
  */
 async function loadDictionaryModule(resolved_id, Catalogue) {
-  if (resolved_id.startsWith("\0t18s-dictionary:")) {
-    const [_, locale, domain] = resolved_id.split(":");
-    if (!locale || !domain) return null;
-    const dictionary = Catalogue.getDictionary(locale, domain);
-    if (!dictionary) return null;
-    return generateDictionaryModule(dictionary);
-  }
-  return null;
+  if (!resolved_id.startsWith("\0t18s-dictionary:")) return null;
+
+  const [_, locale, domain] = resolved_id.split(":");
+  if (!locale || !domain) return null;
+
+  const dictionary = Catalogue.getDictionary(locale, domain);
+
+  return dictionary
+    ? generateDictionaryModule(dictionary)
+    : "export default {}";
 }
 
 /**

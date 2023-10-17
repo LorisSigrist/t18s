@@ -14,6 +14,7 @@ export function generateMainModuleCode(Catalogue, verbose) {
   export { default as T } from "$t18s-runtime:T.svelte";
   
   const messages = {}
+  const Catalogue = {};
   
   export const locales = writable(${JSON.stringify(locales)});
   export const locale = writable(null);
