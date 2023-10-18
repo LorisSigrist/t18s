@@ -242,6 +242,7 @@ export function t18sCore(pluginConfig) {
         resolveDictionaryModuleId,
         resolveMainModuleId,
         resolveRuntimeId,
+        resolveConfigModuleId
       ];
 
       for (const resolver of resolvers) {
@@ -255,7 +256,7 @@ export function t18sCore(pluginConfig) {
     async load(id) {
       id = cleanUrl(id);
 
-      const loaders = [loadMainModule, loadDictionaryModule, loadRuntimeModule];
+      const loaders = [loadMainModule, loadDictionaryModule, loadRuntimeModule, loadConfigModule];
 
       //Attempt to load the module from all loaders
       const loadingPromises = loaders.map((loader) => loader(id, config, Catalogue));
@@ -369,6 +370,19 @@ async function loadRuntimeModule(resolved_id, config, Catalogue) {
 }
 
 /**
+ * If the id is an id for the t18s-runtime, this function will load the runtime
+ * @param {string} resolved_id
+ *  @param {import("./types.js").ResolvedPluginConfig} config
+
+ * @param {MessageCatalogue} Catalogue
+ * @returns {Promise<string | null>}
+ */
+async function loadConfigModule(resolved_id, config, Catalogue) {
+  if (resolved_id !== "\0t18s-internal:config") return null;
+  return "export default " + JSON.stringify(config);
+}
+
+/**
  * If the unresolved_id is for the t18s-runtime, this function will resolve it.
  * @param {string} unresolved_id
  * @returns {string | null}
@@ -403,4 +417,14 @@ function resolveDictionaryModuleId(unresolved_id) {
 function resolveMainModuleId(unresolved_id) {
   if (unresolved_id !== VIRTUAL_MODULE_PREFIX) return null;
   return RESOLVED_VIRTUAL_MODULE_PREFIX;
+}
+
+/**
+ * If the unresolved_id is for the t18s config, this function will resolve it.
+ * @param {string} unresolved_id
+ * @returns {string | null}
+ */
+function resolveConfigModuleId(unresolved_id) {
+  if (unresolved_id !== "t18s-internal:config") return null;
+  return "\0t18s-internal:config"
 }

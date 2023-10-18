@@ -11,6 +11,7 @@ export function generateMainModuleCode(config, Catalogue) {
 
   const code =  `
   import { writable, get } from 'svelte/store';
+  import config from 't18s-internal:config';
   export { default as T } from "$t18s-runtime:T.svelte";
 
   //Keeps track of the current catalogue of dictionaries. Double-Keyed by locale and domain
@@ -38,8 +39,7 @@ export function generateMainModuleCode(config, Catalogue) {
   };
 
   //List of domains that should be loaded eagerly when a new locale is loaded
-  const eagerlyLoadedDomains = new Set();
-  eagerlyLoadedDomains.add("${config.defaultDomain}");
+  const eagerlyLoadedDomains = new Set(["${config.defaultDomain}"]);
 
   let fallbackLocale = undefined;
   let loadingDelay = 200;
@@ -119,23 +119,50 @@ export function generateMainModuleCode(config, Catalogue) {
   }
   
   const getMessage = (keyString, values = undefined) => {
+    const { domain, key } = parseKey(keyString);
     const currentLocale = get(locale);
   
     if(currentLocale === null) {
       throw new Error("[t18s] No locale set. Did you forget to call \`init\`?");
     }
 
-    const { domain, key } = parseKey(keyString);
-    if(Catalogue[currentLocale] && Catalogue[currentLocale][domain] && Catalogue[currentLocale][domain][key]) {
-      const message = Catalogue[currentLocale][domain][key];
-      return typeof message === "string" ? message : message(values);
-    } else if (fallbackLocale && Catalogue[fallbackLocale] && Catalogue[fallbackLocale][domain] && Catalogue[fallbackLocale][domain][key]) {
-      const fallbackMessage = Catalogue[fallbackLocale][domain][key];
-      return typeof fallbackMessage === "string" ? fallbackMessage : fallbackMessage(values);
-    } else {
-      console.warn("[t18s] Translation for key " + key + " not found in locale " + currentLocale);
-      return key;
+
+    let formattedMessage;
+
+    if(Catalogue[currentLocale] && Catalogue[currentLocale][domain]) {
+      const dictionary = Catalogue[currentLocale][domain];
+      const message = dictionary[key];
+      if(message) {
+        formattedMessage = typeof message === "string" ? message : message(values);
+      }
+    } else if(loaders[currentLocale] && loaders[currentLocale][domain]) {
+      loaders[currentLocale][domain]().then(dictionary => {
+        Catalogue[currentLocale] = Catalogue[currentLocale] ?? {};
+        Catalogue[currentLocale][domain] = dictionary;
+        t.set(getMessage);
+      });
     }
+
+    if(formattedMessage) return formattedMessage;
+
+    if (fallbackLocale && Catalogue[fallbackLocale] && Catalogue[fallbackLocale][domain]) {
+      const dictionary = Catalogue[fallbackLocale][domain];
+      const fallbackMessage = dictionary[key];
+      if(fallbackMessage) {
+        formattedMessage = typeof fallbackMessage === "string" ? fallbackMessage : fallbackMessage(values);
+      }
+    } else if(loaders[fallbackLocale] && loaders[fallbackLocale][domain]) {
+      loaders[fallbackLocale][domain]().then(dictionary => {
+        Catalogue[fallbackLocale] = Catalogue[fallbackLocale] ?? {};
+        Catalogue[fallbackLocale][domain] = dictionary;
+        t.set(getMessage);
+      });
+    }
+
+    if(formattedMessage) return formattedMessage;
+    console.warn("[t18s] Translation for key " + keyString + " not found in locale " + currentLocale);
+    return keyString;
+    
   }
   
   export const t = writable(getMessage);
