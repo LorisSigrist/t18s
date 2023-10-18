@@ -25,6 +25,7 @@ import { fileURLToPath } from "node:url";
 import { cleanUrl } from "./utils/id.js";
 import { existsSync } from "node:fs";
 import { createHMRDispatcher } from "./HMR.js";
+import { generateConfigModule } from "./codegen/config.js";
 
 /**
  * TypeSafe translations for Svelte & SvelteKit.
@@ -379,7 +380,7 @@ async function loadRuntimeModule(resolved_id, config, Catalogue) {
  */
 async function loadConfigModule(resolved_id, config, Catalogue) {
   if (resolved_id !== "\0t18s-internal:config") return null;
-  return "export default " + JSON.stringify(config);
+  return generateConfigModule(config);
 }
 
 /**
