@@ -36,6 +36,9 @@
     "vite": "^4.4.9",
     "vitest": "^0.34.6"
   },
+  "peerDependencies": {
+    "svelte": "^3 || ^4"
+  },
   "files": [
     "types",
     "src",

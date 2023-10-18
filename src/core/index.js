@@ -26,6 +26,8 @@ import { cleanUrl } from "./utils/id.js";
 import { existsSync } from "node:fs";
 import { createHMRDispatcher } from "./HMR.js";
 import { generateConfigModule } from "./codegen/config.js";
+import { generateLocaleModule } from "./codegen/locale.js";
+import { $ } from "kleur/colors";
 
 /**
  * TypeSafe translations for Svelte & SvelteKit.
@@ -53,6 +55,14 @@ export function t18sCore(pluginConfig) {
 
   /** Keeps track of the messages that exist & where to find them */
   const Catalogue = new MessageCatalogue();
+
+  Catalogue.addEventListener("locale_removed", e => {
+    dispatch("t18s:removeLocale", { locale: e.detail.locale });
+  })
+  
+  Catalogue.addEventListener("locale_added", e => {
+    dispatch("t18s:addLocale", { locale: e.detail.locale });
+  });
 
   Catalogue.addEventListener(
     "messages_changed",
@@ -243,7 +253,8 @@ export function t18sCore(pluginConfig) {
         resolveDictionaryModuleId,
         resolveMainModuleId,
         resolveRuntimeId,
-        resolveConfigModuleId
+        resolveConfigModuleId,
+        resolveLocaleModuleId,
       ];
 
       for (const resolver of resolvers) {
@@ -257,10 +268,18 @@ export function t18sCore(pluginConfig) {
     async load(id) {
       id = cleanUrl(id);
 
-      const loaders = [loadMainModule, loadDictionaryModule, loadRuntimeModule, loadConfigModule];
+      const loaders = [
+        loadMainModule,
+        loadDictionaryModule,
+        loadRuntimeModule,
+        loadConfigModule,
+        loadLocaleModule
+      ];
 
       //Attempt to load the module from all loaders
-      const loadingPromises = loaders.map((loader) => loader(id, config, Catalogue));
+      const loadingPromises = loaders.map((loader) =>
+        loader(id, config, Catalogue)
+      );
       const results = await Promise.allSettled(loadingPromises);
 
       //Pick the fulfilled result. There should only be one, otherwise we have a bug.
@@ -371,16 +390,27 @@ async function loadRuntimeModule(resolved_id, config, Catalogue) {
 }
 
 /**
- * If the id is an id for the t18s-runtime, this function will load the runtime
  * @param {string} resolved_id
  *  @param {import("./types.js").ResolvedPluginConfig} config
-
+ *
  * @param {MessageCatalogue} Catalogue
  * @returns {Promise<string | null>}
  */
 async function loadConfigModule(resolved_id, config, Catalogue) {
   if (resolved_id !== "\0t18s-internal:config") return null;
   return generateConfigModule(config);
+}
+
+/**
+ * @param {string} resolved_id
+ * @param {import("./types.js").ResolvedPluginConfig} config
+ *
+ * @param {MessageCatalogue} Catalogue
+ * @returns {Promise<string | null>}
+ */
+async function loadLocaleModule(resolved_id, config, Catalogue) {
+  if (resolved_id !== "\0t18s-internal:locales") return null;
+  return generateLocaleModule(Catalogue);
 }
 
 /**
@@ -427,5 +457,15 @@ function resolveMainModuleId(unresolved_id) {
  */
 function resolveConfigModuleId(unresolved_id) {
   if (unresolved_id !== "t18s-internal:config") return null;
-  return "\0t18s-internal:config"
+  return "\0t18s-internal:config";
+}
+
+/**
+ * If the unresolved_id is for the t18s locales, this function will resolve it.
+ * @param {string} unresolved_id
+ * @returns {string | null}
+ */
+function resolveLocaleModuleId(unresolved_id) {
+  if (unresolved_id !== "t18s-internal:locales") return null;
+  return "\0t18s-internal:locales";
 }

@@ -11,13 +11,15 @@ export function generateMainModuleCode(config, Catalogue) {
 
   const code =  `
   import { writable, get } from 'svelte/store';
+  import { locales } from 't18s-internal:locales'
   import config from 't18s-internal:config';
-  export { default as T } from "$t18s-runtime:T.svelte";
+
+
+  export { locales };
 
   //Keeps track of the current catalogue of dictionaries. Double-Keyed by locale and domain
   const Catalogue = {}
   
-  export const locales = writable(${JSON.stringify(locales)});
   export const locale = writable(null);
   export const setLocale = locale.set;
   export const isLoading = writable(false);
@@ -217,6 +219,8 @@ export function generateMainModuleCode(config, Catalogue) {
     import.meta.hot.on("t18s:removeLocale", async (data) => {
       locales.update((locales) => locales.filter((l) => l !==  data.locale));
       
+      console.log("REMOVING LOCALE", data.locale, get(locale), get(locales));
+
       //Switch locale if the current locale was removed
       if(data.locale === get(locale)) {
         locale.set(get(locales)[0]);

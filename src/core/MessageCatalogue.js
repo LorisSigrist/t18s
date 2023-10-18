@@ -117,6 +117,13 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
   /** @param {string} locale */
   addLocale(locale) {
     this.#locales.add(locale);
+    this.#dispatch("locale_added", { locale });
+  }
+
+  /** @param {string} locale */
+  removeLocale(locale) {
+    this.#locales.delete(locale);
+    this.#dispatch("locale_removed", { locale });
   }
 
   /** @param {string} locale */
