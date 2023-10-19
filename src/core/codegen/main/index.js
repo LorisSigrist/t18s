@@ -10,35 +10,17 @@ export const locale = writable(null);
 export const locales = config.locales;
 export const setLocale = locale.set;
 export const isLoading = writable(false);
+export const isLocale = locales.includes;
 
 //Functions to load dictionaries. Double-Keyed by locale and domain
 let loaders = initial_loaders;
-
-/**
- * @param {string} locale
- * @param {string} domain
- * @returns {(() => Promise<Record<string, CompiledMessage>>) | undefined}
- */
-function getLoader(locale, domain) {
-  const loadersForLocale = loaders[locale];
-  if (!loadersForLocale) return undefined;
-  return loadersForLocale[domain];
-}
+const getLoader = doubleKeyedGetter(loaders);
 
 //Keeps track of the current catalogue of dictionaries. Double-Keyed by locale and domain
 /** @type {Record<string, Record<string, Record<string, CompiledMessage>>>} */
 const Catalogue = {};
-
-/**
- * @param {string} locale
- * @param {string} domain
- * @returns {Record<string, CompiledMessage> | undefined}
- */
-function getDictionary(locale, domain) {
-  const domainsForLocale = Catalogue[locale];
-  if (!domainsForLocale) return undefined;
-  return domainsForLocale[domain];
-}
+const getDictionary = doubleKeyedGetter(Catalogue);
+const setDictionary = doubleKeyedSetter(Catalogue);
 
 //List of domains that should be loaded eagerly when a new locale is loaded
 const eagerlyLoadedDomains = new Set([config.defaultDomain]);
@@ -52,35 +34,30 @@ let loadingDelay = 200;
  * @param {{initialLocale: string, fallbackLocale?:string, loadingDelay?:number }} options
  */
 export async function init(options) {
-  if (!options.initialLocale)
-    throw new Error("[t18s] No initial locale provided when calling `init`");
-
-  locale.set(options.initialLocale);
   fallbackLocale = options.fallbackLocale;
   loadingDelay = options.loadingDelay ?? loadingDelay;
 
-  try {
-    const promises = [];
-    promises.push(preloadLocale(options.initialLocale));
-    if (options.fallbackLocale)
-      promises.push(preloadLocale(options.fallbackLocale));
-    await Promise.allSettled(promises);
-  } catch (e) {
-    throw new Error(
-      "[t18s] Failed to load initial locale " + options.initialLocale,
-      { cause: e }
-    );
+  const preloadResults = await Promise.allSettled([
+    preloadLocale(options.initialLocale),
+    fallbackLocale ? preloadLocale(fallbackLocale) : Promise.resolve(),
+  ]);
+
+  for (const result of preloadResults) {
+    if (result.status === "fulfilled") continue;
+    console.error("[t18s] Failed to preload locale", result.reason);
   }
+
+  setLocale(options.initialLocale);
 }
 
 /**
  * Load the given locale quietly in the background
+ * 
  * @param {string} newLocale
- *
  * @throws {Error} If the locale could not be loaded
  */
 export async function preloadLocale(newLocale) {
-  const domains = [...eagerlyLoadedDomains];
+  const domains = [...eagerlyLoadedDomains]; //The domains to load for this locale
 
   const loadersForLocale = loaders[newLocale] ?? {};
 
@@ -106,10 +83,7 @@ export async function preloadLocale(newLocale) {
   for (const result of loaderResults) {
     if (result.status === "rejected") continue;
     const { domain, dictionary } = result.value;
-
-    const domainsForLocale = Catalogue[newLocale] ?? {};
-    domainsForLocale[domain] = dictionary;
-    Catalogue[newLocale] = domainsForLocale;
+    setDictionary(newLocale, domain, dictionary);
   }
 }
 
@@ -125,14 +99,6 @@ export async function loadDomain(domain) {
   const loader = loadersForLocale[domain];
   if (!loader) return;
   await loader();
-}
-
-/** @param {number} ms */
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-/** @param {any} maybeLocale */
-export function isLocale(maybeLocale) {
-  return locales.includes(maybeLocale);
 }
 
 /** @param {string} newLocale */
@@ -165,15 +131,14 @@ function parseKey(key) {
  * @returns
  */
 const getMessage = (keyString, values = undefined) => {
-  const { domain, key } = parseKey(keyString);
   const currentLocale = get(locale);
-
   if (currentLocale === null) {
     throw new Error("[t18s] No locale set. Did you forget to call `init`?");
   }
 
-  let formattedMessage;
+  const { domain, key } = parseKey(keyString);
 
+  let formattedMessage;
   const dictionary = getDictionary(currentLocale, domain);
   if (dictionary) {
     const messageValue = dictionary[key];
@@ -185,16 +150,14 @@ const getMessage = (keyString, values = undefined) => {
     const loader = getLoader(currentLocale, domain);
     if (loader) {
       loader().then((dictionary) => {
-        const domains = Catalogue[currentLocale] ?? {};
-        domains[domain] = dictionary;
-        Catalogue[currentLocale] = domains;
+        setDictionary(currentLocale, domain, dictionary);
         t.set(getMessage); //trigger a re-render
       });
     }
   }
 
   if (formattedMessage) return formattedMessage;
-  
+
   if (fallbackLocale) {
     const fallbackDictionary = getDictionary(fallbackLocale, domain);
     if (fallbackDictionary) {
@@ -210,9 +173,7 @@ const getMessage = (keyString, values = undefined) => {
       if (loader) {
         loader().then((dictionary) => {
           if (!fallbackLocale) return;
-          const domains = Catalogue[fallbackLocale] ?? {};
-          domains[domain] = dictionary;
-          Catalogue[fallbackLocale] = domains;
+          setDictionary(fallbackLocale, domain, dictionary);
           t.set(getMessage); //trigger a re-render
         });
       }
@@ -264,12 +225,7 @@ if (import.meta.hot) {
       )
     ).default;
 
-    let domainsForLocale = Catalogue[locale];
-    if (!domainsForLocale) {
-      domainsForLocale = Catalogue[locale] = {};
-    }
-
-    domainsForLocale[domain] = dictionary;
+    setDictionary(locale, domain, dictionary);
   }
 
   import.meta.hot.on("t18s:addDictionary", async (data) => {
@@ -302,4 +258,42 @@ if (import.meta.hot) {
     await invalidateLoaders();
     t.set(getMessage); //update the store
   });
+}
+
+// UTILS
+
+/**
+ * @template T
+ * @param {Record<string, Record<string, T>>} outer
+ * @returns {(key1: string, key2: string) => (T | undefined)}
+ */
+function doubleKeyedGetter(outer) {
+  return (key1, key2) => {
+    const inner = outer[key1];
+    if (!inner) return undefined;
+    return inner[key2];
+  };
+}
+
+/**
+ * @template T
+ * @param {Record<string, Record<string, T>>} outer
+ * @returns {(key1: string, key2: string, value: T) => void}
+ * 
+ */
+function doubleKeyedSetter(outer) {
+  return (key1, key2, value) => {
+    const inner = outer[key1];
+    if (!inner) outer[key1] = { [key2]: value };
+    else inner[key2] = value;
+  };
+}
+
+/**
+ * Returns a promise that resolves after the given number of milliseconds
+ * @param {number} ms
+ * @returns {Promise<void>}
+ */
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
