@@ -188,6 +188,8 @@ export function t18sCore(pluginConfig) {
    * @param { import("./types.js").ResolvedPluginConfig} config
    */
   async function loadInitialLocales(config) {
+    await regenerateDTS();
+    
     const files = await getFilesInDir(config.translationsDir);
     const paths = files.map((file) => resolve(config.translationsDir, file));
 
