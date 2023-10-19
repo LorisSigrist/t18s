@@ -223,14 +223,13 @@ export function t18sCore(pluginConfig) {
   /**
    * Categorizes to which locale & domain a given file belongs.
    * @param {string} path
-   * @returns {{locale: string, domain: string}}
    */
   const categorizeFile = (path) => {
     const filename = basename(path).split(".").slice(0, -1).join(".");
 
     const [first, second] = filename.split(".");
     if (!first) throw new Error(`Could not determine locale for ${path}`);
-    if (!second) return { locale: first, domain: config.defaultDomain };
+    if (!second) throw new Error(`Could not determine domain for ${path}`);
     return { locale: second, domain: first };
   };
 
