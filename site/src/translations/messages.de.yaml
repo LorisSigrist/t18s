@@ -1,5 +1,7 @@
 hello: Hallo Welt
-
 language:
   en: Englisch
   de: Deutsch
+
+link:
+  home: Startseite

@@ -3,3 +3,6 @@ hello: Hello World
 language:
   en: English
   de: German
+
+link:
+  home: Home

@@ -1,9 +1,10 @@
 <script>
   import { setLocale } from "$t18s";
-  import HrefLang from "$lib/HrefLang.svelte";
-  import { DEFAULT_LOCALE } from "$lib/i18n.js";
-  import LocaleSwitcher from "$lib/LocaleSwitcher.svelte";
+  import { DEFAULT_LOCALE } from "$lib/i18n/index.js";
+  import HrefLang from "$lib/i18n/HrefLang.svelte";
   import { browser } from "$app/environment";
+  import Header from "$lib/ui/Header.svelte";
+  import "$lib/app.css"
 
   export let data;
   $: setLocale(data.locale);
@@ -12,6 +13,7 @@
 
 <HrefLang defaultLocale={DEFAULT_LOCALE} />
 
-<LocaleSwitcher />
+
+<Header /> 
 <slot />
 
