@@ -10,12 +10,12 @@ import { indent } from "./utils/stringUtils.js";
 export function generateDictionaryModule(dictionary) {
   const dictionaryBodyLines = [];
   for (const [key, message] of dictionary) {
-    let line = "";
+    let messageCode = "";
     if (message.typeDefinition) {
-      line += `/** @type {(args: ${message.typeDefinition}) => string} */\n`;
+      messageCode += `/** @type {(args: ${message.typeDefinition}) => string} */\n`;
     }
-    line += `"${key}": ${message.precompiled}`;
-    dictionaryBodyLines.push(line);
+    messageCode += `"${key}": ${message.precompiled}`;
+    dictionaryBodyLines.push(messageCode);
   }
   const dictionaryBody = dictionaryBodyLines.join(",\n");
 
