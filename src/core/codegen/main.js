@@ -7,15 +7,11 @@ import { MessageCatalogue } from "../MessageCatalogue.js";
  * @returns {string}
  */
 export function generateMainModuleCode(config, Catalogue) {
-  const locales = [...Catalogue.getLocales()];
-
   const code =  `
   import { writable, get } from 'svelte/store';
-  import { locales } from 't18s-internal:locales'
   import config from 't18s-internal:config';
-
-
-  export { locales };
+  
+  export const locales = config.locales;
 
   //Keeps track of the current catalogue of dictionaries. Double-Keyed by locale and domain
   const Catalogue = {}
@@ -28,7 +24,7 @@ export function generateMainModuleCode(config, Catalogue) {
   //We need to explicitly list each import here to make sure none of 
   //the dictionaries are accidentally removed by tree-shaking
   const loaders = {
-    ${locales.map((loc) => {
+    ${config.locales.map((loc) => {
       const domains = Catalogue.getDomains(loc);
       let code = `"${loc}" : {\n`;
 
@@ -43,7 +39,7 @@ export function generateMainModuleCode(config, Catalogue) {
   //List of domains that should be loaded eagerly when a new locale is loaded
   const eagerlyLoadedDomains = new Set(["${config.defaultDomain}"]);
 
-  let fallbackLocale = undefined;
+  export let fallbackLocale = undefined;
   let loadingDelay = 200;
 
   export async function init(options) {
@@ -96,7 +92,7 @@ export function generateMainModuleCode(config, Catalogue) {
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
   
   export function isLocale(maybeLocale) {
-    return get(locales).includes(maybeLocale);
+    return locales.includes(maybeLocale);
   }
   
   async function loadLocale(newLocale) {
@@ -116,7 +112,7 @@ export function generateMainModuleCode(config, Catalogue) {
   function parseKey(key) {
     const [first, second] = key.split(":");
     if(!first) throw new Error("[t18s] Invalid key: " + key);
-    if(!second) return {domain: "${config.defaultDomain}", key: first};
+    if(!second) return {domain: config.defaultDomain, key: first};
     else return {domain: first, key: second};
   }
   
@@ -211,23 +207,8 @@ export function generateMainModuleCode(config, Catalogue) {
  
       t.set(getMessage); //update the store
     });
-
-    import.meta.hot.on("t18s:addLocale", async (data) => {
-      locales.update((locales) => [...locales, data.locale]);
-    });
-
-    import.meta.hot.on("t18s:removeLocale", async (data) => {
-      locales.update((locales) => locales.filter((l) => l !==  data.locale));
-      
-      console.log("REMOVING LOCALE", data.locale, get(locale), get(locales));
-
-      //Switch locale if the current locale was removed
-      if(data.locale === get(locale)) {
-        locale.set(get(locales)[0]);
-        t.set(getMessage); //rerender the component
-      }
-    });
   }
   `;
+
   return code;
 }

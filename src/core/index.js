@@ -26,8 +26,6 @@ import { cleanUrl } from "./utils/id.js";
 import { existsSync } from "node:fs";
 import { createHMRDispatcher } from "./HMR.js";
 import { generateConfigModule } from "./codegen/config.js";
-import { generateLocaleModule } from "./codegen/locale.js";
-import { $ } from "kleur/colors";
 
 /**
  * TypeSafe translations for Svelte & SvelteKit.
@@ -55,15 +53,6 @@ export function t18sCore(pluginConfig) {
 
   /** Keeps track of the messages that exist & where to find them */
   const Catalogue = new MessageCatalogue();
-
-  Catalogue.addEventListener("locale_removed", e => {
-    dispatch("t18s:removeLocale", { locale: e.detail.locale });
-  })
-  
-  Catalogue.addEventListener("locale_added", e => {
-    dispatch("t18s:addLocale", { locale: e.detail.locale });
-  });
-
   Catalogue.addEventListener(
     "messages_changed",
     async () => await regenerateDTS()
@@ -170,19 +159,28 @@ export function t18sCore(pluginConfig) {
   }
 
   /**
+   * Safely list the files that are in the given directory. If the reading fails, an empty array is returned & a warning is logged.
+   * @example ["file1.txt", "file2.txt"]
+   *
+   * @param {string} dir
+   * @returns {Promise<string[]>}
+   */
+  async function getFilesInDir(dir) {
+    const readdirResult = await buffer(readdir(dir));
+    return new ResultMatcher(readdirResult)
+      .catchAll((e) => {
+        logger.warn("Could not read directory " + dir);
+        return [];
+      })
+      .run();
+  }
+
+  /**
    * Reads the initial translation files and generates the initial code.
    * @param { import("./types.js").ResolvedPluginConfig} config
    */
   async function loadInitialLocales(config) {
-    const readdirResult = await buffer(readdir(config.translationsDir));
-
-    const files = new ResultMatcher(readdirResult)
-      .catchAll((e) => {
-        logger.warn("Could not read translation directory\n" + e);
-        return [];
-      })
-      .run();
-
+    const files = await getFilesInDir(config.translationsDir);
     const paths = files.map((file) => resolve(config.translationsDir, file));
 
     /** @param {string} path */
@@ -238,6 +236,7 @@ export function t18sCore(pluginConfig) {
         ),
         verbose: pluginConfig.verbose,
         defaultDomain: pluginConfig.defaultDomain,
+        locales: pluginConfig.locales,
       };
 
       logger = new Logger(resolvedConfig, config.verbose);
@@ -254,7 +253,6 @@ export function t18sCore(pluginConfig) {
         resolveMainModuleId,
         resolveRuntimeId,
         resolveConfigModuleId,
-        resolveLocaleModuleId,
       ];
 
       for (const resolver of resolvers) {
@@ -273,7 +271,6 @@ export function t18sCore(pluginConfig) {
         loadDictionaryModule,
         loadRuntimeModule,
         loadConfigModule,
-        loadLocaleModule
       ];
 
       //Attempt to load the module from all loaders
@@ -402,18 +399,6 @@ async function loadConfigModule(resolved_id, config, Catalogue) {
 }
 
 /**
- * @param {string} resolved_id
- * @param {import("./types.js").ResolvedPluginConfig} config
- *
- * @param {MessageCatalogue} Catalogue
- * @returns {Promise<string | null>}
- */
-async function loadLocaleModule(resolved_id, config, Catalogue) {
-  if (resolved_id !== "\0t18s-internal:locales") return null;
-  return generateLocaleModule(Catalogue);
-}
-
-/**
  * If the unresolved_id is for the t18s-runtime, this function will resolve it.
  * @param {string} unresolved_id
  * @returns {string | null}
@@ -458,14 +443,4 @@ function resolveMainModuleId(unresolved_id) {
 function resolveConfigModuleId(unresolved_id) {
   if (unresolved_id !== "t18s-internal:config") return null;
   return "\0t18s-internal:config";
-}
-
-/**
- * If the unresolved_id is for the t18s locales, this function will resolve it.
- * @param {string} unresolved_id
- * @returns {string | null}
- */
-function resolveLocaleModuleId(unresolved_id) {
-  if (unresolved_id !== "t18s-internal:locales") return null;
-  return "\0t18s-internal:locales";
 }

@@ -8,7 +8,7 @@ import { MessageCatalogue } from "../MessageCatalogue.js";
  * @param {MessageCatalogue} Catalogue
  */
 export function generateDTS(config, Catalogue) {
-  const locales = Catalogue.getLocales();
+  const locales = config.locales;
   const messagesTypeMap = generateMessagesTypeMap(config, Catalogue);
 
   const dts = new DTSBuilder();
@@ -29,7 +29,12 @@ export function generateDTS(config, Catalogue) {
       s.setDescription("The known locales"),
     );
 
-    module.addStatement(`export const locales : Readable<Locales>;`, (s) =>
+
+    module.addStatement(`export const fallbackLocale: Locale | undefined;`, (s) =>
+      s.setDescription("The fallback locale that's currently in use.")
+    );
+
+    module.addStatement(`export const locales : Locales;`, (s) =>
       s.setDescription(
         "A store containing the available locales.\n\nThis store will only ever change during development, it is constant in production.",
       ),
@@ -105,15 +110,6 @@ export function generateDTS(config, Catalogue) {
             "@param values Any values that are interpolated into the translation.",
           ].join("\n"),
         ),
-    );
-
-    // T Component
-    module.addImport("import type { SvelteComponentTyped } from 'svelte';");
-    module.addStatement(
-      "export class T<Key extends keyof Messages> extends SvelteComponentTyped<Messages[Key] extends undefined ? { key: Key } : { key: Key, values: Messages[Key] }, {}, {}> { };",
-      (s) => {
-        s.setDescription("The t18s translation component.");
-      },
     );
   });
 

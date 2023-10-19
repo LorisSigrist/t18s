@@ -25,6 +25,22 @@ export type t18sUserConfig = {
    * @default "messages"
    */
   defaultDomain?: string;
+
+  /**
+   * The locales that should be made available.
+   */
+  locales: [string, ...string[]],
 };
 
+export type t18sDefaultConfig = FlipOptional<t18sUserConfig>;
 export type t18sFullConfig = Required<t18sUserConfig>;
+
+
+type OptionalKeys<T> = {
+  [K in keyof T]-?: {} extends Pick<T, K> ? K : never
+}[keyof T];
+
+type FlipOptional<T> = (Required<Pick<T, OptionalKeys<T>>> &
+  Partial<Omit<T, OptionalKeys<T>>>) extends infer O
+  ? { [K in keyof O]: O[K] }
+  : never;

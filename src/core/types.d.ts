@@ -27,4 +27,5 @@ export interface ResolvedPluginConfig {
   translationsDir: string;
   verbose: boolean;
   defaultDomain: string;
+  locales: [string, ...string[]];
 }
