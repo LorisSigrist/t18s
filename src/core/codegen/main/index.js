@@ -11,38 +11,53 @@ export const locales = config.locales;
 export const setLocale = locale.set;
 export const isLoading = writable(false);
 
+//Functions to load dictionaries. Double-Keyed by locale and domain
+let loaders = initial_loaders;
+
+/**
+ * @param {string} locale
+ * @param {string} domain
+ * @returns {(() => Promise<Record<string, CompiledMessage>>) | undefined}
+ */
+function getLoader(locale, domain) {
+  const loadersForLocale = loaders[locale];
+  if (!loadersForLocale) return undefined;
+  return loadersForLocale[domain];
+}
+
 //Keeps track of the current catalogue of dictionaries. Double-Keyed by locale and domain
 /** @type {Record<string, Record<string, Record<string, CompiledMessage>>>} */
 const Catalogue = {};
 
-//Functions to load dictionaries. Double-Keyed by locale and domain
-//We need to explicitly list each import here to make sure none of
-//the dictionaries are accidentally removed by tree-shaking
-let loaders = initial_loaders;
+/**
+ * @param {string} locale
+ * @param {string} domain
+ * @returns {Record<string, CompiledMessage> | undefined}
+ */
+function getDictionary(locale, domain) {
+  const domainsForLocale = Catalogue[locale];
+  if (!domainsForLocale) return undefined;
+  return domainsForLocale[domain];
+}
 
 //List of domains that should be loaded eagerly when a new locale is loaded
-const eagerlyLoadedDomains = new Set(["${config.defaultDomain}"]);
+const eagerlyLoadedDomains = new Set([config.defaultDomain]);
 
 /** @type {string | undefined} */
 export let fallbackLocale = undefined;
 let loadingDelay = 200;
 
 /**
- *
+ * Must be called before any other t18s function.
  * @param {{initialLocale: string, fallbackLocale?:string, loadingDelay?:number }} options
  */
 export async function init(options) {
   if (!options.initialLocale)
     throw new Error("[t18s] No initial locale provided when calling `init`");
+
   locale.set(options.initialLocale);
-
-  if (options.fallbackLocale) {
-    fallbackLocale = options.fallbackLocale;
-  }
-
-  if (options.loadingDelay !== undefined) {
-    loadingDelay = options.loadingDelay;
-  }
+  fallbackLocale = options.fallbackLocale;
+  loadingDelay = options.loadingDelay ?? loadingDelay;
 
   try {
     const promises = [];
@@ -159,45 +174,53 @@ const getMessage = (keyString, values = undefined) => {
 
   let formattedMessage;
 
-  if (Catalogue[currentLocale] && Catalogue[currentLocale][domain]) {
-    const dictionary = Catalogue[currentLocale][domain];
-    const message = dictionary[key];
-    if (message) {
+  const dictionary = getDictionary(currentLocale, domain);
+  if (dictionary) {
+    const messageValue = dictionary[key];
+    if (messageValue) {
       formattedMessage =
-        typeof message === "string" ? message : message(values);
+        typeof messageValue === "string" ? messageValue : messageValue(values);
     }
-  } else if (loaders[currentLocale] && loaders[currentLocale][domain]) {
-    loaders[currentLocale][domain]().then((dictionary) => {
-      Catalogue[currentLocale] = Catalogue[currentLocale] ?? {};
-      Catalogue[currentLocale][domain] = dictionary;
-      t.set(getMessage);
-    });
+  } else {
+    const loader = getLoader(currentLocale, domain);
+    if (loader) {
+      loader().then((dictionary) => {
+        const domains = Catalogue[currentLocale] ?? {};
+        domains[domain] = dictionary;
+        Catalogue[currentLocale] = domains;
+        t.set(getMessage); //trigger a re-render
+      });
+    }
+  }
+
+  if (formattedMessage) return formattedMessage;
+  
+  if (fallbackLocale) {
+    const fallbackDictionary = getDictionary(fallbackLocale, domain);
+    if (fallbackDictionary) {
+      const messageValue = fallbackDictionary[key];
+      if (messageValue) {
+        formattedMessage =
+          typeof messageValue === "string"
+            ? messageValue
+            : messageValue(values);
+      }
+    } else {
+      const loader = getLoader(fallbackLocale, domain);
+      if (loader) {
+        loader().then((dictionary) => {
+          if (!fallbackLocale) return;
+          const domains = Catalogue[fallbackLocale] ?? {};
+          domains[domain] = dictionary;
+          Catalogue[fallbackLocale] = domains;
+          t.set(getMessage); //trigger a re-render
+        });
+      }
+    }
   }
 
   if (formattedMessage) return formattedMessage;
 
-  if (
-    fallbackLocale &&
-    Catalogue[fallbackLocale] &&
-    Catalogue[fallbackLocale][domain]
-  ) {
-    const dictionary = Catalogue[fallbackLocale][domain];
-    const fallbackMessage = dictionary[key];
-    if (fallbackMessage) {
-      formattedMessage =
-        typeof fallbackMessage === "string"
-          ? fallbackMessage
-          : fallbackMessage(values);
-    }
-  } else if (loaders[fallbackLocale] && loaders[fallbackLocale][domain]) {
-    loaders[fallbackLocale][domain]().then((dictionary) => {
-      Catalogue[fallbackLocale] = Catalogue[fallbackLocale] ?? {};
-      Catalogue[fallbackLocale][domain] = dictionary;
-      t.set(getMessage);
-    });
-  }
-
-  if (formattedMessage) return formattedMessage;
   console.warn(
     "[t18s] Translation for key " +
       keyString +
