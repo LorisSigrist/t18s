@@ -33,11 +33,11 @@
     "prettier": "^3.0.3",
     "typescript": "^5.2.2",
     "typescript-event-target": "^1.0.5",
-    "vite": "^4.4.9",
     "vitest": "^0.34.6"
   },
   "peerDependencies": {
-    "svelte": "^3 || ^4"
+    "svelte": "^3 || ^4",
+    "vite": "^4.5.0"
   },
   "files": [
     "types",

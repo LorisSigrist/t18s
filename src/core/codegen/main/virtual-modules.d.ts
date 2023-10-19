@@ -1,8 +1,7 @@
-
 type CompiledMessage = string | ((values: any) => string)
 
 declare module "t18s-internal:config" {
-    const config: import("../../types.js").ResolvedPluginConfig;
+    const config: import("../config.js").PublicConfig
     export default config;
 }
 

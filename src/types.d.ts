@@ -1,7 +1,7 @@
 /**
  * Configuration options for the t18s plugin.
  */
-export type t18sUserConfig = {
+export type t18sUserConfig<Locales extends readonly string[]> = {
   /**
    * The directory in which to search for translation files.
    * @default "src/translations"
@@ -29,18 +29,8 @@ export type t18sUserConfig = {
   /**
    * The locales that should be made available.
    */
-  locales: [string, ...string[]],
+  locales: Locales,
+  fallbackLocale?: Locales[number] | null
 };
 
-export type t18sDefaultConfig = FlipOptional<t18sUserConfig>;
-export type t18sFullConfig = Required<t18sUserConfig>;
-
-
-type OptionalKeys<T> = {
-  [K in keyof T]-?: {} extends Pick<T, K> ? K : never
-}[keyof T];
-
-type FlipOptional<T> = (Required<Pick<T, OptionalKeys<T>>> &
-  Partial<Omit<T, OptionalKeys<T>>>) extends infer O
-  ? { [K in keyof O]: O[K] }
-  : never;
+export type t18sFullConfig = Required<t18sUserConfig<string[]>>;

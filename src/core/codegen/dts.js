@@ -56,14 +56,6 @@ export function generateDTS(config, Catalogue) {
     );
 
     module.addStatement(
-      "export function init(options: { initialLocale: Locale, fallbackLocale?: Locale, loadingDelay?: number }) : Promise<void>",
-      (s) =>
-        s.setDescription(
-          "Initialize t18s.\nThis must be called before any other t18s function.",
-        ),
-    );
-
-    module.addStatement(
       "export function loadLocale(locale: Locale): Promise<void>;",
       s => s.setDescription("Loads the given locale if it's not already loaded. Does NOT change the current locale.")
     )

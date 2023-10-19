@@ -123,7 +123,9 @@ export function t18sCore(pluginConfig) {
   async function invalidateTranslationFile(filePath) {
     const { locale, domain } = categorizeFile(filePath);
     if (!config.locales.includes(locale)) {
-      console.warn("Attempted to invalidate file for invalid locale: " + locale);
+      console.warn(
+        "Attempted to invalidate file for invalid locale: " + locale
+      );
       return;
     }
 
@@ -246,6 +248,7 @@ export function t18sCore(pluginConfig) {
         verbose: pluginConfig.verbose,
         defaultDomain: pluginConfig.defaultDomain,
         locales: pluginConfig.locales,
+        fallbackLocale: pluginConfig.fallbackLocale ?? null,
       };
 
       logger = new Logger(resolvedConfig, config.verbose);
@@ -262,7 +265,7 @@ export function t18sCore(pluginConfig) {
         resolveMainModuleId,
         resolveRuntimeId,
         resolveConfigModuleId,
-        resolveLoaderModuleId
+        resolveLoaderModuleId,
       ];
 
       for (const resolver of resolvers) {
@@ -281,7 +284,7 @@ export function t18sCore(pluginConfig) {
         loadDictionaryModule,
         loadRuntimeModule,
         loadConfigModule,
-        loadLoaderModule
+        loadLoaderModule,
       ];
 
       //Attempt to load the module from all loaders
@@ -419,7 +422,7 @@ async function loadConfigModule(resolved_id, config, Catalogue) {
 async function loadLoaderModule(resolved_id, config, Catalogue) {
   if (resolved_id !== "\0t18s-internal:loaders") return null;
   return generateLoaderModule(config, Catalogue);
-};
+}
 
 /**
  * If the unresolved_id is for the t18s-runtime, this function will resolve it.

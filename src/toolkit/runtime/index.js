@@ -1,4 +1,4 @@
-// @ts-expect-error missing
+// @ts-ignore
 import Toolkit from "./Toolkit.svelte";
 
 function create_host() {
