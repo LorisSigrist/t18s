@@ -49,7 +49,7 @@ export function t18sCore(pluginConfig) {
    * Dispatch an HMR event to the client.
    * @type {import("./HMR.js").HMREventDispatcher}
    */
-  let dispatch = () => {};
+  let hmrDispatch = () => {};
 
   /** Keeps track of the messages that exist & where to find them */
   const Catalogue = new MessageCatalogue(pluginConfig.locales);
@@ -58,24 +58,22 @@ export function t18sCore(pluginConfig) {
     async () => await regenerateDTS()
   );
   Catalogue.addEventListener("dictionary_added", (e) => {
-    dispatch("t18s:addDictionary", {
+    hmrDispatch("t18s:addDictionary", {
       locale: e.detail.locale,
       domain: e.detail.domain,
     });
   });
   Catalogue.addEventListener("dictionary_removed", (e) => {
-    reporter.localeDeleted(e.detail.locale);
-    dispatch("t18s:removeDictionary", {
+    reporter.unregisterTranslations(e.detail.locale, e.detail.domain);
+    hmrDispatch("t18s:removeDictionary", {
       locale: e.detail.locale,
       domain: e.detail.domain,
     });
   });
   Catalogue.addEventListener("dictionary_changed", (e) => {
-    reporter.localeUpdated(e.detail.locale);
-    dispatch("t18s:reloadDictionary", {
-      locale: e.detail.locale,
-      domain: e.detail.domain,
-    });
+    const { locale, domain } = e.detail;
+    reporter.translationsChanged(locale, domain);
+    hmrDispatch("t18s:reloadDictionary", { locale, domain });
   });
 
   /** Handles interactions with translation files */
@@ -123,7 +121,10 @@ export function t18sCore(pluginConfig) {
    */
   async function invalidateTranslationFile(filePath) {
     const { locale, domain } = categorizeFile(filePath);
-    if (!config.locales.includes(locale)) return;
+    if (!config.locales.includes(locale)) {
+      console.warn("Attempted to invalidate file for invalid locale: " + locale);
+      return;
+    }
 
     //Try to read the file & buffer the result
     const bufferedFileRead = await buffer(fileHandler.read(filePath));
@@ -325,7 +326,7 @@ export function t18sCore(pluginConfig) {
       });
 
       viteDevServer = server;
-      dispatch = createHMRDispatcher(server);
+      hmrDispatch = createHMRDispatcher(server);
     },
   };
 }

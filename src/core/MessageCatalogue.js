@@ -91,7 +91,7 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
       throw new LocaleNotFoundException(locale);
     this.#dictionaries.set(locale, domain, dictionary);
     this.#dispatch("messages_changed", {});
-    this.#dispatch("messages_changed", { locale, domain, dictionary });
+    this.#dispatch("dictionary_changed", { locale, domain, dictionary });
   }
 
   /**

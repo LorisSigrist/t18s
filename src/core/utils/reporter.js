@@ -30,9 +30,9 @@ export class Reporter {
   }
 
   /**
-   * 
-   * @param {string} filePath 
-   * @param {string} invalidLocale 
+   *
+   * @param {string} filePath
+   * @param {string} invalidLocale
    */
   warnAboutFileForInvalidLocale(filePath, invalidLocale) {
     let errorMessage = `Attempted to register a translation file for an unregistered locale: ${invalidLocale}`;
@@ -44,31 +44,38 @@ export class Reporter {
 
   /**
    * @param {string} locale
-   */
-  localeUpdated(locale) {
-    this.#logger.log(`Locale ${kleur.italic(locale)} updated`);
-  }
-
-  /**
-   * @param {string} locale
-   */
-  localeDeleted(locale) {
-    this.#logger.warn(`Locale ${kleur.italic(locale)} deleted`);
-  }
-
-  /**
-   * @param {string} locale
-   */
-  localeCreated(locale) {
-    this.#logger.success(`Locale ${kleur.italic(locale)} created`);
-  }
-
-  /**
-   * @param {string} locale 
-   * @param {string} domain 
+   * @param {string} domain
    */
   translationsRegistered(locale, domain) {
-    this.#logger.log(`Domain ${kleur.italic(domain)} registered for locale ${kleur.italic(locale)}`);
+    this.#logger.log(
+      `Domain ${kleur.italic(domain)} registered for locale ${kleur.italic(
+        locale
+      )}`
+    );
+  }
+
+  /**
+   * @param {string} locale
+   * @param {string} domain
+   */
+  translationsChanged(locale, domain) {
+    this.#logger.log(
+      `Domain ${kleur.italic(domain)} changed for locale ${kleur.italic(
+        locale
+      )}`
+    );
+  }
+
+  /**
+   * @param {string} locale
+   * @param {string} domain
+   */
+  unregisterTranslations(locale, domain) {
+    this.#logger.log(
+      `Domain ${kleur.italic(domain)} unregistered for locale ${kleur.italic(
+        locale
+      )}`
+    );
   }
 
   /**
@@ -78,8 +85,8 @@ export class Reporter {
   warnAboutDuplicateLocaleFiles(locale, filePaths) {
     this.#logger.error(
       `Multiple files for locale ${locale} found:\n    ${filePaths.join(
-        "\n    ",
-      )}`,
+        "\n    "
+      )}`
     );
   }
 }
