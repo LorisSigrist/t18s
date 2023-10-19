@@ -1,4 +1,4 @@
-import { addQuotes, stringTypeUnion } from "./utils/stringUtils.js";
+import { addQuotes } from "./utils/stringUtils.js";
 import { DTSBuilder } from "./utils/dtsBuilder.js";
 import { VIRTUAL_MODULE_PREFIX } from "../constants.js";
 import { MessageCatalogue } from "../MessageCatalogue.js";
