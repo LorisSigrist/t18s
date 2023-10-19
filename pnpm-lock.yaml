@@ -63,6 +63,9 @@ importers:
         specifier: workspace:*
         version: link:../packages/t18s
     devDependencies:
+      '@iconify-json/heroicons':
+        specifier: ^1.1.13
+        version: 1.1.13
       '@iconify-json/logos':
         specifier: ^1.1.37
         version: 1.1.37
@@ -372,6 +375,12 @@ packages:
       intl-messageformat: 10.5.3
       tslib: 2.6.2
       typescript: 5.2.2
+    dev: true
+
+  /@iconify-json/heroicons@1.1.13:
+    resolution: {integrity: sha512-WsRTTc0qGDreszIgL9uVpPSnRlM2bXaKmK3E0zpQZloUZQX3FokDqGFgc0UbJ+8np/ta571Ty+8n78mlMhEU8w==}
+    dependencies:
+      '@iconify/types': 2.0.0
     dev: true
 
   /@iconify-json/logos@1.1.37:

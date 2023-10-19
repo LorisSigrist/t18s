@@ -10,6 +10,7 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json --watch"
 	},
 	"devDependencies": {
+		"@iconify-json/heroicons": "^1.1.13",
 		"@iconify-json/logos": "^1.1.37",
 		"@iconify-json/simple-icons": "^1.1.75",
 		"@sveltejs/adapter-static": "^2.0.3",

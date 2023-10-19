@@ -3,8 +3,8 @@
   import { DEFAULT_LOCALE } from "$lib/i18n/index.js";
   import HrefLang from "$lib/i18n/HrefLang.svelte";
   import { browser } from "$app/environment";
-  import Header from "$lib/ui/Header.svelte";
   import "$lib/app.css"
+  import Sidebar from "$lib/ui/Sidebar.svelte";
 
   export let data;
   $: setLocale(data.locale);
@@ -14,6 +14,11 @@
 <HrefLang defaultLocale={DEFAULT_LOCALE} />
 
 
-<Header /> 
-<slot />
+<div class="flex flex-row">
+  <Sidebar />
+  <main class="px-24 py-16 w-full h-full">
+    <slot />
+  </main>
+</div>
+
 

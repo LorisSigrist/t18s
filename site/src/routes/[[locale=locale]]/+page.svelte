@@ -1,10 +1,5 @@
 <script>
-  import { t } from "$t18s";
-  import Hero from "./Hero.svelte";
+  import Code from "$lib/ui/Code.svelte";
 </script>
 
-<Hero />
-
-{#each { length: 300 } as _}
-  <h1>{$t("hello")}</h1>
-{/each}
+<Code code="npm install -D t18s" language="bash" />
