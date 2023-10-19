@@ -12,7 +12,7 @@ export function generateDictionaryModule(dictionary) {
   for (const [key, message] of dictionary) {
     let line = "";
     if (message.typeDefinition) {
-      line += `/** @type {(args: ${message.typeDefinition}) => string} */\n`
+      line += `/** @type {(args: ${message.typeDefinition}) => string} */\n`;
     }
     line += `"${key}": ${message.precompiled}`;
     dictionaryBodyLines.push(line);

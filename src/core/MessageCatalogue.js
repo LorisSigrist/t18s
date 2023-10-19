@@ -44,7 +44,7 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
   #locales;
 
   /**
-   * @param {Iterable<string>} locales 
+   * @param {Iterable<string>} locales
    */
   constructor(locales) {
     super();

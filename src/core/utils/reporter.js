@@ -49,8 +49,8 @@ export class Reporter {
   translationsRegistered(locale, domain) {
     this.#logger.log(
       `Domain ${kleur.italic(domain)} registered for locale ${kleur.italic(
-        locale
-      )}`
+        locale,
+      )}`,
     );
   }
 
@@ -61,8 +61,8 @@ export class Reporter {
   translationsChanged(locale, domain) {
     this.#logger.log(
       `Domain ${kleur.italic(domain)} changed for locale ${kleur.italic(
-        locale
-      )}`
+        locale,
+      )}`,
     );
   }
 
@@ -73,8 +73,8 @@ export class Reporter {
   unregisterTranslations(locale, domain) {
     this.#logger.log(
       `Domain ${kleur.italic(domain)} unregistered for locale ${kleur.italic(
-        locale
-      )}`
+        locale,
+      )}`,
     );
   }
 
@@ -85,8 +85,8 @@ export class Reporter {
   warnAboutDuplicateLocaleFiles(locale, filePaths) {
     this.#logger.error(
       `Multiple files for locale ${locale} found:\n    ${filePaths.join(
-        "\n    "
-      )}`
+        "\n    ",
+      )}`,
     );
   }
 }

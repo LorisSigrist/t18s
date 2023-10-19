@@ -1,27 +1,18 @@
-/**
- * @typedef {Pick<import("../types.js").ResolvedPluginConfig, "defaultDomain" | "locales" | "verbose"|"fallbackLocale">} PublicConfig
- */
-
-
 /** @type {string | null} */
 let cachedCode = null;
 
 /**
- * @param {import("../types.js").ResolvedPluginConfig} config 
+ * @param {import("../types.js").ResolvedPluginConfig} config
  */
 export function generateConfigModule(config) {
-
-    if(cachedCode !== null) return cachedCode;
-
-    /** @type {PublicConfig} */
-    const publicConfig = {
-        defaultDomain: config.defaultDomain,
-        locales: config.locales,
-        verbose: config.verbose,
-        fallbackLocale: config.fallbackLocale
-    }
-
-    const code = "export default " + JSON.stringify(publicConfig, null, 2) + ";";
-    cachedCode = code;
-    return code;
+  if (cachedCode !== null) return cachedCode;
+  let code = "";
+  code += `export const verbose = ${config.verbose ? "true" : "false"};\n`;
+  code += `export const locales = ${JSON.stringify(config.locales)};\n`;
+  code += `export const fallbackLocale = ${
+    config.fallbackLocale ? `"${config.fallbackLocale}"` : "undefined"
+  };\n`;
+  code += `export const defaultDomain = "${config.defaultDomain}";\n`;
+  cachedCode = code;
+  return code;
 }

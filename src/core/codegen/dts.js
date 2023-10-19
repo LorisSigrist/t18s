@@ -29,14 +29,13 @@ export function generateDTS(config, Catalogue) {
       s.setDescription("The known locales"),
     );
 
-    module.addStatement(`export const fallbackLocale: Locale | undefined;`, (s) =>
-      s.setDescription("The fallback locale that's currently in use.")
+    module.addStatement(
+      `export const fallbackLocale: Locale | undefined;`,
+      (s) => s.setDescription("The fallback locale that's currently in use."),
     );
 
     module.addStatement(`export const locales : Locales;`, (s) =>
-      s.setDescription(
-        "The available locales",
-      ),
+      s.setDescription("The available locales"),
     );
 
     module.addStatement(`export const locale: Writable<Locale>;`, (s) =>
@@ -57,8 +56,11 @@ export function generateDTS(config, Catalogue) {
 
     module.addStatement(
       "export function loadLocale(locale: Locale): Promise<void>;",
-      s => s.setDescription("Loads the given locale if it's not already loaded. Does NOT change the current locale.")
-    )
+      (s) =>
+        s.setDescription(
+          "Loads the given locale if it's not already loaded. Does NOT change the current locale.",
+        ),
+    );
 
     module.addStatement(
       `export const preloadLocale: (newLocale: Locale) => Promise<void>;`,
@@ -127,7 +129,9 @@ function generateMessagesTypeMap(config, Catalogue) {
   for (const [_, domain, dictionary] of Catalogue.getDictionaries().entries()) {
     for (const [messageKey, message] of dictionary.entries()) {
       const key =
-        domain === config.defaultDomain ? messageKey : `${domain}:${messageKey}`;
+        domain === config.defaultDomain
+          ? messageKey
+          : `${domain}:${messageKey}`;
       if (!key2messages.has(key)) key2messages.set(key, new Set());
       key2messages.get(key)?.add(message);
     }

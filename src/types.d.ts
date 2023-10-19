@@ -29,8 +29,8 @@ export type t18sUserConfig<Locales extends readonly string[]> = {
   /**
    * The locales that should be made available.
    */
-  locales: Locales,
-  fallbackLocale?: Locales[number] | null
+  locales: Locales;
+  fallbackLocale?: Locales[number] | null;
 };
 
 export type t18sFullConfig = Required<t18sUserConfig<string[]>>;

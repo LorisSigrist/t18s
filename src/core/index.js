@@ -56,7 +56,7 @@ export function t18sCore(pluginConfig) {
   const Catalogue = new MessageCatalogue(pluginConfig.locales);
   Catalogue.addEventListener(
     "messages_changed",
-    async () => await regenerateDTS()
+    async () => await regenerateDTS(),
   );
   Catalogue.addEventListener("dictionary_added", (e) => {
     hmrDispatch("t18s:addDictionary", {
@@ -93,7 +93,7 @@ export function t18sCore(pluginConfig) {
 
     if (Catalogue.hasDictionary(locale, domain)) {
       logger.error(
-        `Locale ${locale} already exists. Skipping file ${filePath}`
+        `Locale ${locale} already exists. Skipping file ${filePath}`,
       );
       return;
     }
@@ -124,7 +124,7 @@ export function t18sCore(pluginConfig) {
     const { locale, domain } = categorizeFile(filePath);
     if (!config.locales.includes(locale)) {
       console.warn(
-        "Attempted to invalidate file for invalid locale: " + locale
+        "Attempted to invalidate file for invalid locale: " + locale,
       );
       return;
     }
@@ -243,9 +243,9 @@ export function t18sCore(pluginConfig) {
         dtsPath: resolve(resolvedConfig.root, pluginConfig.dts),
         translationsDir: resolve(
           resolvedConfig.root,
-          pluginConfig.translationsDir
+          pluginConfig.translationsDir,
         ),
-        verbose: pluginConfig.verbose,
+        verbose: pluginConfig.verbose && resolvedConfig.command === "serve",
         defaultDomain: pluginConfig.defaultDomain,
         locales: pluginConfig.locales,
         fallbackLocale: pluginConfig.fallbackLocale ?? null,
@@ -289,7 +289,7 @@ export function t18sCore(pluginConfig) {
 
       //Attempt to load the module from all loaders
       const loadingPromises = loaders.map((loader) =>
-        loader(id, config, Catalogue)
+        loader(id, config, Catalogue),
       );
       const results = await Promise.allSettled(loadingPromises);
 
@@ -341,7 +341,7 @@ function getRuntimeEntryPath() {
   const thisModulePath = normalizePath(dirname(fileURLToPath(import.meta.url)));
   return thisModulePath.replace(
     /\/t18s\/src\/core$/,
-    "/t18s/src/core/runtime/"
+    "/t18s/src/core/runtime/",
   );
 }
 

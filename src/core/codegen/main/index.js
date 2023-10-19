@@ -2,15 +2,19 @@
 // CANNOT IMPORT ANY RELATIVE FILES - WE READ THIS USING fs.readFile
 
 import { writable, get } from "svelte/store";
-import config from "t18s-internal:config";
+import {
+  verbose,
+  fallbackLocale,
+  locales,
+  defaultDomain,
+} from "t18s-internal:config";
 import initial_loaders from "t18s-internal:loaders";
 
 /** @type {import("svelte/store").Writable<string | null>} */
 const localeStore = writable(null);
 export { localeStore as locale };
 export const setLocale = localeStore.set;
-
-export const locales = config.locales;
+export { fallbackLocale, locales };
 
 /** @param {any} param */
 export const isLocale = (param) => locales.includes(param);
@@ -44,9 +48,7 @@ const loadDictionary = async (locale, domain) => {
 };
 
 //List of domains that should be loaded eagerly when a new locale is loaded
-const eagerlyLoadedDomains = new Set([config.defaultDomain]);
-
-export const fallbackLocale = config.fallbackLocale;
+const eagerlyLoadedDomains = new Set([defaultDomain]);
 let loadingDelay = 200;
 
 /**
@@ -76,7 +78,7 @@ export async function preloadLocale(newLocale) {
           loader()
             .then((dictionary) => resolve({ locale, domain, dictionary }))
             .catch(reject);
-        })
+        }),
       );
     }
   }
@@ -94,13 +96,11 @@ export async function loadDomain(domain) {
   eagerlyLoadedDomains.add(domain);
   const currentLocale = get(localeStore);
   if (!currentLocale)
-    throw new Error("[t18s] No locale set. Did you forget to set one in `+layout.js`?");
+    throw new Error(
+      "[t18s] No locale set. Did you forget to set one in `+layout.js`?",
+    );
 
-  //Execute the Loader for the domain with the current locale
-  const loadersForLocale = loaders[currentLocale] ?? {};
-  const loader = loadersForLocale[domain];
-  if (!loader) return;
-  await loader();
+  await loadDictionary(currentLocale, domain);
 }
 
 /** @param {string} newLocale */
@@ -112,7 +112,9 @@ export async function loadLocale(newLocale) {
     });
     await preloadLocale(newLocale);
   } catch (e) {
-    console.error("[t18s] Failed to load locale " + newLocale);
+    if (verbose) {
+      console.error("[t18s] Failed to load locale " + newLocale);
+    }
   } finally {
     isLoading.set(false);
     done = true;
@@ -123,7 +125,7 @@ export async function loadLocale(newLocale) {
 function parseKey(key) {
   const [first, second] = key.split(":");
   if (!first) throw new Error("[t18s] Invalid key: " + key);
-  if (!second) return { domain: config.defaultDomain, key: first };
+  if (!second) return { domain: defaultDomain, key: first };
   else return { domain: first, key: second };
 }
 
@@ -135,7 +137,9 @@ function parseKey(key) {
 const getMessage = (keyString, values = undefined) => {
   const currentLocale = get(localeStore);
   if (currentLocale === null)
-    throw new Error("[t18s] No locale set. Did you forget to set one in `+layout.js`?");
+    throw new Error(
+      "[t18s] No locale set. Did you forget to set one in `+layout.js`?",
+    );
 
   const { domain, key } = parseKey(keyString);
 
@@ -155,12 +159,14 @@ const getMessage = (keyString, values = undefined) => {
 
   if (formattedMessage) return formattedMessage;
 
-  console.warn(
-    "[t18s] Translation for key " +
-      keyString +
-      " not found in locale " +
-      currentLocale
-  );
+  if (verbose) {
+    console.warn(
+      "[t18s] Translation for key " +
+        keyString +
+        " not found in locale " +
+        currentLocale,
+    );
+  }
   return keyString;
 };
 
