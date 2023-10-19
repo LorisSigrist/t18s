@@ -1,5 +1,4 @@
 import { t18sCore } from "./core/index.js";
-import { t18sToolkit } from "./toolkit/index.js";
 
 const DEFAULT_CONFIG = {
   translationsDir: "src/translations",
@@ -20,5 +19,5 @@ const DEFAULT_CONFIG = {
  */
 export function t18s(userConfig) {
   const pluginConfig = { ...DEFAULT_CONFIG, ...userConfig };
-  return [t18sToolkit(), t18sCore(pluginConfig)];
+  return [t18sCore(pluginConfig)];
 }

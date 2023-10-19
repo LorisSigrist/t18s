@@ -1,3 +1,5 @@
+/// <reference types="vite/client" />
+
 type CompiledMessage = string | ((values: any) => string);
 
 declare module "t18s-internal:config" {
