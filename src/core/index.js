@@ -26,6 +26,7 @@ import { cleanUrl } from "./utils/id.js";
 import { existsSync } from "node:fs";
 import { createHMRDispatcher } from "./HMR.js";
 import { generateConfigModule } from "./codegen/config.js";
+import { generateLoaderModule } from "./codegen/loaders.js";
 
 /**
  * TypeSafe translations for Svelte & SvelteKit.
@@ -261,6 +262,7 @@ export function t18sCore(pluginConfig) {
         resolveMainModuleId,
         resolveRuntimeId,
         resolveConfigModuleId,
+        resolveLoaderModuleId
       ];
 
       for (const resolver of resolvers) {
@@ -279,6 +281,7 @@ export function t18sCore(pluginConfig) {
         loadDictionaryModule,
         loadRuntimeModule,
         loadConfigModule,
+        loadLoaderModule
       ];
 
       //Attempt to load the module from all loaders
@@ -348,7 +351,7 @@ function getRuntimeEntryPath() {
  */
 async function loadMainModule(resolved_id, config, Catalogue) {
   if (resolved_id !== RESOLVED_VIRTUAL_MODULE_PREFIX) return null;
-  return generateMainModuleCode(config, Catalogue);
+  return generateMainModuleCode();
 }
 
 /**
@@ -407,6 +410,18 @@ async function loadConfigModule(resolved_id, config, Catalogue) {
 }
 
 /**
+ * @param {string} resolved_id
+ *  @param {import("./types.js").ResolvedPluginConfig} config
+ *
+ * @param {MessageCatalogue} Catalogue
+ * @returns {Promise<string | null>}
+ */
+async function loadLoaderModule(resolved_id, config, Catalogue) {
+  if (resolved_id !== "\0t18s-internal:loaders") return null;
+  return generateLoaderModule(config, Catalogue);
+};
+
+/**
  * If the unresolved_id is for the t18s-runtime, this function will resolve it.
  * @param {string} unresolved_id
  * @returns {string | null}
@@ -451,4 +466,13 @@ function resolveMainModuleId(unresolved_id) {
 function resolveConfigModuleId(unresolved_id) {
   if (unresolved_id !== "t18s-internal:config") return null;
   return "\0t18s-internal:config";
+}
+
+/**
+ * @param {string} unresolved_id
+ * @returns {string | null}
+ */
+function resolveLoaderModuleId(unresolved_id) {
+  if (unresolved_id !== "t18s-internal:loaders") return null;
+  return "\0t18s-internal:loaders";
 }
