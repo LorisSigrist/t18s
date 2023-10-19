@@ -11,8 +11,6 @@ import { DoubleKeyedMap } from "./utils/DoubleKeyedMap.js";
  *  "dictionary_removed": CustomEvent<{ locale: string, domain:string }>,
  *  "dictionary_changed": CustomEvent<{ locale: string, domain: string, dictionary: Dictionary }>,
  *  "messages_changed": CustomEvent<{}>,
- *  "locale_added" : CustomEvent<{ locale: string }>,
- *  "locale_removed" : CustomEvent<{ locale: string }>,
  * }} LocaleRegistryEventMap
  */
 
@@ -43,7 +41,15 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
    * The locales that are registered.
    * @type {Set<string>}
    */
-  #locales = new Set();
+  #locales;
+
+  /**
+   * @param {Iterable<string>} locales 
+   */
+  constructor(locales) {
+    super();
+    this.#locales = new Set(locales);
+  }
 
   /**
    * Register a new locale.
@@ -114,38 +120,14 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
     return this.#dictionaries;
   }
 
-  /** @param {string} locale */
-  addLocale(locale) {
-    this.#locales.add(locale);
-    this.#dispatch("locale_added", { locale });
-  }
-
-  /** @param {string} locale */
-  removeLocale(locale) {
-    this.#locales.delete(locale);
-    this.#dispatch("locale_removed", { locale });
-  }
-
-  /** @param {string} locale */
-  hasLocale(locale) {
-    return this.#locales.has(locale);
-  }
-
-  /**
-   * Returns all registered locales.
-   * @returns {Set<string>}
-   */
-  getLocales() {
-    return this.#locales;
-  }
-
   /**
    * Get all domains that are registered for the given locale.
    *
    * @param {string} locale
+   * @throws {LocaleNotFoundException} If the locale is not registered.
    */
   getDomains(locale) {
-    if (!this.hasLocale(locale)) throw new LocaleNotFoundException(locale);
+    if (!this.#locales.has(locale)) throw new LocaleNotFoundException(locale);
 
     /** @type {Set<string>} */
     const domains = new Set();

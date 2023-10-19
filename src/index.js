@@ -15,8 +15,6 @@ const DEFAULT_CONFIG = {
  * @returns {import("vite").Plugin[]}
  */
 export function t18s(userConfig) {
-  /** @type {import("./types.js").t18sFullConfig} */
   const pluginConfig = { ...DEFAULT_CONFIG, ...userConfig };
-
   return [t18sToolkit(), t18sCore(pluginConfig)];
 }

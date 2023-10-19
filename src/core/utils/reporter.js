@@ -30,6 +30,19 @@ export class Reporter {
   }
 
   /**
+   * 
+   * @param {string} filePath 
+   * @param {string} invalidLocale 
+   */
+  warnAboutFileForInvalidLocale(filePath, invalidLocale) {
+    let errorMessage = `Attempted to register a translation file for an unregistered locale: ${invalidLocale}`;
+    errorMessage += `\nDid you forget to register the locale in the t18s plugin config?`;
+    errorMessage += `\nFile: ${filePath}`;
+
+    this.#logger.warn(errorMessage);
+  }
+
+  /**
    * @param {string} locale
    */
   localeUpdated(locale) {
@@ -48,6 +61,14 @@ export class Reporter {
    */
   localeCreated(locale) {
     this.#logger.success(`Locale ${kleur.italic(locale)} created`);
+  }
+
+  /**
+   * @param {string} locale 
+   * @param {string} domain 
+   */
+  translationsRegistered(locale, domain) {
+    this.#logger.log(`Domain ${kleur.italic(domain)} registered for locale ${kleur.italic(locale)}`);
   }
 
   /**

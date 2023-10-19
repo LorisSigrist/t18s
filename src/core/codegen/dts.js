@@ -29,14 +29,13 @@ export function generateDTS(config, Catalogue) {
       s.setDescription("The known locales"),
     );
 
-
     module.addStatement(`export const fallbackLocale: Locale | undefined;`, (s) =>
       s.setDescription("The fallback locale that's currently in use.")
     );
 
     module.addStatement(`export const locales : Locales;`, (s) =>
       s.setDescription(
-        "A store containing the available locales.\n\nThis store will only ever change during development, it is constant in production.",
+        "The available locales",
       ),
     );
 
@@ -63,6 +62,11 @@ export function generateDTS(config, Catalogue) {
           "Initialize t18s.\nThis must be called before any other t18s function.",
         ),
     );
+
+    module.addStatement(
+      "export function loadLocale(locale: Locale): Promise<void>;",
+      s => s.setDescription("Loads the given locale if it's not already loaded. Does NOT change the current locale.")
+    )
 
     module.addStatement(
       `export const preloadLocale: (newLocale: Locale) => Promise<void>;`,

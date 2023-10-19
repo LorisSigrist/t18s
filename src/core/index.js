@@ -52,13 +52,12 @@ export function t18sCore(pluginConfig) {
   let dispatch = () => {};
 
   /** Keeps track of the messages that exist & where to find them */
-  const Catalogue = new MessageCatalogue();
+  const Catalogue = new MessageCatalogue(pluginConfig.locales);
   Catalogue.addEventListener(
     "messages_changed",
     async () => await regenerateDTS()
   );
   Catalogue.addEventListener("dictionary_added", (e) => {
-    reporter.localeCreated(e.detail.locale);
     dispatch("t18s:addDictionary", {
       locale: e.detail.locale,
       domain: e.detail.domain,
@@ -88,6 +87,10 @@ export function t18sCore(pluginConfig) {
    */
   async function registerTranslationFile(filePath) {
     const { locale, domain } = categorizeFile(filePath);
+    if (!config.locales.includes(locale)) {
+      reporter.warnAboutFileForInvalidLocale(filePath, locale);
+      return;
+    }
 
     if (Catalogue.hasDictionary(locale, domain)) {
       logger.error(
@@ -109,7 +112,7 @@ export function t18sCore(pluginConfig) {
     const { dictionary, invalidKeys } = compileToDictionary(keyVal, locale);
     if (invalidKeys) reporter.warnAboutInvalidKeys(filePath, invalidKeys);
     Catalogue.registerDictionary(locale, domain, filePath, dictionary);
-    Catalogue.addLocale(locale);
+    reporter.translationsRegistered(locale, domain);
   }
 
   /**
@@ -120,6 +123,7 @@ export function t18sCore(pluginConfig) {
    */
   async function invalidateTranslationFile(filePath) {
     const { locale, domain } = categorizeFile(filePath);
+    if (!config.locales.includes(locale)) return;
 
     //Try to read the file & buffer the result
     const bufferedFileRead = await buffer(fileHandler.read(filePath));
@@ -183,10 +187,14 @@ export function t18sCore(pluginConfig) {
     const files = await getFilesInDir(config.translationsDir);
     const paths = files.map((file) => resolve(config.translationsDir, file));
 
-    /** @param {string} path */
-    async function loadFile(path) {
-      const { locale, domain } = categorizeFile(path);
-      const readResult = await buffer(fileHandler.read(path));
+    /** @param {string} filePath */
+    async function loadFile(filePath) {
+      const { locale, domain } = categorizeFile(filePath);
+      if (!config.locales.includes(locale)) {
+        reporter.warnAboutFileForInvalidLocale(filePath, locale);
+        return;
+      }
+      const readResult = await buffer(fileHandler.read(filePath));
       const keyVal = new ResultMatcher(readResult)
         .catch(LoadingException, (e) => {
           logger.error(e.message);
@@ -195,10 +203,9 @@ export function t18sCore(pluginConfig) {
         .run();
 
       const { dictionary, invalidKeys } = compileToDictionary(keyVal, locale);
-      if (invalidKeys) reporter.warnAboutInvalidKeys(path, invalidKeys);
+      if (invalidKeys) reporter.warnAboutInvalidKeys(filePath, invalidKeys);
 
-      Catalogue.registerDictionary(locale, domain, path, dictionary);
-      Catalogue.addLocale(locale);
+      Catalogue.registerDictionary(locale, domain, filePath, dictionary);
     }
 
     //Load all locale-files

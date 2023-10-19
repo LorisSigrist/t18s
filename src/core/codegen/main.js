@@ -95,7 +95,7 @@ export function generateMainModuleCode(config, Catalogue) {
     return locales.includes(maybeLocale);
   }
   
-  async function loadLocale(newLocale) {
+  export async function loadLocale(newLocale) {
     let done = false;
     try {
       //To avoid showing the loading state too much, we allow a small delay before showing the loading state.
@@ -182,6 +182,7 @@ export function generateMainModuleCode(config, Catalogue) {
 
       Catalogue[data.locale] = Catalogue[data.locale] ?? {};
       Catalogue[data.locale][data.domain] = dictionary;
+      
 
       t.set(getMessage); //update the store
     });
