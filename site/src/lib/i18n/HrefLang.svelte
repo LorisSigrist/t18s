@@ -7,7 +7,7 @@
   import { page } from "$app/stores";
   import { resolvePath } from "@sveltejs/kit";
   import { get } from "svelte/store";
-  import { DEFAULT_LOCALE } from "./i18n";
+  import { DEFAULT_LOCALE } from "$lib/i18n/index.js";
 
   /**
    * The name of the route parameter that defines the locale.

@@ -2,7 +2,7 @@
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
   import { isLocale, locale, locales, preloadLocale, t } from "$t18s";
-  import { resolveTranslatedPath } from "./i18n";
+  import { resolveTranslatedPath } from "$lib/i18n/index.js";
 
   /** @param {import("$t18s").Locale} newLocale */
   async function handleLocaleChange(newLocale) {

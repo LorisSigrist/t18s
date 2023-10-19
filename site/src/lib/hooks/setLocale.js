@@ -1,7 +1,10 @@
 import { DEFAULT_LOCALE } from '$lib/i18n';
 import { isLocale } from '$t18s';
 
-/** @type {import('@sveltejs/kit').Handle} */
+/**
+ * Replaces the placeholder %lang% with the current locale. s
+ * @type {import('@sveltejs/kit').Handle} *
+ */
 export const localeHook = async ({ event, resolve }) => {
     const locale = getLocale(event);
     event.locals.locale = locale;

@@ -11,7 +11,7 @@ const minification_options = {
 	minifyCSS: true,
 	minifyJS: true,
 	removeAttributeQuotes: true,
-	removeComments: false, // some hydration code needs comments, so leave them in
+	removeComments: false, // some hydration code needs comments, so leave them in ---- what code??
 	removeOptionalTags: true,
 	removeRedundantAttributes: true,
 	removeScriptTypeAttributes: true,
@@ -20,7 +20,10 @@ const minification_options = {
 	sortClassName: true
 };
 
-/** @type {import('@sveltejs/kit').Handle} */
+/** 
+ * Minify HTML output in production.
+ * @type {import('@sveltejs/kit').Handle} 
+ */
 export const minifyHook = async ({ event, resolve }) => {  
   const response = await resolve(event, {
     transformPageChunk: ({ html, done }) => {
