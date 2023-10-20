@@ -13,10 +13,10 @@
     </span>
 
     <div class="my-6" />
-
     <Searchbar />
   </header>
-  <nav class="grid gap-3">
+  <nav class="grid gap-8">
+    
     <div class="grid">
       <SidebarSectionHeading>Getting Started</SidebarSectionHeading>
       <SidebarLink href="/" active>Installation</SidebarLink>
@@ -24,14 +24,11 @@
       <SidebarLink href="/">Loading Messages</SidebarLink>
     </div>
 
-    <div class="my-2" />
-
-    <SidebarSectionHeading>Guides</SidebarSectionHeading>
-    <h3>Getting Started</h3>
-    <SidebarLink href="/" active>Installation</SidebarLink>
-    <h3>Getting Started</h3>
-    <h3>Getting Started</h3>
-    <h3>Getting Started</h3>
+    <div class="grid">
+      <SidebarSectionHeading>Guides</SidebarSectionHeading>
+      <SidebarLink href="/" active>Installation</SidebarLink>
+      <SidebarLink href="/syntax">Syntax</SidebarLink>
+    </div>
   </nav>
 
   <footer>
