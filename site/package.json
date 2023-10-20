@@ -15,6 +15,7 @@
 		"@iconify-json/simple-icons": "^1.1.75",
 		"@sveltejs/adapter-static": "^2.0.3",
 		"@sveltejs/kit": "^1.5.0",
+		"@tailwindcss/typography": "^0.5.10",
 		"autoprefixer": "^10.4.16",
 		"html-minifier": "^4.0.0",
 		"postcss": "^8.4.31",
@@ -27,6 +28,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@melt-ui/svelte": "^0.55.3",
 		"t18s": "workspace:*"
 	}
 }

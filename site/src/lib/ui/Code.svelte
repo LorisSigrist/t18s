@@ -1,12 +1,19 @@
 <script>
+  import CopyButton from "./Code/CopyButton.svelte";
+  import CodePanelHeader from "./Code/CodePanelHeader.svelte";
+  import CodeTab from "./Code/CodeTab.svelte";
   /** @type {string}*/
   export let code;
 
   /** @type {string | null}*/
   export let language = null;
+
+  /** @type {string | null}*/
+  export let filename = null;
 </script>
 
-
-<pre class="rounded-md overflow-hidden relative bg-gray-50 text-gray-700 px-6 py-3 w-full">
-<code class="language-{language}">{code}</code>
-</pre>
+<div
+  class="my-6 overflow-hidden rounded-2xl bg-zinc-900 shadow-md dark:ring-1 dark:ring-white/10"
+>
+  <CodeTab code={"npm install --save-dev t18s"}>npm install --save-dev t18s</CodeTab>
+</div>
