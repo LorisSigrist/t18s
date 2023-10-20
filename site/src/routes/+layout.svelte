@@ -16,7 +16,7 @@
 
 <div class="flex flex-row">
   <Sidebar />
-  <main class="px-24 py-16 w-full h-full" prose>
+  <main class="px-24 py-16 w-full h-full prose">
     <slot />
   </main>
 </div>

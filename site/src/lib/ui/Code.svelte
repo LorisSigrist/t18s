@@ -13,7 +13,7 @@
 </script>
 
 <div
-  class="my-6 overflow-hidden rounded-2xl bg-zinc-900 shadow-md dark:ring-1 dark:ring-white/10"
+  class="my-6 overflow-hidden rounded-2xl bg-zinc-900 shadow-md dark:ring-1 dark:ring-white/10 not-prose"
 >
   <CodeTab code={"npm install --save-dev t18s"}>npm install --save-dev t18s</CodeTab>
 </div>
