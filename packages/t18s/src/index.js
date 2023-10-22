@@ -1,4 +1,5 @@
 import { t18sCore } from "./core/index.js";
+import { fsAllowBypass } from "./fsAllowBypass/index.js";
 
 const DEFAULT_CONFIG = {
   translationsDir: "src/translations",
@@ -19,5 +20,5 @@ const DEFAULT_CONFIG = {
  */
 export function t18s(userConfig) {
   const pluginConfig = { ...DEFAULT_CONFIG, ...userConfig };
-  return [t18sCore(pluginConfig)];
+  return [t18sCore(pluginConfig), fsAllowBypass()];
 }

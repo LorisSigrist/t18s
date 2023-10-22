@@ -10,6 +10,6 @@
     "noUncheckedIndexedAccess": true,
     "strict": true
   },
-  "include": ["src"],
+  "include": ["src", "compiler"],
   "exclude": ["**/*.test.js"]
 }

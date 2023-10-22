@@ -48,6 +48,10 @@
     ".": {
       "import": "./src/index.js",
       "types": "./types/index.d.ts"
+    },
+    "./compiler": {
+      "import": "./compiler/index.js",
+      "types": "./types/index.d.ts"
     }
   }
 }

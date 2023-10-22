@@ -1,6 +1,4 @@
 // THE CLIENT SIDE CODE FOR $t18s
-// CANNOT IMPORT ANY RELATIVE FILES - WE READ THIS USING fs.readFile
-
 import { writable, get } from "svelte/store";
 import {
   verbose,
@@ -9,6 +7,7 @@ import {
   defaultDomain,
 } from "t18s-internal:config";
 import initial_loaders from "t18s-internal:loaders";
+import { doubleKeyedGetter, doubleKeyedSetter, sleep } from "./utils.js";
 
 /** @type {import("svelte/store").Writable<string | null>} */
 const localeStore = writable(null);
@@ -78,7 +77,7 @@ export async function preloadLocale(newLocale) {
           loader()
             .then((dictionary) => resolve({ locale, domain, dictionary }))
             .catch(reject);
-        }),
+        })
       );
     }
   }
@@ -97,7 +96,7 @@ export async function loadDomain(domain) {
   const currentLocale = get(localeStore);
   if (!currentLocale)
     throw new Error(
-      "[t18s] No locale set. Did you forget to set one in `+layout.js`?",
+      "[t18s] No locale set. Did you forget to set one in `+layout.js`?"
     );
 
   await loadDictionary(currentLocale, domain);
@@ -138,7 +137,7 @@ const getMessage = (keyString, values = undefined) => {
   const currentLocale = get(localeStore);
   if (currentLocale === null)
     throw new Error(
-      "[t18s] No locale set. Did you forget to set one in `+layout.js`?",
+      "[t18s] No locale set. Did you forget to set one in `+layout.js`?"
     );
 
   const { domain, key } = parseKey(keyString);
@@ -164,7 +163,7 @@ const getMessage = (keyString, values = undefined) => {
       "[t18s] Translation for key " +
         keyString +
         " not found in locale " +
-        currentLocale,
+        currentLocale
     );
   }
   return keyString;
@@ -251,40 +250,4 @@ function getFormatted(dictionary, messageKey, values) {
   const message = dictionary[messageKey];
   if (!message) return;
   return typeof message === "string" ? message : message(values);
-}
-
-/**
- * @template T
- * @param {Record<string, Record<string, T>>} outer
- * @returns {(key1: string, key2: string) => (T | undefined)}
- */
-function doubleKeyedGetter(outer) {
-  return (key1, key2) => {
-    const inner = outer[key1];
-    if (!inner) return undefined;
-    return inner[key2];
-  };
-}
-
-/**
- * @template T
- * @param {Record<string, Record<string, T>>} outer
- * @returns {(key1: string, key2: string, value: T) => void}
- *
- */
-function doubleKeyedSetter(outer) {
-  return (key1, key2, value) => {
-    const inner = outer[key1];
-    if (!inner) outer[key1] = { [key2]: value };
-    else inner[key2] = value;
-  };
-}
-
-/**
- * Returns a promise that resolves after the given number of milliseconds
- * @param {number} ms
- * @returns {Promise<void>}
- */
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }

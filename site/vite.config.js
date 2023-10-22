@@ -14,4 +14,9 @@ export default defineConfig({
 		compiler: "svelte",
     }),
   ],
+  server: {
+    fs: {
+      allow: ["."],
+    }
+  }
 });

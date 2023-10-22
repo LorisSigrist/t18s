@@ -1,18 +1,14 @@
 import { basename, dirname, resolve } from "node:path";
-import { readdir, writeFile, readFile } from "node:fs/promises";
+import { readdir, writeFile } from "node:fs/promises";
 import { YamlHandler } from "./file-handling/formats/yaml.js";
 import { JsonHandler } from "./file-handling/formats/json.js";
 import { Logger } from "./utils/logger.js";
-import {
-  RESOLVED_VIRTUAL_MODULE_PREFIX,
-  VIRTUAL_MODULE_PREFIX,
-} from "./constants.js";
 import { FileHandler } from "./file-handling/fileHandler.js";
 import { LoadingException } from "./file-handling/exception.js";
 import { generateDTS } from "./codegen/dts.js";
 import { generateDictionaryModule } from "./codegen/dictionary.js";
-import { generateMainModuleCode } from "./codegen/main.js";
-import { compileToDictionary } from "./compiler/index.js";
+import { resolveMainModuleId } from "./codegen/main.js";
+import { compileToDictionary } from "./utils/compileToDictionary.js";
 import { Reporter } from "./utils/reporter.js";
 import { ResultMatcher } from "./utils/resultMatcher.js";
 import { buffer } from "./utils/bufferPromise.js";
@@ -23,7 +19,6 @@ import {
 import { normalizePath } from "vite";
 import { fileURLToPath } from "node:url";
 import { cleanUrl } from "./utils/id.js";
-import { existsSync } from "node:fs";
 import { createHMRDispatcher } from "./HMR.js";
 import { generateConfigModule } from "./codegen/config.js";
 import { generateLoaderModule } from "./codegen/loaders.js";
@@ -43,9 +38,6 @@ export function t18sCore(pluginConfig) {
   /** @type {Reporter} */
   let reporter;
 
-  /** @type {import("vite").ViteDevServer | null}*/
-  let viteDevServer = null;
-
   /**
    * Dispatch an HMR event to the client.
    * @type {import("./HMR.js").HMREventDispatcher}
@@ -56,20 +48,16 @@ export function t18sCore(pluginConfig) {
   const Catalogue = new MessageCatalogue(pluginConfig.locales);
   Catalogue.addEventListener(
     "messages_changed",
-    async () => await regenerateDTS(),
+    async () => await regenerateDTS()
   );
   Catalogue.addEventListener("dictionary_added", (e) => {
-    hmrDispatch("t18s:addDictionary", {
-      locale: e.detail.locale,
-      domain: e.detail.domain,
-    });
+    const { locale, domain } = e.detail;
+    hmrDispatch("t18s:addDictionary", { locale, domain });
   });
   Catalogue.addEventListener("dictionary_removed", (e) => {
-    reporter.unregisterTranslations(e.detail.locale, e.detail.domain);
-    hmrDispatch("t18s:removeDictionary", {
-      locale: e.detail.locale,
-      domain: e.detail.domain,
-    });
+    const { locale, domain } = e.detail;
+    reporter.unregisterTranslations(locale, domain);
+    hmrDispatch("t18s:removeDictionary", { locale, domain });
   });
   Catalogue.addEventListener("dictionary_changed", (e) => {
     const { locale, domain } = e.detail;
@@ -93,7 +81,7 @@ export function t18sCore(pluginConfig) {
 
     if (Catalogue.hasDictionary(locale, domain)) {
       logger.error(
-        `Locale ${locale} already exists. Skipping file ${filePath}`,
+        `Locale ${locale} already exists. Skipping file ${filePath}`
       );
       return;
     }
@@ -124,7 +112,7 @@ export function t18sCore(pluginConfig) {
     const { locale, domain } = categorizeFile(filePath);
     if (!config.locales.includes(locale)) {
       console.warn(
-        "Attempted to invalidate file for invalid locale: " + locale,
+        "Attempted to invalidate file for invalid locale: " + locale
       );
       return;
     }
@@ -189,7 +177,7 @@ export function t18sCore(pluginConfig) {
    */
   async function loadInitialLocales(config) {
     await regenerateDTS();
-    
+
     const files = await getFilesInDir(config.translationsDir);
     const paths = files.map((file) => resolve(config.translationsDir, file));
 
@@ -244,7 +232,7 @@ export function t18sCore(pluginConfig) {
         dtsPath: resolve(resolvedConfig.root, pluginConfig.dts),
         translationsDir: resolve(
           resolvedConfig.root,
-          pluginConfig.translationsDir,
+          pluginConfig.translationsDir
         ),
         verbose: pluginConfig.verbose && resolvedConfig.command === "serve",
         defaultDomain: pluginConfig.defaultDomain,
@@ -264,7 +252,6 @@ export function t18sCore(pluginConfig) {
       const resolvers = [
         resolveDictionaryModuleId,
         resolveMainModuleId,
-        resolveRuntimeId,
         resolveConfigModuleId,
         resolveLoaderModuleId,
       ];
@@ -281,16 +268,14 @@ export function t18sCore(pluginConfig) {
       id = cleanUrl(id);
 
       const loaders = [
-        loadMainModule,
         loadDictionaryModule,
-        loadRuntimeModule,
         loadConfigModule,
         loadLoaderModule,
       ];
 
       //Attempt to load the module from all loaders
       const loadingPromises = loaders.map((loader) =>
-        loader(id, config, Catalogue),
+        loader(id, config, Catalogue)
       );
       const results = await Promise.allSettled(loadingPromises);
 
@@ -332,7 +317,6 @@ export function t18sCore(pluginConfig) {
         setMessage(event.locale, event.domain, event.key, event.value);
       });
 
-      viteDevServer = server;
       hmrDispatch = createHMRDispatcher(server);
     },
   };
@@ -342,20 +326,8 @@ function getRuntimeEntryPath() {
   const thisModulePath = normalizePath(dirname(fileURLToPath(import.meta.url)));
   return thisModulePath.replace(
     /\/t18s\/src\/core$/,
-    "/t18s/src/core/runtime/",
+    "/t18s/src/core/runtime/"
   );
-}
-
-/**
- * Returns the code for the main module if the resolved_id is for the main module.
- * @param {string} resolved_id
- * @param {import("./types.js").ResolvedPluginConfig} config
- * @param {MessageCatalogue} Catalogue
- * @returns {Promise<string | null>}
- */
-async function loadMainModule(resolved_id, config, Catalogue) {
-  if (resolved_id !== RESOLVED_VIRTUAL_MODULE_PREFIX) return null;
-  return generateMainModuleCode();
 }
 
 /**
@@ -376,29 +348,6 @@ async function loadDictionaryModule(resolved_id, config, Catalogue) {
   return dictionary
     ? generateDictionaryModule(dictionary)
     : "export default {}";
-}
-
-/**
- * If the id is an id for the t18s-runtime, this function will load the runtime
- * @param {string} resolved_id
- *  @param {import("./types.js").ResolvedPluginConfig} config
-
- * @param {MessageCatalogue} Catalogue
- * @returns {Promise<string | null>}
- */
-async function loadRuntimeModule(resolved_id, config, Catalogue) {
-  if (!resolved_id.startsWith(getRuntimeEntryPath())) return null;
-
-  //Manually read the file content to bypass vite's fs.allow check
-  if (existsSync(resolved_id)) {
-    try {
-      const contents = await readFile(resolved_id, "utf-8");
-      return contents;
-    } catch (e) {
-      console.error(`[t18s-runtime] failed to read file: ${resolved_id}`);
-    }
-  }
-  return null;
 }
 
 /**
@@ -426,16 +375,6 @@ async function loadLoaderModule(resolved_id, config, Catalogue) {
 }
 
 /**
- * If the unresolved_id is for the t18s-runtime, this function will resolve it.
- * @param {string} unresolved_id
- * @returns {string | null}
- */
-function resolveRuntimeId(unresolved_id) {
-  if (!unresolved_id.startsWith("$t18s-runtime:")) return null;
-  return unresolved_id.replace("$t18s-runtime:", getRuntimeEntryPath());
-}
-
-/**
  * If the unresolved_id is for a t18s dictionary, this function will resolve it.
  * Dictionary modules have the format "t18s-dictionary:<locale>:<domain>"
  *
@@ -450,16 +389,6 @@ function resolveDictionaryModuleId(unresolved_id) {
 
   const resolved_id = "\0" + unresolved_id;
   return resolved_id;
-}
-
-/**
- * If the unresolved_id is for a t18s dictionary, this function will resolve it.
- * @param {string} unresolved_id
- * @returns {string | null}
- */
-function resolveMainModuleId(unresolved_id) {
-  if (unresolved_id !== VIRTUAL_MODULE_PREFIX) return null;
-  return RESOLVED_VIRTUAL_MODULE_PREFIX;
 }
 
 /**

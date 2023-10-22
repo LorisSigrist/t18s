@@ -20,8 +20,8 @@
     <div class="grid">
       <SidebarSectionHeading>Getting Started</SidebarSectionHeading>
       <SidebarLink href="/" active>Installation</SidebarLink>
-      <SidebarLink href="/">Setting Up</SidebarLink>
-      <SidebarLink href="/">Loading Messages</SidebarLink>
+      <SidebarLink href="/getting-started">Setting Up</SidebarLink>
+      <SidebarLink href="/roadmap">Loading Messages</SidebarLink>
     </div>
 
     <div class="grid">

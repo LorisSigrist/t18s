@@ -1,7 +1,6 @@
 import { parse } from "@formatjs/icu-messageformat-parser";
-import { precompile } from "./precompile.js";
-import { generateType } from "./generateTypes.js";
-import { ResultMatcher } from "../utils/resultMatcher.js";
+import { precompile, generateType } from "t18s/compiler"
+import { ResultMatcher } from "./resultMatcher.js";
 
 /**
  * @param {Map<string, string>} keyVal
