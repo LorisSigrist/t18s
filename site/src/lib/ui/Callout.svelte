@@ -15,7 +15,7 @@
 </script>
 
 <div
-  class="not-prose my-6 flex gap-2.5 p-4 rounded-2xl leading-6 border {ColorClasses[type]}"
+  class="not-prose my-6 flex  gap-2.5 p-4 rounded-2xl leading-6 border {ColorClasses[type]}"
 >
   {#if type === "success"}
     <SuccessIcon class="mt-1 h-4 w-4 flex-none text-emerald-500" />
