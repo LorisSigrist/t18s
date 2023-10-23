@@ -1,4 +1,3 @@
-import { readFile } from "fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { normalizePath } from "vite";
@@ -12,11 +11,8 @@ function getT18SModulePath() {
 
 const $t18sMainModulePath = getT18SModulePath();
 
-/**
- * @param {string} unresolved_id 
- * @returns {string | null}
- */
-export function resolveMainModuleId(unresolved_id) {
+/** @type {import("./types.js").IDResolver} */
+export const resolveMainModuleId = (unresolved_id) => {
   if (unresolved_id === VIRTUAL_MODULE_PREFIX) return $t18sMainModulePath;
   return null;
-}
+};

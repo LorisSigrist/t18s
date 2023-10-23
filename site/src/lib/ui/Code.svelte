@@ -1,6 +1,4 @@
 <script>
-  import CopyButton from "./Code/CopyButton.svelte";
-  import CodePanelHeader from "./Code/CodePanelHeader.svelte";
   import CodeTab from "./Code/CodeTab.svelte";
   /** @type {string}*/
   export let code;

@@ -1,4 +1,4 @@
-import { basename, dirname, resolve } from "node:path";
+import { basename, resolve } from "node:path";
 import { readdir, writeFile } from "node:fs/promises";
 import { YamlHandler } from "./file-handling/formats/yaml.js";
 import { JsonHandler } from "./file-handling/formats/json.js";
@@ -6,8 +6,7 @@ import { Logger } from "./utils/logger.js";
 import { FileHandler } from "./file-handling/fileHandler.js";
 import { LoadingException } from "./file-handling/exception.js";
 import { generateDTS } from "./codegen/dts.js";
-import { generateDictionaryModule } from "./codegen/dictionary.js";
-import { resolveMainModuleId } from "./codegen/main.js";
+import { resolveMainModuleId } from "./module-resolution/main.js";
 import { compileToDictionary } from "./utils/compileToDictionary.js";
 import { Reporter } from "./utils/reporter.js";
 import { ResultMatcher } from "./utils/resultMatcher.js";
@@ -16,12 +15,21 @@ import {
   MessageCatalogue,
   LocaleNotFoundException,
 } from "./MessageCatalogue.js";
-import { normalizePath } from "vite";
-import { fileURLToPath } from "node:url";
 import { cleanUrl } from "./utils/id.js";
 import { createHMRDispatcher } from "./HMR.js";
-import { generateConfigModule } from "./codegen/config.js";
-import { generateLoaderModule } from "./codegen/loaders.js";
+import {
+  loadDictionaryModule,
+  resolveDictionaryModuleId,
+} from "./module-resolution/dictionary.js";
+import {
+  loadConfigModule,
+  resolveConfigModuleId,
+} from "./module-resolution/config.js";
+import {
+  loadLoaderModule,
+  resolveLoaderModuleId,
+} from "./module-resolution/loader.js";
+import { resolveIdSequence } from "./module-resolution/utils.js";
 
 /**
  * TypeSafe translations for Svelte & SvelteKit.
@@ -210,19 +218,6 @@ export function t18sCore(pluginConfig) {
     await writeFile(config.dtsPath, generateDTS(config, Catalogue));
   }
 
-  /**
-   * Categorizes to which locale & domain a given file belongs.
-   * @param {string} path
-   */
-  const categorizeFile = (path) => {
-    const filename = basename(path).split(".").slice(0, -1).join(".");
-
-    const [first, second] = filename.split(".");
-    if (!first) throw new Error(`Could not determine locale for ${path}`);
-    if (!second) throw new Error(`Could not determine domain for ${path}`);
-    return { locale: second, domain: first };
-  };
-
   return {
     name: "t18s",
     enforce: "pre",
@@ -246,27 +241,17 @@ export function t18sCore(pluginConfig) {
       await loadInitialLocales(config);
     },
 
-    resolveId(id) {
-      id = cleanUrl(id);
-
-      const resolvers = [
-        resolveDictionaryModuleId,
-        resolveMainModuleId,
-        resolveConfigModuleId,
-        resolveLoaderModuleId,
-      ];
-
-      for (const resolver of resolvers) {
-        const resolved = resolver(id);
-        if (resolved) return resolved;
-      }
-
-      return null;
-    },
+    resolveId: resolveIdSequence([
+      resolveDictionaryModuleId,
+      resolveMainModuleId,
+      resolveConfigModuleId,
+      resolveLoaderModuleId,
+    ]),
 
     async load(id) {
       id = cleanUrl(id);
 
+      /** @type {import("./module-resolution/types.js").ModuleLoader[]} */
       const loaders = [
         loadDictionaryModule,
         loadConfigModule,
@@ -322,90 +307,16 @@ export function t18sCore(pluginConfig) {
   };
 }
 
-function getRuntimeEntryPath() {
-  const thisModulePath = normalizePath(dirname(fileURLToPath(import.meta.url)));
-  return thisModulePath.replace(
-    /\/t18s\/src\/core$/,
-    "/t18s/src/core/runtime/"
-  );
-}
-
 /**
- * Returns the code for the dictionary module if the resolved_id is for the main module.
- * @param {string} resolved_id
- * @param {import("./types.js").ResolvedPluginConfig} config
- * @param {MessageCatalogue} Catalogue
- * @returns {Promise<string | null>}
+ * Categorizes to which locale & domain a given file belongs.
+ * @param {string} path
+ * @returns {{locale: string, domain: string}}
  */
-async function loadDictionaryModule(resolved_id, config, Catalogue) {
-  if (!resolved_id.startsWith("\0t18s-dictionary:")) return null;
+function categorizeFile(path) {
+  const filename = basename(path).split(".").slice(0, -1).join(".");
 
-  const [_, locale, domain] = resolved_id.split(":");
-  if (!locale || !domain) return null;
-
-  const dictionary = Catalogue.getDictionary(locale, domain);
-
-  return dictionary
-    ? generateDictionaryModule(dictionary)
-    : "export default {}";
-}
-
-/**
- * @param {string} resolved_id
- *  @param {import("./types.js").ResolvedPluginConfig} config
- *
- * @param {MessageCatalogue} Catalogue
- * @returns {Promise<string | null>}
- */
-async function loadConfigModule(resolved_id, config, Catalogue) {
-  if (resolved_id !== "\0t18s-internal:config") return null;
-  return generateConfigModule(config);
-}
-
-/**
- * @param {string} resolved_id
- *  @param {import("./types.js").ResolvedPluginConfig} config
- *
- * @param {MessageCatalogue} Catalogue
- * @returns {Promise<string | null>}
- */
-async function loadLoaderModule(resolved_id, config, Catalogue) {
-  if (resolved_id !== "\0t18s-internal:loaders") return null;
-  return generateLoaderModule(config, Catalogue);
-}
-
-/**
- * If the unresolved_id is for a t18s dictionary, this function will resolve it.
- * Dictionary modules have the format "t18s-dictionary:<locale>:<domain>"
- *
- * @param {string} unresolved_id
- * @returns {string | null}
- */
-function resolveDictionaryModuleId(unresolved_id) {
-  if (!unresolved_id.startsWith("t18s-dictionary:")) return null;
-
-  const [_, locale, domain] = unresolved_id.split(":");
-  if (!locale || !domain) return null;
-
-  const resolved_id = "\0" + unresolved_id;
-  return resolved_id;
-}
-
-/**
- * If the unresolved_id is for the t18s config, this function will resolve it.
- * @param {string} unresolved_id
- * @returns {string | null}
- */
-function resolveConfigModuleId(unresolved_id) {
-  if (unresolved_id !== "t18s-internal:config") return null;
-  return "\0t18s-internal:config";
-}
-
-/**
- * @param {string} unresolved_id
- * @returns {string | null}
- */
-function resolveLoaderModuleId(unresolved_id) {
-  if (unresolved_id !== "t18s-internal:loaders") return null;
-  return "\0t18s-internal:loaders";
+  const [first, second] = filename.split(".");
+  if (!first) throw new Error(`Could not determine locale for ${path}`);
+  if (!second) throw new Error(`Could not determine domain for ${path}`);
+  return { locale: second, domain: first };
 }

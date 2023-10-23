@@ -5,7 +5,7 @@
   import GithubIcon from "virtual:icons/simple-icons/github";
 </script>
 
-<aside role="navigation" class="flex flex-col max-w-lg gap-8 px-12 pt-16">
+<aside role="navigation" class="flex flex-col max-w-lg gap-8 px-12 pt-16 overflow-y-auto">
   <header>
     <span class="flex gap-2 items-center">
       <img src="/icon.svg" alt="t18s" class="w-12 h-12" />

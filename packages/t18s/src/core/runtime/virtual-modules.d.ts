@@ -7,6 +7,7 @@ declare module "t18s-internal:config" {
   export const locales: readonly string[];
   export const fallbackLocale: string | undefined;
   export const defaultDomain: string;
+  export const loadingDelay: number;
 }
 
 declare module "t18s-internal:loaders" {

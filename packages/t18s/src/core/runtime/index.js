@@ -4,7 +4,8 @@ import {
   verbose,
   fallbackLocale,
   locales,
-  defaultDomain,
+    defaultDomain,
+  loadingDelay
 } from "t18s-internal:config";
 import initial_loaders from "t18s-internal:loaders";
 import { doubleKeyedGetter, doubleKeyedSetter, sleep } from "./utils.js";
@@ -17,7 +18,6 @@ export { fallbackLocale, locales };
 
 /** @param {any} param */
 export const isLocale = (param) => locales.includes(param);
-
 export const isLoading = writable(false);
 
 //Functions to load dictionaries. Double-Keyed by locale and domain
@@ -48,7 +48,6 @@ const loadDictionary = async (locale, domain) => {
 
 //List of domains that should be loaded eagerly when a new locale is loaded
 const eagerlyLoadedDomains = new Set([defaultDomain]);
-let loadingDelay = 200;
 
 /**
  * Load the given locale quietly in the background
@@ -57,10 +56,10 @@ let loadingDelay = 200;
  * @throws {Error} If the locale could not be loaded
  */
 export async function preloadLocale(newLocale) {
-  const domains = [...eagerlyLoadedDomains]; //The domains to load for this locale
+    const domains = [...eagerlyLoadedDomains]; //The domains to load for this locale
 
-  const localeChain = [newLocale];
-  if (fallbackLocale) localeChain.push(fallbackLocale);
+    const localeChain = [newLocale];
+    if (fallbackLocale) localeChain.push(fallbackLocale);
 
   /**
    * @type {Promise<{locale: string, domain: string, dictionary: Record<string, CompiledMessage>}>[]}
@@ -250,4 +249,25 @@ function getFormatted(dictionary, messageKey, values) {
   const message = dictionary[messageKey];
   if (!message) return;
   return typeof message === "string" ? message : message(values);
+}
+
+/**
+ * Gets the Set of loaders that need to be executed before a locale can be displayed
+ * @param {string} locale 
+ * @returns {Set<() => Promise<Record<string, CompiledMessage>>>}
+ */
+function getLoaderChain(locale) {
+    /** @type {Set<() => Promise<Record<string, CompiledMessage>>>} */
+    const loaderChain = new Set();
+    const locales = [locale];
+    if (fallbackLocale) locales.push(fallbackLocale);
+
+    for (const domain of eagerlyLoadedDomains) {
+        for (const locale of locales) {
+            const loader = getLoader(locale, domain);
+            if (loader) loaderChain.add(loader);
+        }
+    }
+
+    return loaderChain;
 }
