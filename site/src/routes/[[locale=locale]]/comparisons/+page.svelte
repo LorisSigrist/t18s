@@ -1,5 +1,59 @@
+<script>
+    import Check from "virtual:icons/heroicons/check"
+    import XMark from "virtual:icons/heroicons/x-mark"
+</script>
+
 <h1>Comparisons to other Libraries</h1>
 <p>
     There are quite a few i18n libraries available for Svelte. Here is how 
     t18s compares to the most popular ones.
 </p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Feature</th>
+            <th>t18s</th>
+            <th>svelte-i18n</th>
+            <th>sveltekit-i18n</th>
+            <th>typesafe-i18n</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Supports SvelteKit</td>
+            <td><Check/></td>
+            <td><Check/></td>
+            <td><Check/></td>
+            <td><Check/></td>
+        </tr>
+        <tr>
+            <td>SSR</td>
+            <td><Check/></td>
+            <td><Check/></td>
+            <td><Check/></td>
+            <td><Check/></td>
+        </tr>
+        <tr>
+            <td>Separate Message Domains</td>
+            <td><Check/></td>
+            <td><XMark/></td>
+            <td><Check/></td>
+            <td><XMark/></td>
+        </tr>
+        <tr>
+            <td>Typesafe</td>
+            <td><Check/></td>
+            <td><XMark/></td>
+            <td><XMark/></td>
+            <td><Check/></td>
+        </tr>
+        <tr>
+            <td>Lazy Loading Locales</td>
+            <td><Check/></td>
+            <td><Check/></td>
+            <td><Check/></td>
+            <td><Check/></td>
+        </tr>
+    </tbody>
+</table>

@@ -9,7 +9,7 @@
   <Sidebar />
   <BottomAppbar />
   <main class="w-full h-full overflow-y-auto p-4 pt-12 sm:pt-16">
-    <div class="prose">
+    <div class="prose mb-12">
       <slot />
     </div>
   </main>
