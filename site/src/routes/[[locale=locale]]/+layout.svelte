@@ -4,11 +4,11 @@
 </script>
 
 <div
-  class="fixed inset-0 flex flex-col-reverse md:flex-row gap-x-8 lg:gap-x-24"
+  class="fixed inset-0 flex flex-col-reverse md:flex-row gap-x-8"
 >
   <Sidebar />
   <BottomAppbar />
-  <main class="w-full h-full overflow-y-auto p-4 pt-12 sm:pt-16">
+  <main class="w-full h-full overflow-y-auto pt-12 sm:pt-16 px-4">
     <div class="prose mb-12">
       <slot />
     </div>

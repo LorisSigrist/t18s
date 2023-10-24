@@ -39,7 +39,7 @@
             <td><Check/></td>
             <td><XMark/></td>
             <td><Check/></td>
-            <td><XMark/></td>
+            <td><Check/></td>
         </tr>
         <tr>
             <td>Typesafe</td>
@@ -54,6 +54,13 @@
             <td><Check/></td>
             <td><Check/></td>
             <td><Check/></td>
+        </tr>
+        <tr>
+            <td>Compiled</td>
+            <td><Check/></td>
+            <td><XMark/></td>
+            <td><XMark/></td>
+            <td><XMark/></td>
         </tr>
     </tbody>
 </table>

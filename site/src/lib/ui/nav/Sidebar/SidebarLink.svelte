@@ -15,7 +15,7 @@
 
 <a
   class={merge(
-    "text-gray-700 relative outline-orange-400 hover:bg-orange-50 py-2 rounded-md",
+    "text-gray-700 relative outline-orange-400 hover:bg-orange-50 py-1.5 rounded-md",
     active && "font-semibold"
   )}
   data-sveltekit-keepfocus

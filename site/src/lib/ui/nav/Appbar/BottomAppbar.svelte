@@ -42,20 +42,30 @@
       class="absolute grid gap-2 top-0 left-0 -translate-y-full bg-white rounded-t-lg border-t w-full p-4 max-h-96 overflow-y-auto"
       on:click={() => (navOpen = false)}
     >
-      <BottomAppbarSection let:Link let:Heading>
-        <Heading>Getting Started</Heading>
-        <Link href="/" active={$page.url.pathname === "/"}>Installation</Link>
-        <Link
-          href="/getting-started"
-          active={$page.url.pathname === "/getting-started"}>Setting Up</Link
-        >
-        <Link href="/roadmap" active={$page.url.pathname === "/roadmap"}
-          >Roadmap</Link
-        >
-        <Link href="/syntax" active={$page.url.pathname === "/syntax"}
-          >Syntax</Link
-        >
-      </BottomAppbarSection>
+    <BottomAppbarSection let:Heading let:Link>
+      <Heading>Guide</Heading>
+      <Link href="/getting-started" active={$page.url.pathname === "/getting-started"}>Getting Started</Link>
+      <Link href="/syntax" active={$page.url.pathname === "/syntax"}>Syntax</Link>
+      <Link href="/switching-locales" active={$page.url.pathname === "/switching-locales"}>Switching Locales</Link>
+      <Link href="/preloading" active={$page.url.pathname === "/preloading"}>Preloading</Link>
+    </BottomAppbarSection>
+
+    <BottomAppbarSection let:Heading let:Link>
+      <Heading>Best Practices</Heading>
+      <Link href="/seo" active={$page.url.pathname === "/seo"}>SEO</Link>
+    </BottomAppbarSection>
+
+    <BottomAppbarSection let:Heading let:Link>
+      <Heading>Reference</Heading>
+      <Link href="/plugin-config" active={$page.url.pathname === "/plugin-config"}>Plugin Config</Link>
+      <Link href="/$t18s" active={$page.url.pathname === "/$t18s"}>$t18s</Link>
+    </BottomAppbarSection>
+
+    <BottomAppbarSection let:Heading let:Link>
+      <Heading>Appendix</Heading>
+      <Link href="/comparisons" active={$page.url.pathname === "/comparisons"}>Comparisons</Link>
+      <Link href="/roadmap" active={$page.url.pathname === "/roadmap"}>Roadmap</Link>
+    </BottomAppbarSection>
     </nav>
   {/if}
 </header>
