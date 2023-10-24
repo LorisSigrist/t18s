@@ -24,7 +24,7 @@
   class="group dark:bg-white/2.5" 
   hidden={!active} 
   role={$tabs.length > 1 ? "tabpanel" : null}
-  aria-labelledby={$tabs.length > 1 ? `code-group-${codeGroupId}-tab-${name}"` : null}
+  aria-labelledby={$tabs.length > 1 ? `code-group-${codeGroupId}-tab-${name}` : null}
 >
   {#if label || tag}
     <CodePanelHeader {tag} {label} />

@@ -29,6 +29,7 @@
 	"type": "module",
 	"dependencies": {
 		"@melt-ui/svelte": "^0.55.3",
+		"prismjs": "^1.29.0",
 		"svelte-focus-trap": "^1.2.0",
 		"t18s": "workspace:*"
 	}
