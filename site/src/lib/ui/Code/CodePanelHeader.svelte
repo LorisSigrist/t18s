@@ -1,9 +1,9 @@
 <script>
-    import Tag from "./Tag.svelte";
-  /** @type {string} */
-  export let tag;
-  /** @type {string} */
-  export let label;
+  import Tag from "./Tag.svelte";
+  /** @type {string | null} */
+  export let tag = null;
+  /** @type {string | null} */
+  export let label = null;
 </script>
 
 {#if tag || label}

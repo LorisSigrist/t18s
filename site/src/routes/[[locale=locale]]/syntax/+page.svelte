@@ -28,7 +28,7 @@ The special key <code>other</code> is used as a fallback if no other key matches
 
 <Callout type="info">
   Some i18n libraries require you to define a fallback case for all selects. 
-  T18s does not, instead relying on typesafety to ensure all values match a key. 
+  T18s does not, instead relying on typesafety to ensure all values match a key.
 </Callout>
 
 <h2>Inline HTML</h2>
