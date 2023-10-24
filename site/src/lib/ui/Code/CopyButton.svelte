@@ -11,7 +11,7 @@
     copied
       ? "bg-emerald-400/10 ring-1 ring-inset ring-emerald-400/20"
       : "bg-white/5 hover:bg-white/7.5 dark:bg-white/2.5 dark:hover:bg-white/5",
-    "focus:opacity-100 outline-none focus-visible:bg-orange-400/30",
+    "focus:opacity-100 outline-none focus-visible:bg-orange-400/20 focus-visible:ring-1 ring-inset focus-visible:ring-orange-400"
   )}
   on:click
 >

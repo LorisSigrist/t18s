@@ -8,7 +8,3 @@
   <Tab name="yarn">yarn add --dev t18s</Tab>
   <Tab name="pnpm">pnpm add --save-dev t18s</Tab>
 </CodeGroup>
-
-<CodeGroup let:Tab>
-  <Tab>npm install --save-dev t18s</Tab>
-</CodeGroup>

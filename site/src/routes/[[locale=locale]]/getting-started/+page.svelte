@@ -18,7 +18,9 @@
 
 <CodeGroup let:Header let:Tab>
     <Header title="vite.config.js" />
-    <Tab>npm install --save-dev t18s</Tab>
+    <Tab>
+        
+    </Tab>
 </CodeGroup>
 
 <p>

@@ -18,6 +18,7 @@
     "text-gray-700 relative outline-orange-400 hover:bg-orange-50 py-2 rounded-md",
     active && "font-semibold"
   )}
+  data-sveltekit-keepfocus
   {href}
 >
   <slot />

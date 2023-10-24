@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+
+mark {
+    @apply text-orange-400 bg-transparent;
+}

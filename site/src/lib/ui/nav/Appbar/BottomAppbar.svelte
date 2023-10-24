@@ -3,6 +3,8 @@
   import XMark from "virtual:icons/heroicons/x-mark";
   import BottomAppbarSection from "./BottomAppbarSection.svelte";
   import { page } from "$app/stores";
+  import { conditionalFocusTrap } from "$lib/utils/focus";
+
 
   let navOpen = false;
 </script>
@@ -15,8 +17,10 @@
   />
 {/if}
 
-<header class="block md:hidden relative z-50">
-
+<header
+  class="block md:hidden relative z-50"
+  use:conditionalFocusTrap={navOpen}
+>
   <div class="flex p-4 border-t items-center justify-between z-50 bg-white">
     <a class="flex gap-2" href="/">
       <img src="/icon.svg" alt="t18s" class="w-6 h-6" />
@@ -33,23 +37,25 @@
   </div>
 
   {#if navOpen}
-  <nav
-    class="absolute grid gap-2 top-0 left-0 -translate-y-full bg-white rounded-t-lg border-t w-full p-4 max-h-96 overflow-y-auto"
-  >
-    <BottomAppbarSection let:Link let:Heading>
-      <Heading>Getting Started</Heading>
-      <Link href="/" active={$page.url.pathname === "/"}>Installation</Link>
-      <Link
-        href="/getting-started"
-        active={$page.url.pathname === "/getting-started"}>Setting Up</Link
-      >
-      <Link href="/roadmap" active={$page.url.pathname === "/roadmap"}
-        >Roadmap</Link
-      >
-      <Link href="/syntax" active={$page.url.pathname === "/syntax"}
-        >Syntax</Link
-      >
-    </BottomAppbarSection>
-  </nav>
-{/if}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <nav
+      class="absolute grid gap-2 top-0 left-0 -translate-y-full bg-white rounded-t-lg border-t w-full p-4 max-h-96 overflow-y-auto"
+      on:click={() => (navOpen = false)}
+    >
+      <BottomAppbarSection let:Link let:Heading>
+        <Heading>Getting Started</Heading>
+        <Link href="/" active={$page.url.pathname === "/"}>Installation</Link>
+        <Link
+          href="/getting-started"
+          active={$page.url.pathname === "/getting-started"}>Setting Up</Link
+        >
+        <Link href="/roadmap" active={$page.url.pathname === "/roadmap"}
+          >Roadmap</Link
+        >
+        <Link href="/syntax" active={$page.url.pathname === "/syntax"}
+          >Syntax</Link
+        >
+      </BottomAppbarSection>
+    </nav>
+  {/if}
 </header>
