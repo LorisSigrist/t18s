@@ -1,0 +1,16 @@
+import{S as V,i as I,s as J,k as x,q as j,a as _,y as d,l as F,m as T,r as k,h as f,c as g,z as v,b as p,D as z,A as w,g as y,d as b,B as S,E as K}from"../chunks/index.90d50ca5.js";import{C as L}from"../chunks/CodeGroup.56f46765.js";import{P as M}from"../chunks/Prism.42f81a6a.js";const N=`import { sveltekit } from "@sveltejs/kit/vite";
+import { t18s } from "t18s";
+import { defineConfig } from "vite";
+
+export default defineConfig({
+  plugins: [
+    sveltekit(),
+    t18s({
+      locales: ["en", "de"],
+      fallbackLocale: "en",
+    }),
+  ],
+});
+`;function O(i){let t;return{c(){t=j("npm install --save-dev t18s")},l(r){t=k(r,"npm install --save-dev t18s")},m(r,n){p(r,t,n)},d(r){r&&f(t)}}}function Q(i){let t,r;return t=new i[1]({props:{$$slots:{default:[O]},$$scope:{ctx:i}}}),{c(){d(t.$$.fragment)},l(n){v(t.$$.fragment,n)},m(n,o){w(t,n,o),r=!0},p(n,o){const s={};o&4&&(s.$$scope={dirty:o,ctx:n}),t.$set(s)},i(n){r||(y(t.$$.fragment,n),r=!0)},o(n){b(t.$$.fragment,n),r=!1},d(n){S(t,n)}}}function R(i){let t,r;return t=new M({props:{code:N,language:"javascript"}}),{c(){d(t.$$.fragment)},l(n){v(t.$$.fragment,n)},m(n,o){w(t,n,o),r=!0},p:K,i(n){r||(y(t.$$.fragment,n),r=!0)},o(n){b(t.$$.fragment,n),r=!1},d(n){S(t,n)}}}function U(i){let t,r,n,o;return t=new i[0]({props:{title:"vite.config.js"}}),n=new i[1]({props:{$$slots:{default:[R]},$$scope:{ctx:i}}}),{c(){d(t.$$.fragment),r=_(),d(n.$$.fragment)},l(s){v(t.$$.fragment,s),r=g(s),v(n.$$.fragment,s)},m(s,l){w(t,s,l),p(s,r,l),w(n,s,l),o=!0},p(s,l){const $={};l&4&&($.$$scope={dirty:l,ctx:s}),n.$set($)},i(s){o||(y(t.$$.fragment,s),y(n.$$.fragment,s),o=!0)},o(s){b(t.$$.fragment,s),b(n.$$.fragment,s),o=!1},d(s){S(t,s),s&&f(r),S(n,s)}}}function W(i){let t,r,n,o,s,l,$,E,u,B,A,m,G,c,D,q;return $=new L({props:{$$slots:{default:[Q,({Tab:e})=>({1:e}),({Tab:e})=>e?2:0]},$$scope:{ctx:i}}}),m=new L({props:{$$slots:{default:[U,({Header:e,Tab:a})=>({0:e,1:a}),({Header:e,Tab:a})=>(e?1:0)|(a?2:0)]},$$scope:{ctx:i}}}),{c(){t=x("h1"),r=j("Getting Started"),n=_(),o=x("p"),s=j("First you need to install t18s as a dev dependency."),l=_(),d($.$$.fragment),E=_(),u=x("p"),B=j(`T18S isn't just a library, it's a vite-plugin, so you will need to register it
+  in your vite config.`),A=_(),d(m.$$.fragment),G=_(),c=x("p"),D=j("Aaaand we're off.")},l(e){t=F(e,"H1",{});var a=T(t);r=k(a,"Getting Started"),a.forEach(f),n=g(e),o=F(e,"P",{});var C=T(o);s=k(C,"First you need to install t18s as a dev dependency."),C.forEach(f),l=g(e),v($.$$.fragment,e),E=g(e),u=F(e,"P",{});var P=T(u);B=k(P,`T18S isn't just a library, it's a vite-plugin, so you will need to register it
+  in your vite config.`),P.forEach(f),A=g(e),v(m.$$.fragment,e),G=g(e),c=F(e,"P",{});var H=T(c);D=k(H,"Aaaand we're off."),H.forEach(f)},m(e,a){p(e,t,a),z(t,r),p(e,n,a),p(e,o,a),z(o,s),p(e,l,a),w($,e,a),p(e,E,a),p(e,u,a),z(u,B),p(e,A,a),w(m,e,a),p(e,G,a),p(e,c,a),z(c,D),q=!0},p(e,[a]){const C={};a&4&&(C.$$scope={dirty:a,ctx:e}),$.$set(C);const P={};a&4&&(P.$$scope={dirty:a,ctx:e}),m.$set(P)},i(e){q||(y($.$$.fragment,e),y(m.$$.fragment,e),q=!0)},o(e){b($.$$.fragment,e),b(m.$$.fragment,e),q=!1},d(e){e&&f(t),e&&f(n),e&&f(o),e&&f(l),S($,e),e&&f(E),e&&f(u),e&&f(A),S(m,e),e&&f(G),e&&f(c)}}}class h extends V{constructor(t){super(),I(this,t,null,W,J,{})}}export{h as component};
