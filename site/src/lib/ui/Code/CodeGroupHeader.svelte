@@ -10,6 +10,9 @@
 
   /** @type {import("svelte/store").Writable<number>}*/
   const activeTab = getContext("code-group-active-tab");
+
+  /** @type {string}*/
+  const codeGroupId = getContext("code-group-id");
 </script>
 
 <div
@@ -25,18 +28,20 @@
     <div
       role="tablist"
       aria-orientation="horizontal"
-      class="-mb-px flex gap-4 text-xs font-medium"
+      class="-mb-px flex text-xs font-medium"
     >
       {#each $tabs as tab, i}
         {@const active = i === $activeTab}
         <button
           role="tab"
+          id="code-group-{codeGroupId}-tab-{tab}"
           on:click={() => activeTab.set(i)}
           class={merge(
-            "border-b py-3 transition ui-not-focus-visible:outline-none",
+            "border-b py-3 px-2 transition ui-not-focus-visible:outline-none outline-none",
+            "focus-visible:bg-orange-600/30",
             active
               ? "border-orange-500 text-orange-400"
-              : "border-transparent text-zinc-400 hover:text-zinc-300"
+              : "border-transparent text-zinc-400 hover:text-zinc-300",
           )}>{tab}</button
         >
       {/each}

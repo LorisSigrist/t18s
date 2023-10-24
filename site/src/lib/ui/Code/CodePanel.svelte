@@ -13,17 +13,21 @@
   const tabs = getContext("code-group-tabs");
   /** @type {import("svelte/store").Writable<number>}*/
   const activeTab = getContext("code-group-active-tab");
+  /** @type {string}*/
+  const codeGroupId = getContext("code-group-id");
 
   tabs.update((oldTabs) => [...oldTabs, name]);
-
   $: active = $tabs.findIndex((tab) => tab === name) === $activeTab;
 </script>
 
-{#if active}
-  <div class="group dark:bg-white/2.5">
-    {#if label || tag}
-      <CodePanelHeader {tag} {label} />
-    {/if}
-    <CodePanelBody><slot /></CodePanelBody>
-  </div>
-{/if}
+<div 
+  class="group dark:bg-white/2.5" 
+  hidden={!active} 
+  role="tabpanel"
+  aria-labelledby="code-group-{codeGroupId}-tab-{name}"
+>
+  {#if label || tag}
+    <CodePanelHeader {tag} {label} />
+  {/if}
+  <CodePanelBody><slot /></CodePanelBody>
+</div>
