@@ -21,17 +21,15 @@ the braces will be replaced with the value of the variable with the same name.
   <Tab>Hello <mark>{"{fullName}"}</mark>, how are you?</Tab>
 </CodeGroup>
 
-You can specify that a value is a number by adding a type-annotation in the
-curly braces.
+<p>
+  You can specify that a value is not a string by adding a type-annotation in the
+  curly braces. The known types are <code>number</code>, <code>date</code>, and <code>time</code>.
+</p>
 
 <CodeGroup let:Tab>
-  <Tab>There are {"{"}count<mark>, number</mark>{"}"} people here</Tab>
-</CodeGroup>
-
-The same thing works for dates.
-
-<CodeGroup let:Tab>
-  <Tab>Today is {"{"}date<mark>, date</mark>{"}"}</Tab>
+  <Tab><pre>There are {"{"}count, <mark>number</mark>{"}"} people here
+Today is {"{"}date, <mark>date</mark>{"}"}
+Sarah shows up at {"{"}time, <mark>time</mark>{"}"}</pre></Tab>
 </CodeGroup>
 
 You can format the value by adding a third, format options in the curly braces.

@@ -12,5 +12,5 @@
 
 <CodeGroup let:Header let:Tab>
   <Header title="Highlighting" />
-  <Tab><Prism code="console.log('Hello World')" language="javascript" /></Tab>
+  <Tab name="JS"><Prism code="console.log('Hello World')" language="javascript" /></Tab>
 </CodeGroup>

@@ -1,5 +1,5 @@
 <script>
-  import { setLocale } from "$t18s";
+  import { locale, setLocale } from "$t18s";
   import { DEFAULT_LOCALE } from "$lib/i18n/index.js";
   import HrefLang from "$lib/i18n/HrefLang.svelte";
   import { browser } from "$app/environment";
@@ -7,7 +7,7 @@
 
   export let data;
   $: setLocale(data.locale);
-  $: if(browser) document.documentElement.lang = data.locale;
+  $: if(browser) document.documentElement.lang = $locale;
 </script>
 
 <HrefLang defaultLocale={DEFAULT_LOCALE} />

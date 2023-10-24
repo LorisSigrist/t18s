@@ -8,8 +8,11 @@
 
 <p>First you need to install t18s as a dev dependency.</p>
 
-<CodeGroup let:Tab>
-  <Tab>npm install --save-dev t18s</Tab>
+<CodeGroup let:Header let:Tab>
+    <Header title="Installation" />
+    <Tab name="npm"><Prism code="npm install --save-dev t18s" language="bash" /></Tab>
+    <Tab name="yarn"><Prism code="yarn add --dev t18s" language="bash" /></Tab>
+    <Tab name="pnpm"><Prism code="pnpm add --save-dev t18s" language="bash" /></Tab>
 </CodeGroup>
 
 <p>

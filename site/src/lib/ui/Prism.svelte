@@ -13,6 +13,10 @@
         "typescript" : Prism.languages.typescript,
         //@ts-ignore
         "bash" : Prism.languages.bash,
+        //@ts-ignore
+        "html" : Prism.languages.html,
+         //@ts-ignore
+        "svelte" : Prism.languages.html,
     }
 
     /** @type {keyof typeof GRAMMARS}*/

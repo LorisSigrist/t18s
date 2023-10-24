@@ -74,7 +74,7 @@ pre[class*="language-"] {
 
 .token.attr-value,
 .token.attr-value .punctuation {
-	color: #a89984; /* fg4 / gray1 */
+	color: #b8bb26; /* fg4 / gray1 */
 }
 
 .token.url {
