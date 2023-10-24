@@ -1,6 +1,6 @@
 <script>
-  import BottomAppbar from "$lib/ui/BottomAppbar.svelte";
-  import Sidebar from "$lib/ui/Sidebar.svelte";
+  import BottomAppbar from "$lib/ui/nav/Appbar/BottomAppbar.svelte";
+  import Sidebar from "$lib/ui/nav/Sidebar/Sidebar.svelte";
 </script>
 
 <div

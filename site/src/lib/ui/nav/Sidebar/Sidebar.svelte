@@ -1,7 +1,7 @@
 <script>
-  import Searchbar from "./Searchbar.svelte";
-  import SidebarLink from "./SidebarLink.svelte";
-  import SidebarSectionHeading from "./SidebarSectionHeading.svelte";
+  import { page } from "$app/stores";
+  import Searchbar from "../../Searchbar.svelte";
+  import SidebarSection from "./SidebarSection.svelte";
   import GithubIcon from "virtual:icons/simple-icons/github";
 </script>
 
@@ -16,19 +16,14 @@
     <Searchbar />
   </header>
   <nav class="grid gap-8">
-    
-    <div class="grid">
-      <SidebarSectionHeading>Getting Started</SidebarSectionHeading>
-      <SidebarLink href="/" active>Installation</SidebarLink>
-      <SidebarLink href="/getting-started">Setting Up</SidebarLink>
-      <SidebarLink href="/roadmap">Loading Messages</SidebarLink>
-    </div>
 
-    <div class="grid">
-      <SidebarSectionHeading>Guides</SidebarSectionHeading>
-      <SidebarLink href="/" active>Installation</SidebarLink>
-      <SidebarLink href="/syntax">Syntax</SidebarLink>
-    </div>
+    <SidebarSection let:Heading let:Link>
+      <Heading>Getting Started</Heading>
+      <Link href="/" active={$page.url.pathname === "/"}>Installation</Link>
+      <Link href="/getting-started" active={$page.url.pathname === "/getting-started"}>Setting Up</Link>
+      <Link href="/roadmap" active={$page.url.pathname === "/roadmap"}>Roadmap</Link>
+      <Link href="/syntax" active={$page.url.pathname === "/syntax"}>Syntax</Link>
+    </SidebarSection>
   </nav>
 
   <footer>
