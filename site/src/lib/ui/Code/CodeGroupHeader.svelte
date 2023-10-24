@@ -1,12 +1,15 @@
 <script>
   import { merge } from "$lib/utils/class-merge";
+  import { getContext } from "svelte";
 
   /** @type {string | null}*/
   export let title = null;
 
-  /** @type {string[]}*/
-  export let tabs = [];
-  export let activeTab = 0;
+  /** @type {import("svelte/store").Writable<string[]>}*/
+  const tabs = getContext("code-group-tabs");
+
+  /** @type {import("svelte/store").Writable<number>}*/
+  const activeTab = getContext("code-group-active-tab");
 </script>
 
 <div
@@ -18,17 +21,17 @@
     </h3>
   {/if}
 
-  {#if tabs.length > 0}
+  {#if $tabs.length > 1}
     <div
       role="tablist"
       aria-orientation="horizontal"
       class="-mb-px flex gap-4 text-xs font-medium"
     >
-      {#each tabs as tab, i}
-        {@const active = i === activeTab}
+      {#each $tabs as tab, i}
+        {@const active = i === $activeTab}
         <button
           role="tab"
-          on:click={() => (activeTab = i)}
+          on:click={() => activeTab.set(i)}
           class={merge(
             "border-b py-3 transition ui-not-focus-visible:outline-none",
             active

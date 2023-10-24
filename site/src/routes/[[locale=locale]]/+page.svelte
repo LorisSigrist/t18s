@@ -1,15 +1,12 @@
 <script>
   import CodeGroup from "$lib/ui/CodeGroup.svelte";
-  let activeTab = 0;
 </script>
 
 <CodeGroup let:Header let:Tab>
-  <Header title="Installation" tabs={["npm", "pnpm"]} bind:activeTab />
-  {#if activeTab === 0}
-    <Tab>npm install --save-dev t18s</Tab>
-  {:else if activeTab === 1}
-    <Tab>pnpm install --save-dev t18s</Tab>
-  {/if}
+  <Header title="Installation" />
+  <Tab name="npm">npm install --save-dev t18s</Tab>
+  <Tab name="yarn">yarn add --dev t18s</Tab>
+  <Tab name="pnpm">pnpm add --save-dev t18s</Tab>
 </CodeGroup>
 
 <CodeGroup let:Tab>
