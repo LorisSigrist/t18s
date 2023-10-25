@@ -6,6 +6,8 @@
 
 # Getting Started
 
+## Installation
+
 First you need to install t18s as a dev dependency.
 
 <CodeGroup let:Header let:Tab>
@@ -32,3 +34,7 @@ in your vite config.
 You will need to at least one option in the plugin options; The list of
 locales that you want to support. Additionally you may use a fallback locale
 that will be used if a message is missing in the current locale.
+
+## Adding messages
+Create a folder `translations` in your `src` folder. This is the default location
+in which t18s will look for messages. 

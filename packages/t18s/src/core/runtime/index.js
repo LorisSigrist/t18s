@@ -16,7 +16,10 @@ export { localeStore as locale };
 export const setLocale = localeStore.set;
 export { fallbackLocale, locales };
 
-/** @param {any} param */
+/** 
+ * @param {any} param 
+ * @returns {param is (typeof import("t18s-internal:config").locales)[number]}
+ */
 export const isLocale = (param) => locales.includes(param);
 export const isLoading = writable(false);
 
