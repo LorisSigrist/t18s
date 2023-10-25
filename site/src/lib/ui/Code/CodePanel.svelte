@@ -25,6 +25,7 @@
   hidden={!active} 
   role={$tabs.length > 1 ? "tabpanel" : null}
   aria-labelledby={$tabs.length > 1 ? `code-group-${codeGroupId}-tab-${name}` : null}
+  id={$tabs.length > 1 ? `code-group-${codeGroupId}-panel-${name}` : null}
 >
   {#if label || tag}
     <CodePanelHeader {tag} {label} />

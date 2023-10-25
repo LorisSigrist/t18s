@@ -1,17 +1,18 @@
 <script>
   import { page } from "$app/stores";
+  import { merge } from "$lib/utils/class-merge";
   import SidebarSection from "./SidebarSection.svelte";
   import GithubIcon from "virtual:icons/simple-icons/github";
 </script>
 
-<aside role="navigation" class="hidden md:flex flex-col w-96 gap-16 overflow-y-auto pt-16 px-12">
+<aside role="banner" class="hidden md:flex flex-col w-96 gap-8 overflow-y-auto pt-16 px-12">
   <header>
     <span class="flex gap-2 items-center">
       <img src="/icon.svg" alt="t18s" class="w-8 h-8" />
       <span class="text-lg font-bold text-gray-950">T18S</span>
     </span>
   </header>
-  <nav class="grid gap-6">
+  <nav class="grid gap-2">
     <SidebarSection let:Heading let:Link>
       <Heading>Guide</Heading>
       <Link href="/getting-started" active={$page.url.pathname === "/getting-started"}>Getting Started</Link>
@@ -40,7 +41,11 @@
 
   <footer>
     <a
-      class="text-gray-300 hover:text-gray-500"
+      class={merge(
+        "text-gray-300 hover:text-orange-500 rounded-full outline-offset-4 outline-orange-400",
+        "focus-visible:text-orange-400",
+        "grid place-items-center w-min"
+      )}
       href="https://github.com/LorisSigrist/t18s"
       target="_blank"
     >

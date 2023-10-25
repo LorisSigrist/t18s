@@ -10,6 +10,7 @@
     "flex justify-between gap-2 py-2 px-2 rounded-md text-sm transition text-zinc-600 hover:text-zinc-900",
     active && "bg-orange-50"
   )}
+  aria-current={active ? "page" : undefined}
 >
   <span class="truncate"><slot /></span>
 </a>

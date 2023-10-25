@@ -4,7 +4,7 @@
 </script>
 
 <div
-  class="fixed inset-0 flex flex-col-reverse md:flex-row gap-x-8"
+  class="fixed inset-0 flex flex-col-reverse md:flex-row"
 >
   <Sidebar />
   <BottomAppbar />

@@ -9,19 +9,33 @@
   import "prismjs/components/prism-yaml.js";
   Prism.manual = true;
 
+  /** @type {any} */
+  const prism_languages = Prism.languages;
+
   const GRAMMARS = {
-    //@ts-ignore
-    javascript: Prism.languages.javascript,
-    //@ts-ignore
-    typescript: Prism.languages.typescript,
-    //@ts-ignore
-    bash: Prism.languages.bash,
-    //@ts-ignore
-    html: Prism.languages.html,
-    //@ts-ignore
-    svelte: Prism.languages.html,
-    //@ts-ignore
-    yaml: Prism.languages.yaml,
+    javascript: prism_languages.javascript,
+    js: prism_languages.javascript,
+    typescript: prism_languages.typescript,
+    ts: prism_languages.typescript,
+    bash: prism_languages.bash,
+    html: prism_languages.html,
+    svelte: prism_languages.html,
+    yaml: prism_languages.yaml,
+  };
+
+  /**
+   * Maps language names onto their prism names
+   * @type {Record<keyof typeof GRAMMARS, string>}
+   */
+  const LANGUAGES = {
+    javascript: "JavaScript",
+    js: "JavaScript",
+    typescript: "TypeScript",
+    ts: "TypeScript",
+    bash: "Bash",
+    html: "HTML",
+    svelte: "Svelte",
+    yaml: "YAML",
   };
 
   /** @type {keyof typeof GRAMMARS}*/
@@ -30,9 +44,9 @@
   /** @type {string}*/
   export let code;
 
-  $: html = Prism.highlight(code, GRAMMARS[language], language);
+  $: html = Prism.highlight(code, GRAMMARS[language], LANGUAGES[language]);
 </script>
 
-<pre class="language-{language}"><code class="language-{language}"
-    >{@html html}</code
+<pre class="language-{LANGUAGES[language]}"><code
+    class="language-{LANGUAGES[language]}">{@html html}</code
   ></pre>

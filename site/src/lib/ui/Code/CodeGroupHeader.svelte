@@ -34,6 +34,8 @@
         {@const active = i === $activeTab}
         <button
           role="tab"
+          aria-selected={active}
+          aria-controls="code-group-{codeGroupId}-panel-{tab}"
           id="code-group-{codeGroupId}-tab-{tab}"
           on:click={() => activeTab.set(i)}
           class={merge(
