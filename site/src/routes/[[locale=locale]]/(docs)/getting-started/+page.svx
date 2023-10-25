@@ -2,9 +2,14 @@
   import CodeGroup from "$lib/ui/CodeGroup.svelte";
   import ViteConfigSnippet from "./vite-config-snippet.js?raw";
   import Prism from "$lib/ui/Prism.svelte";
+  import Callout from "$lib/ui/Callout.svelte";
 </script>
 
 # Getting Started
+
+<Callout type="warning">
+T18S is still in early development. Expect breaking changes and a lot of new features.
+</Callout>
 
 ## Installation
 
@@ -36,5 +41,26 @@ locales that you want to support. Additionally you may use a fallback locale
 that will be used if a message is missing in the current locale.
 
 ## Adding messages
+
 Create a folder `translations` in your `src` folder. This is the default location
-in which t18s will look for messages. 
+in which t18s will look for messages. Then create a file called `en.yaml` there.
+
+<CodeGroup let:Header let:Tab>
+  <Header title="src/translations/en.yaml" />
+  <Tab>
+    <Prism code={`hello: Hello World`} language="yaml" />
+  </Tab>
+</CodeGroup>
+
+Now in your svelte component you can use the `t` store exported from the `$t18s` (with the **$**!) to access the messages.
+
+<CodeGroup let:Header let:Tab>
+  <Header title="src/App.svelte" />
+  <Tab>
+    <Prism code={`<script>
+  import { t } from "$t18s";
+</script>
+{$t("hello")}`}
+language="svelte" />
+  </Tab>
+</CodeGroup>
