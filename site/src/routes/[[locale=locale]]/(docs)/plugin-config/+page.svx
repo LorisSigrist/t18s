@@ -1,1 +1,23 @@
-# Plugin Configuration
+# Plugin Configuration 
+
+The `t18s` plugin can be configured by passing an options object to the plugin in `vite.config.js`. This page lists all available options and their default values.
+
+## `locales`
+An array of locales to support. 
+
+## `fallbackLocale`
+The locale to use when a given message is not available in the current locale. Defaults to `null`, which means that no fallback is used.
+
+## `translationDir`
+The directory in which to look for message-files. Defaults to `src/translations`.
+
+## `dts`
+The path in which to write the generated typescript definitions. Defaults to `src/$t18s.d.ts`. Put this
+somewhere where ambient types are picked up by the compiler.
+
+## `verbose`
+Whether to log information about the translation process during development. Defaults to `true`.
+T18S is always silent in production.
+
+## `defaultDomain`
+The default domain to use when no domain is specified in the message key. Defaults to `messages`.
