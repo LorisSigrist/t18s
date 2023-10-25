@@ -18,6 +18,7 @@
 		"@tailwindcss/typography": "^0.5.10",
 		"autoprefixer": "^10.4.16",
 		"html-minifier": "^4.0.0",
+		"mdsvex": "^0.11.0",
 		"postcss": "^8.4.31",
 		"svelte": "^3.54.0",
 		"svelte-check": "^3.0.1",

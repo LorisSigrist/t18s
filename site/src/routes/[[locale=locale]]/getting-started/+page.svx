@@ -4,9 +4,9 @@
   import Prism from "$lib/ui/Prism.svelte";
 </script>
 
-<h1>Getting Started</h1>
+# Getting Started
 
-<p>First you need to install t18s as a dev dependency.</p>
+First you need to install t18s as a dev dependency.
 
 <CodeGroup let:Header let:Tab>
   <Header title="Installation" />
@@ -19,10 +19,8 @@
   >
 </CodeGroup>
 
-<p>
-  T18S isn't just a library, it's a vite-plugin, so you will need to register it
-  in your vite config.
-</p>
+T18S isn't just a library, it's a vite-plugin, so you will need to register it
+in your vite config.
 
 <CodeGroup let:Header let:Tab>
   <Header title="vite.config.js" />
@@ -31,8 +29,6 @@
   </Tab>
 </CodeGroup>
 
-<p>
-  You will need to at least one option in the plugin options; The list of
-  locales that you want to support. Additionally you may use a fallback locale
-  that will be used if a message is missing in the current locale.
-</p>
+You will need to at least one option in the plugin options; The list of
+locales that you want to support. Additionally you may use a fallback locale
+that will be used if a message is missing in the current locale.

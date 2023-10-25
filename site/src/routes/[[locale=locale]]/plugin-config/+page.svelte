@@ -1,1 +1,0 @@
-<h1>Plugin Configuration</h1>

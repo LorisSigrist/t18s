@@ -4,17 +4,13 @@
   import Prism from "$lib/ui/Prism.svelte";
 </script>
 
-<h1>Message Syntax</h1>
-<p>
-  T18s uses the <a
-    href="https://unicode-org.github.io/icu/userguide/format_parse/messages"
-    target="_blank"
-    rel="noopener noreferrer">ICU MessageFormat</a
-  > Syntax for messages, the de-facto standard in the JavaScript ecosystem. Let's
-  learn how to use it.
-</p>
+# Message Syntax
 
-<h2>Interpolating Values</h2>
+T18s uses the [ICU MessageFormat](https://unicode-org.github.io/icu/userguide/format_parse/messages) Syntax for messages, the de-facto standard in the JavaScript ecosystem. Let's
+learn how to use it.
+
+## Interpolating Values
+
 You can interpolate strings into your messages using curly braces. The value inside
 the braces will be replaced with whatever value you pass when using the message.
 
@@ -22,11 +18,9 @@ the braces will be replaced with whatever value you pass when using the message.
   <Tab><pre>Hello <mark>{"{fullName}"}</mark>, how are you?</pre></Tab>
 </CodeGroup>
 
-<p>
-  You can specify that a value is not a string by adding a type-annotation in
-  the curly braces. The known types are <code>number</code>, <code>date</code>,
-  and <code>time</code>.
-</p>
+You can specify that a value is not a string by adding a type-annotation in
+the curly braces. The known types are `number`, `date`,
+and `time`.
 
 <CodeGroup let:Tab>
   <Tab>
@@ -48,35 +42,25 @@ You can for example specify how long the date should be.
 </CodeGroup>
 
 These formatting options are locale aware and will do the right thing for the
-locale you are using. It uses the <code>Intl</code> API under the hood.
+locale you are using. It uses the `Intl` API under the hood.
 Generally the format for interpolating values is always this.
 
-<ol>
-  <li>Variable name</li>
-  <li>Type</li>
-  <li>Options</li>
-</ol>
+1. Varaible Name
+2. Format Type
+3. Format Options
 
-<p>
-  The options that are available vary by type. You can find a list of all the
-  options for each type in the <a
-    href="https://unicode-org.github.io/icu/userguide/format_parse/messages"
-    target="_blank"
-    rel="noopener noreferrer">ICU MessageFormat</a
-  >
-  documentation. (We <b>do</b> support skeletons)
-</p>
+The options that are available vary by type. You can find a list of all the
+options for each type in the
+[ICU MessageFormat](https://unicode-org.github.io/icu/userguide/format_parse/messages)
+documentation.
+(We **do** support skeletons)
 
-<h2>Plurals</h2>
+## Plurals
 
-<p>
-  You can use pluralization to use different messages based on a number. This is
-  useful for things like "1 person" vs "2 people".
-</p>
+You can use pluralization to use different messages based on a number. This is
+useful for things like "1 person" vs "2 people".
 
-<p>
-  You can declare them by using the `plural` type and listing out the options.
-</p>
+You can declare them by using the `plural` type and listing out the options.
 
 <CodeGroup let:Tab>
   <Tab>
@@ -85,9 +69,7 @@ Generally the format for interpolating values is always this.
   </Tab>
 </CodeGroup>
 
-<p />
-
-<p>You can also match an exact number by using an equals sign before it.</p>
+You can also match an exact number by using an equals sign before it.
 
 <CodeGroup let:Tab>
   <Tab>
@@ -96,9 +78,7 @@ Generally the format for interpolating values is always this.
   </Tab>
 </CodeGroup>
 
-<p>
-  You can use the number itself inside the message by using the <code>#</code> placeholder.
-</p>
+You can use the number itself inside the message by using the `#` placeholder.
 
 <CodeGroup let:Tab>
   <Tab>
@@ -112,16 +92,13 @@ Generally the format for interpolating values is always this.
   allowed.
 </Callout>
 
-<h2>Select</h2>
-<p>
-  Select allows you to use one of multiple values based on a key. This is useful
-  for grammatical gender.
-</p>
+## Select
 
-<p>
-  You use it by using the <code>select</code> type, and then listing out each option
-  with a key and a value in curly braces.
-</p>
+Select allows you to use one of multiple values based on a key. This is useful
+for grammatical gender.
+
+You use it by using the `select` type, and then listing out each option
+with a key and a value in curly braces.
 
 <CodeGroup let:Tab>
   <Tab>
@@ -130,9 +107,7 @@ Generally the format for interpolating values is always this.
   >
 </CodeGroup>
 
-<p>
-  The special key <code>other</code> is used as a fallback if no other key matches.
-</p>
+The special key `other` is used as a fallback if no other key matches.
 
 <CodeGroup let:Tab>
   <Tab>
@@ -147,9 +122,10 @@ Generally the format for interpolating values is always this.
   T18s does not, instead relying on typesafety to ensure all values match a key.
 </Callout>
 
-<h2>Selectordinal</h2>
+## Selectordinal
+
 Selectordinal are usefull for stuff like "1st" vs "2nd" vs "3rd". You use them similarly
-to plural, but with the<code>selectordinal</code> type.
+to plural, but with the `selectordinal` type.
 
 <CodeGroup let:Tab>
   <Tab>
@@ -163,13 +139,12 @@ to plural, but with the<code>selectordinal</code> type.
   same ordianl for 1st and 21st.
 </Callout>
 
-<h2>Inline HTML</h2>
-<p>
-  Sometimes you want to dynamically insert HTML into your messages. You can do
-  this by writing tags inside your messages. However, these tags aren't raw html,
-  they too are translated. When formatting the message, you will need to pass in 
-  a callback that takes in the text-content of the tag and returns the html you want to insert.
-</p>
+## Inline HTML
+
+Sometimes you want to dynamically insert HTML into your messages. You can do
+this by writing tags inside your messages. However, these tags aren't raw html,
+they too are translated. When formatting the message, you will need to pass in
+a callback that takes in the text-content of the tag and returns the html you want to insert.
 
 <CodeGroup let:Tab>
   <Tab>
@@ -186,5 +161,3 @@ to plural, but with the<code>selectordinal</code> type.
 <Callout type="info">
   When you use messages containing HTML, don't forget to use svelte's {"{@html}"} directive to render them.
 </Callout>
-
-
