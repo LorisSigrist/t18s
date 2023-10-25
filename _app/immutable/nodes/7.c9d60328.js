@@ -1,4 +1,4 @@
-import{S as J,i as K,s as M,k as G,q,a as k,y as g,l as F,m as Y,r as z,h as p,c as S,z as c,b as u,D as B,A as _,g as d,d as v,B as w,E as D}from"../chunks/index.4de23c61.js";import{C as V,P as H}from"../chunks/Prism.94ba2997.js";const N=`import { sveltekit } from "@sveltejs/kit/vite";
+import{S as J,i as K,s as M,k as G,q,a as k,y as g,l as F,m as Y,r as z,h as p,c as S,z as c,b as u,D as B,A as _,g as d,d as v,B as w,E as D}from"../chunks/index.e52fc4ee.js";import{C as V,P as H}from"../chunks/Prism.5b7fe600.js";const N=`import { sveltekit } from "@sveltejs/kit/vite";
 import { t18s } from "t18s";
 import { defineConfig } from "vite";
 

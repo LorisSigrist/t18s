@@ -1,4 +1,4 @@
-import{S as Vt,i as Xt,s as Zt,k as m,q as u,a as g,y as w,l as h,m as c,r as $,h as l,c as d,z as v,b as i,D as o,A as b,g as E,d as k,B as y,E as X}from"../chunks/index.4de23c61.js";import{C as V,P as Z}from"../chunks/Prism.94ba2997.js";import{C as en}from"../chunks/Callout.0bb6051e.js";const tn=`<head>
+import{S as Vt,i as Xt,s as Zt,k as m,q as u,a as g,y as w,l as h,m as c,r as $,h as l,c as d,z as v,b as i,D as o,A as b,g as E,d as k,B as y,E as X}from"../chunks/index.e52fc4ee.js";import{C as V,P as Z}from"../chunks/Prism.5b7fe600.js";import{C as en}from"../chunks/Callout.70eb9fc4.js";const tn=`<head>
     <link rel="alternate" href="/en" hreflang="en" />
     <link rel="alternate" href="/de" hreflang="de" />
 </head>`,nn=`<head>
