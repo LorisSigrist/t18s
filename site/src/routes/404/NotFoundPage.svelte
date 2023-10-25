@@ -3,7 +3,7 @@
   </script>
   
   <svelte:head>
-      <meta name="robots" content="noindex">
+      <meta name="robots" content="noindex, nofollow">
       <title>Page Not Found</title>
   </svelte:head>
   
