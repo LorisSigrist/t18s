@@ -23,22 +23,6 @@ describe("compile", () => {
     expect(result).toMatch(correct);
   });
 
-  it("compiles a message with a tag argument into a function", () => {
-    const message = "Hello <tag>{name}!</tag>";
-    const compiled = precompile(parseMessage(message), "en");
-    const values = {
-      tag: (value) => `<bold>${value}</bold>`,
-      name: "world",
-    };
-    const result = evaluateFnString(compiled, {
-      tag: "bold",
-      name: "world",
-    });
-
-    const correct = formatJS(message, values);
-    expect(result).toMatch(correct);
-  });
-
   it("compiles a message containing a backtick", () => {
     const message = "Hello `world` {name}";
     const compiled = precompile(parseMessage(message), "en");

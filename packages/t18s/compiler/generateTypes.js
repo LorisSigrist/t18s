@@ -37,7 +37,7 @@ export function generateType(elements) {
       }
 
       case TYPE.tag: {
-        commonFields.set(element.value, "string");
+        commonFields.set(element.value, "(inner: string) => string");
 
         //Make sure to also generate types for the children of the tag
         const contentType = generateType(element.children);

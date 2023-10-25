@@ -183,11 +183,6 @@ to plural, but with the<code>selectordinal</code> type.
   </Tab>
 </CodeGroup>
 
-<Callout type="warning">
-  You cannot use any additional values inside tags, nesting is not supported.
-</Callout>
-
-
 <Callout type="info">
   When you use messages containing HTML, don't forget to use svelte's {"{@html}"} directive to render them.
 </Callout>

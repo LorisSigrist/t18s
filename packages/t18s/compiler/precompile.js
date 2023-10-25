@@ -34,17 +34,7 @@ function compileElement(element, locale, poundValue) {
     case TYPE.argument:
       return "${args." + element.value + "}";
     case TYPE.tag:
-      return (
-        "<${args." +
-        element.value +
-        "}>" +
-        element.children
-          .map((el) => compileElement(el, locale, poundValue))
-          .join("") +
-        "</${args." +
-        element.value +
-        "}>"
-      );
+      return "${args." + element.value + '(`' + element.children.map(e => compileElement(e, locale, poundValue)).join("") +'`)}';
     case TYPE.select: {
       return compileSelect(element, locale, poundValue);
     }
