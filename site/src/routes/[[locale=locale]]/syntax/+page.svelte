@@ -1,6 +1,7 @@
 <script>
   import Callout from "$lib/ui/Callout.svelte";
   import CodeGroup from "$lib/ui/CodeGroup.svelte";
+  import Prism from "$lib/ui/Prism.svelte";
 </script>
 
 <h1>Message Syntax</h1>
@@ -18,7 +19,7 @@ You can interpolate strings into your messages using curly braces. The value ins
 the braces will be replaced with whatever value you pass when using the message.
 
 <CodeGroup let:Tab>
-  <Tab>Hello <mark>{"{fullName}"}</mark>, how are you?</Tab>
+  <Tab><pre>Hello <mark>{"{fullName}"}</mark>, how are you?</pre></Tab>
 </CodeGroup>
 
 <p>
@@ -28,11 +29,11 @@ the braces will be replaced with whatever value you pass when using the message.
 </p>
 
 <CodeGroup let:Tab>
-  <Tab
-    >There are {"{"}count, <mark>number</mark>{"}"} people here<br />
-    Today is {"{"}date, <mark>date</mark>{"}"}<br />
-    Sarah shows up at {"{"}time, <mark>time</mark>{"}"}</Tab
-  >
+  <Tab>
+    <pre>There are {"{"}count, <mark>number</mark>{"}"} people here</pre>
+    <pre>Today is {"{"}date, <mark>date</mark>{"}"}</pre>
+    <pre>Sarah shows up at {"{"}time, <mark>time</mark>{"}"}</pre>
+  </Tab>
 </CodeGroup>
 
 You can format the value by adding a third, format options in the curly braces.
@@ -40,9 +41,9 @@ You can for example specify how long the date should be.
 
 <CodeGroup let:Tab>
   <Tab
-    >Today is {"{data, date"}<mark>, short</mark>{"}"}<br />
-    Today is {"{data, date"}<mark>, medium</mark>{"}"}<br />
-    Today is {"{data, date"}<mark>, long</mark>{"}"}
+    ><pre>Today is {"{data, date"}<mark>, short</mark>{"}"}</pre>
+    <pre>Today is {"{data, date"}<mark>, medium</mark>{"}"}</pre>
+    <pre>Today is {"{data, date"}<mark>, long</mark>{"}"}</pre>
   </Tab>
 </CodeGroup>
 
@@ -74,12 +75,35 @@ Generally the format for interpolating values is always this.
 </p>
 
 <p>
-  You can use the number itself inside the message by using the <code>#</code> symbol.
+  You can declare them by using the `plural` type and listing out the options.
 </p>
 
 <CodeGroup let:Tab>
   <Tab>
-    {"{count, plural, one {There is "}<mark>#</mark>{" person here} other {There are "}<mark>#</mark>{" people here}}"}
+    <pre>{"{count, "}<mark>plural</mark
+      >{", one {There is one person here} other {There are multiple people here}}"}</pre>
+  </Tab>
+</CodeGroup>
+
+<p />
+
+<p>You can also match an exact number by using an equals sign before it.</p>
+
+<CodeGroup let:Tab>
+  <Tab>
+    <pre>{"{count, plural,"}<mark> =0</mark
+      >{" {There is no one here} other {There is someone here}}"}</pre>
+  </Tab>
+</CodeGroup>
+
+<p>
+  You can use the number itself inside the message by using the <code>#</code> placeholder.
+</p>
+
+<CodeGroup let:Tab>
+  <Tab>
+    <pre>{"{count, plural, one {There is "}<mark>#</mark
+    >{" person here} other {There are "}<mark>#</mark>{" people here}}"}</pre>
   </Tab>
 </CodeGroup>
 
@@ -101,7 +125,8 @@ Generally the format for interpolating values is always this.
 
 <CodeGroup let:Tab>
   <Tab>
-    Hello {"{gender, select, male {Mr.} female {Mrs.}} {name}"}</Tab
+    <pre>Hello {"{gender, "}<mark>select</mark
+    >{", male {Mr.} female {Mrs.}} {name}"}</pre></Tab
   >
 </CodeGroup>
 
@@ -111,9 +136,9 @@ Generally the format for interpolating values is always this.
 
 <CodeGroup let:Tab>
   <Tab>
-    Hello {"{gender, select, male {Mr.} female {Mrs.} "}<mark
+    <pre>Hello {"{gender, select, male {Mr.} female {Mrs.} "}<mark
       >other{" {Mx.}"}</mark
-    >{"} {name}"}
+    >{"} {name}"}</pre>
   </Tab>
 </CodeGroup>
 
@@ -128,8 +153,8 @@ to plural, but with the<code>selectordinal</code> type.
 
 <CodeGroup let:Tab>
   <Tab>
-    {"{count, "}<mark>selectordinal</mark
-    >{", one {#st} two {#nd} few {#rd} other {#th}}"}
+    <pre>{"{count, "}<mark>selectordinal</mark
+    >{", one {#st} two {#nd} few {#rd} other {#th}}"}</pre>
   </Tab>
 </CodeGroup>
 
@@ -139,7 +164,32 @@ to plural, but with the<code>selectordinal</code> type.
 </Callout>
 
 <h2>Inline HTML</h2>
+<p>
+  Sometimes you want to dynamically insert HTML into your messages. You can do
+  this by writing tags inside your messages. However, these tags aren't raw html,
+  they too are translated. When formatting the message, you will need to pass in 
+  a callback that takes in the text-content of the tag and returns the html you want to insert.
+</p>
+
+<CodeGroup let:Tab>
+  <Tab>
+    <pre>Go to our <mark>{"<homepageLink>"}</mark>Homepage<mark>{"</homepageLink>"}</mark></pre>
+  </Tab>
+</CodeGroup>
+
+<CodeGroup let:Tab>
+  <Tab>
+    <Prism language="javascript" code={'$t("key", {homepageLink: (innerText) => `<a href="...">${innerText}</a>`})'} />
+  </Tab>
+</CodeGroup>
 
 <Callout type="warning">
-  You cannot use any additional values inside tags.
+  You cannot use any additional values inside tags, nesting is not supported.
 </Callout>
+
+
+<Callout type="info">
+  When you use messages containing HTML, don't forget to use svelte's {"{@html}"} directive to render them.
+</Callout>
+
+
