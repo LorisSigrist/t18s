@@ -24,12 +24,3 @@ export function doubleKeyedSetter(outer) {
     else inner[key2] = value;
   };
 }
-
-/**
- * Returns a promise that resolves after the given number of milliseconds
- * @param {number} ms
- * @returns {Promise<void>}
- */
-export function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}

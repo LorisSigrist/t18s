@@ -24,12 +24,6 @@ const MessageCatalogueEventTarget = /** @type {any} */ (TypedEventTarget);
 
 export class MessageCatalogue extends MessageCatalogueEventTarget {
   /**
-   * Map locales to their dictionaries.
-   * @type {DoubleKeyedMap<Dictionary>}
-   */
-  #dictionaries = new DoubleKeyedMap();
-
-  /**
    * Maps locales & domains to the files where they are defined.
    * - Key1: locale
    * - Key2: domain
@@ -38,18 +32,11 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
   #files = new DoubleKeyedMap();
 
   /**
-   * The locales that are registered.
-   * @type {Set<string>}
+   * Map domains to locales to their messages.
+   * @type {DoubleKeyedMap<Dictionary>}
    */
-  #locales;
+  #messages = new DoubleKeyedMap();
 
-  /**
-   * @param {Iterable<string>} locales
-   */
-  constructor(locales) {
-    super();
-    this.#locales = new Set(locales);
-  }
 
   /**
    * Register a new locale.
@@ -60,7 +47,7 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
    */
   registerDictionary(locale, domain, filePath, dictionary) {
     this.#files.set(locale, domain, filePath);
-    this.#dictionaries.set(locale, domain, dictionary);
+    this.#messages.set(domain, locale, dictionary);
 
     this.#dispatch("dictionary_added", { locale, domain, dictionary });
     this.#dispatch("messages_changed", {});
@@ -72,8 +59,8 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
    * @param {string} domain
    */
   unregisterDictionary(locale, domain) {
-    this.#dictionaries.delete(locale, domain);
     this.#files.delete(locale, domain);
+    this.#messages.delete(domain, locale);
 
     this.#dispatch("dictionary_removed", { locale, domain });
     this.#dispatch("messages_changed", {});
@@ -89,9 +76,18 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
   setDictionary(locale, domain, dictionary) {
     if (!this.#files.has(locale, domain))
       throw new LocaleNotFoundException(locale);
-    this.#dictionaries.set(locale, domain, dictionary);
+
+    this.#messages.set(domain, locale, dictionary);
+
     this.#dispatch("messages_changed", {});
     this.#dispatch("dictionary_changed", { locale, domain, dictionary });
+  }
+
+  /**
+   * @param {string} domain
+   */
+  getMessages(domain) {
+    return this.#messages.getInner(domain);
   }
 
   /**
@@ -100,7 +96,7 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
    * @returns {Dictionary | undefined}
    */
   getDictionary(locale, domain) {
-    return this.#dictionaries.get(locale, domain);
+    return this.#messages.get(domain, locale);
   }
 
   /**
@@ -116,36 +112,13 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
     return file;
   }
 
-  getDictionaries() {
-    return this.#dictionaries;
-  }
-
   /**
    * Get all domains that are registered for the given locale.
    *
-   * @param {string} locale
-   * @throws {LocaleNotFoundException} If the locale is not registered.
+   * @returns {Set<string>}
    */
-  getDomains(locale) {
-    if (!this.#locales.has(locale)) throw new LocaleNotFoundException(locale);
-
-    /** @type {Set<string>} */
-    const domains = new Set();
-    for (const [loc, domain] of this.#files.keys()) {
-      if (loc === locale) domains.add(domain);
-    }
-
-    return domains;
-  }
-
-  /**
-   * @param {string} locale
-   * @param {string} domain
-   * @returns {boolean}
-   */
-  hasDictionary(locale, domain) {
-    return this.#dictionaries.has(locale, domain);
-  }
+  getDomains = () => new Set(this.#messages.outerKeys());
+  hasDictionary = this.#messages.has;
 
   /**
    * Dispatches an event of the given type with the given details.

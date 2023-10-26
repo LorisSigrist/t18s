@@ -5,7 +5,7 @@ import { VIRTUAL_MODULE_PREFIX } from "../constants.js";
 
 function getT18SModulePath() {
   const thisModulePath = normalizePath(dirname(fileURLToPath(import.meta.url)));
-  const $t18sMainModulePath = resolve(thisModulePath, "../runtime/index.js");
+  const $t18sMainModulePath = resolve(thisModulePath, "../runtime/$t18s.js");
   return $t18sMainModulePath;
 }
 

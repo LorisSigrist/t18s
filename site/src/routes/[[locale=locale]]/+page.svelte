@@ -2,19 +2,29 @@
   import CodeGroup from "$lib/ui/CodeGroup.svelte";
   import CommandLineIcon from "virtual:icons/heroicons/command-line";
   import TypeScriptIcon from "virtual:icons/simple-icons/typescript";
+  import {
+    title,
+    mission_statement,
+    get_started_cta,
+    precompilation_feature_title,
+    precompilation_feature_description,
+    typesafety_feature_title,
+    typesafety_feature_description
+  } from "$t18s/messages/homepage";
 </script>
 
-<div class="bg-white fixed inset-0 grid place-items-center px-4 py-12 overflow-y-auto">
+<div
+  class="bg-white fixed inset-0 grid place-items-center px-4 py-12 overflow-y-auto"
+>
   <div class="max-w-2xl flex flex-col gap-4">
-    <div class="text-center">
+    <hgroup class="text-center">
       <h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
-        i18n meets Typesafety
+        {$title()}
       </h1>
       <p class="mt-6 text-lg leading-8 text-gray-600">
-        T18S aims to provide the best internationalization experience for
-        SvelteKit, delivering typesafety, performance, and ease of use.
+        {$mission_statement()}
       </p>
-    </div>
+    </hgroup>
     <div>
       <dl
         class="mx-auto mt-8 px-4 grid max-w-2xl grid-cols-1 gap-8 text-base leading-7 text-gray-700 sm:grid-cols-2 lg:mx-0 lg:max-w-none lg:gap-x-12"
@@ -25,11 +35,10 @@
               class="absolute left-1 top-1 h-5 w-5 text-orange-500"
               aria-hidden
             />
-            Typesafe.
+            {$typesafety_feature_title()}
           </dt>
           <dd class="inline">
-            T18S generates & enforces types for your translations. No more
-            forgetting to pass the right arguments.
+            {$typesafety_feature_description()}
           </dd>
         </div>
         <div class="relative pl-9">
@@ -38,11 +47,10 @@
               class="absolute left-1 top-1 h-5 w-5 text-orange-500"
               aria-hidden
             />
-            Precompiled.
+            {$precompilation_feature_title()}
           </dt>
           <dd class="inline">
-            T18s compiles your translations at build time. No more huge i18n
-            bundles on the client.
+            {$precompilation_feature_description()}
           </dd>
         </div>
       </dl>
@@ -56,7 +64,7 @@
       <a
         href="/getting-started"
         class="rounded-md bg-orange-600 px-6 py-3.5 text-sm font-semibold text-white shadow-sm hover:bg-orange-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
-        >Get started</a
+        >{$get_started_cta()}</a
       >
     </div>
   </div>

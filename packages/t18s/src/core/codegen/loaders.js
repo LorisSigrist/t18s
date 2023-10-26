@@ -12,7 +12,7 @@ export function generateLoaderModule(config, Catalogue) {
 
   for (const locale of config.locales) {
     let localeCode = "";
-    const domains = Catalogue.getDomains(locale);
+    const domains = Catalogue.getDomains();
     localeCode += `"${locale}" : {\n`;
 
     /** @type {string[]} */

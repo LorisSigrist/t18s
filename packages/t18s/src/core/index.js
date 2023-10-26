@@ -30,6 +30,10 @@ import {
   resolveLoaderModuleId,
 } from "./module-resolution/loader.js";
 import { resolveIdSequence } from "./module-resolution/utils.js";
+import {
+  loadMessagesModule,
+  resolveMessagesModuleId,
+} from "./module-resolution/messages.js";
 
 /**
  * TypeSafe translations for Svelte & SvelteKit.
@@ -53,15 +57,11 @@ export function t18sCore(pluginConfig) {
   let hmrDispatch = () => {};
 
   /** Keeps track of the messages that exist & where to find them */
-  const Catalogue = new MessageCatalogue(pluginConfig.locales);
+  const Catalogue = new MessageCatalogue();
   Catalogue.addEventListener(
     "messages_changed",
     async () => await regenerateDTS()
   );
-  Catalogue.addEventListener("dictionary_added", (e) => {
-    const { locale, domain } = e.detail;
-    hmrDispatch("t18s:addDictionary", { locale, domain });
-  });
   Catalogue.addEventListener("dictionary_removed", (e) => {
     const { locale, domain } = e.detail;
     reporter.unregisterTranslations(locale, domain);
@@ -230,7 +230,6 @@ export function t18sCore(pluginConfig) {
           pluginConfig.translationsDir
         ),
         verbose: pluginConfig.verbose && resolvedConfig.command === "serve",
-        defaultDomain: pluginConfig.defaultDomain,
         locales: pluginConfig.locales,
         fallbackLocale: pluginConfig.fallbackLocale ?? null,
       };
@@ -246,6 +245,7 @@ export function t18sCore(pluginConfig) {
       resolveMainModuleId,
       resolveConfigModuleId,
       resolveLoaderModuleId,
+      resolveMessagesModuleId,
     ]),
 
     async load(id) {
@@ -256,6 +256,7 @@ export function t18sCore(pluginConfig) {
         loadDictionaryModule,
         loadConfigModule,
         loadLoaderModule,
+        loadMessagesModule,
       ];
 
       //Attempt to load the module from all loaders
@@ -270,7 +271,6 @@ export function t18sCore(pluginConfig) {
         if (result.value) return result.value;
       }
 
-      //If none of the loaders could load the module, return null.
       return null;
     },
 
@@ -317,6 +317,6 @@ function categorizeFile(path) {
 
   const [first, second] = filename.split(".");
   if (!first) throw new Error(`Could not determine locale for ${path}`);
-  if (!second) throw new Error(`Could not determine domain for ${path}`);
+  if (!second) return { locale: first, domain: "" };
   return { locale: second, domain: first };
 }

@@ -25,3 +25,27 @@ export function generateDictionaryModule(dictionary) {
   code += "\n};";
   return code;
 }
+
+/**
+ * Generates the code for a dictionary module.
+ *
+ * @param {import("../types.js").Dictionary} dictionary
+ * @returns {string}
+ */
+export function newGenerateDictionaryModule(dictionary) {
+  /** @type {string[]} */
+  let statements = [];
+
+
+  for (const [key, message] of dictionary) {
+    let statement = "";
+    if (message.typeDefinition) {
+      statement += `/** @type {(args: ${message.typeDefinition}) => string} */\n`;
+    }
+
+    statement += `export const ${key} = ${message.precompiled};`;
+    statements.push(statement);
+  }
+
+  return statements.join("\n");
+}

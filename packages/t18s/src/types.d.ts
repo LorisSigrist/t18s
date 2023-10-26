@@ -21,15 +21,14 @@ export type t18sUserConfig<Locales extends readonly string[]> = {
   verbose?: boolean;
 
   /**
-   * The default domain which will be used when no domain is specified.
-   * @default "messages"
-   */
-  defaultDomain?: string;
-
-  /**
    * The locales that should be made available.
    */
   locales: Locales;
+
+  /**
+   * The fallback locale to use when a translation is not in the current locale.
+   * @default null
+   */
   fallbackLocale?: Locales[number] | null;
 };
 

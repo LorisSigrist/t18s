@@ -26,7 +26,6 @@ export interface ResolvedPluginConfig {
   dtsPath: string;
   translationsDir: string;
   verbose: boolean;
-  defaultDomain: string;
   locales: string[];
   fallbackLocale: string | null;
 }

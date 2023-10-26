@@ -1,14 +1,18 @@
 <script>
   import { page } from "$app/stores";
-
-  const FALLBACK_TITLE = "T18S";
+  import { title, defaultTitle } from "$t18s/messages/seo";
+  import { test } from "$t18s/messages";
 
   $: metadata = $page.data.metadata ?? {};
 </script>
 
 <svelte:head>
   {#key $page.url.pathname}
-    <title>{metadata?.title ?? FALLBACK_TITLE}</title>
+    <title
+      >{metadata?.title
+        ? $title({ pageTitle: metadata.title })
+        : $defaultTitle()}</title
+    >
 
     {#if metadata.description}
       <meta name="description" content={metadata.description} />
