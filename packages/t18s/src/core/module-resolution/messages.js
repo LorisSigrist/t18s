@@ -25,7 +25,7 @@ function generateMessagesModuleCode(Catalogue, domain) {
   let code = "";
   code += 'import { locale } from "$t18s";\n';
   code += 'import { get, derived } from "svelte/store";\n';
-  code += 'import { verbose } from "t18s-internal:config";\n\n'
+  code += 'import { verbose, fallbackLocale } from "t18s-internal:config";\n\n'
 
   let messageKeys = new Set();
   let locales = new Set();

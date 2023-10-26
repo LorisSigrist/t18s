@@ -11,6 +11,7 @@
     typesafety_feature_title,
     typesafety_feature_description
   } from "$t18s/messages/homepage";
+  import Prism from "$lib/ui/Prism.svelte";
 </script>
 
 <div
@@ -58,7 +59,7 @@
     <div class="flex flex-row flex-wrap gap-x-4 items-center justify-center">
       <div class="w-56 max-w-full text-left">
         <CodeGroup let:Tab>
-          <Tab>npm i -D t18s</Tab>
+          <Tab><Prism language="bash" code="npm i -D t18s" /></Tab>
         </CodeGroup>
       </div>
       <a

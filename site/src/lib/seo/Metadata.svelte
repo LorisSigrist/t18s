@@ -1,7 +1,6 @@
 <script>
   import { page } from "$app/stores";
   import { title, defaultTitle } from "$t18s/messages/seo";
-  import { test } from "$t18s/messages";
 
   $: metadata = $page.data.metadata ?? {};
 </script>
