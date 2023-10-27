@@ -18,6 +18,3 @@ somewhere where ambient types are picked up by the compiler.
 ## `verbose`
 Whether to log information about the translation process during development. Defaults to `true`.
 T18S is always silent in production.
-
-## `defaultDomain`
-The default domain to use when no domain is specified in the message key. Defaults to `messages`.

@@ -52,15 +52,32 @@ in which t18s will look for messages. Then create a file called `en.yaml` there.
   </Tab>
 </CodeGroup>
 
-Now in your svelte component you can use the `t` store exported from the `$t18s` (with the **$**!) to access the messages.
+Now in your svelte component you import the message and use it in your markup.
 
 <CodeGroup let:Header let:Tab>
   <Header title="src/App.svelte" />
   <Tab>
-    <Prism code={`<script>
-  import { t } from "$t18s";
-</script>
-{$t("hello")}`}
-language="svelte" />
+    <Prism 
+    code={'<script>\n\timport { hello } from "$t18s/messages";\n</script>\n\n<h1>{$hello()}</h1>'}
+    language="svelte" />
   </Tab>
 </CodeGroup>
+
+<Callout type="info">
+  T18S uses message-imports instead of a global <code class="prose-code">$t</code> function to allow for tree-shaking unused messages.
+</Callout>
+
+## Message Domains
+You can split your messages into domains, making organization much easier. Just name
+your files: `<namespace>.<locale>.yaml` and import them like this:
+
+<CodeGroup let:Header let:Tab>
+  <Header title="src/App.svelte" />
+  <Tab>
+    <Prism 
+    code={'<script>\n\timport { my_message } from "$t18s/messages/<namespace>";\n</script>\n\n<h1>{$my_message()}</h1>'}
+    language="svelte" />
+  </Tab>
+</CodeGroup>
+
+Domains are loaded & bundled independently, so if you only need a message on some pages, putting it in a separate domain will allow you to only load it on those pages.

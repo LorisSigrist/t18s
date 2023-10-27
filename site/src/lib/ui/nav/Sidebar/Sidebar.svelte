@@ -25,14 +25,6 @@
       <Link href="/syntax" active={$page.url.pathname === "/syntax"}
         >Syntax</Link
       >
-      <Link
-        href="/switching-locales"
-        active={$page.url.pathname === "/switching-locales"}
-        >Switching Locales</Link
-      >
-      <Link href="/preloading" active={$page.url.pathname === "/preloading"}
-        >Preloading</Link
-      >
     </SidebarSection>
 
     <SidebarSection let:Heading let:Link>
