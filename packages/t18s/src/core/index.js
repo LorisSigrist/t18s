@@ -13,7 +13,6 @@ import { ResultMatcher } from "./utils/resultMatcher.js";
 import { buffer } from "./utils/bufferPromise.js";
 import {
   MessageCatalogue,
-  LocaleNotFoundException,
 } from "./MessageCatalogue.js";
 import { cleanUrl } from "./utils/id.js";
 import { createHMRDispatcher } from "./HMR.js";
@@ -50,6 +49,9 @@ export function t18sCore(pluginConfig) {
   /** @type {Reporter} */
   let reporter;
 
+  /** @type {import("vite").ViteDevServer} */
+  let viteDevServer;
+
   /**
    * Dispatch an HMR event to the client.
    * @type {import("./HMR.js").HMREventDispatcher}
@@ -60,8 +62,24 @@ export function t18sCore(pluginConfig) {
   const Catalogue = new MessageCatalogue();
   Catalogue.addEventListener(
     "messages_changed",
-    async () => await regenerateDTS()
+    async () => {
+      await regenerateDTS();
+
+      if (viteDevServer) {
+        const message_module = viteDevServer.moduleGraph.getModuleById("\0$t18s/messages/homepage")
+        if (message_module) {
+          console.log("Invalidating module")
+          viteDevServer.moduleGraph.invalidateModule(message_module, undefined, undefined, true);
+
+          viteDevServer.ws.send({
+            type: "full-reload"
+          })
+        }
+      }
+    }
   );
+
+  /*
   Catalogue.addEventListener("dictionary_removed", (e) => {
     const { locale, domain } = e.detail;
     reporter.unregisterTranslations(locale, domain);
@@ -72,6 +90,7 @@ export function t18sCore(pluginConfig) {
     reporter.translationsChanged(locale, domain);
     hmrDispatch("t18s:reloadDictionary", { locale, domain });
   });
+  */
 
   /** Handles interactions with translation files */
   const fileHandler = new FileHandler([YamlHandler, JsonHandler]);
@@ -149,18 +168,6 @@ export function t18sCore(pluginConfig) {
     const { locale, domain } = categorizeFile(filePath);
     Catalogue.unregisterDictionary(locale, domain);
   };
-
-  /**
-   * Sets (create or overwrite) the message for a given key and locale.   *
-   * @param {string} locale
-   * @param {string} domain
-   * @param {string} key
-   * @param {string} message_src
-   */
-  async function setMessage(locale, domain, key, message_src) {
-    const filePath = Catalogue.getFile(locale, domain);
-    fileHandler.setPath(filePath, key, message_src);
-  }
 
   /**
    * Safely list the files that are in the given directory. If the reading fails, an empty array is returned & a warning is logged.
@@ -282,7 +289,7 @@ export function t18sCore(pluginConfig) {
        */
       const fileInTranslationDir = (path) =>
         path.startsWith(config.translationsDir);
-
+      
       server.watcher.on("unlink", async (filePath) => {
         if (!fileInTranslationDir(filePath)) return;
         unregisterTranslationFile(filePath);
@@ -298,11 +305,8 @@ export function t18sCore(pluginConfig) {
         await invalidateTranslationFile(filePath);
       });
 
-      server.ws.on("t18s:add-message", (event) => {
-        setMessage(event.locale, event.domain, event.key, event.value);
-      });
-
       hmrDispatch = createHMRDispatcher(server);
+      viteDevServer = server;
     },
   };
 }
@@ -313,7 +317,8 @@ export function t18sCore(pluginConfig) {
  * @returns {{locale: string, domain: string}}
  */
 function categorizeFile(path) {
-  const filename = basename(path).split(".").slice(0, -1).join(".");
+  //get the filename without the extension
+  const filename = basename(path).split(".").slice(0, -1).join("."); 
 
   const [first, second] = filename.split(".");
   if (!first) throw new Error(`Could not determine locale for ${path}`);

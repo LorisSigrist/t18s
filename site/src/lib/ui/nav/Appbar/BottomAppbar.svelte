@@ -18,7 +18,7 @@
 {/if}
 
 <header
-  class="block md:hidden relative z-50"
+  class="block md:hidden relative z-50 print:hidden"
   use:conditionalFocusTrap={navOpen}
 >
   <div class="flex p-4 border-t items-center justify-between z-50 bg-white">

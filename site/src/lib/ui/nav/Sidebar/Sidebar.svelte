@@ -7,7 +7,7 @@
 
 <aside
   role="banner"
-  class="hidden md:flex flex-col w-96 gap-8 overflow-y-auto pt-16 px-12"
+  class="hidden md:flex flex-col w-96 gap-8 overflow-y-auto pt-16 px-12 print:hidden"
 >
   <header>
     <a href="/" class="flex gap-2 items-center outline-orange-400">

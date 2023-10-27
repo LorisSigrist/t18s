@@ -1,5 +1,7 @@
 <script>
   import { page } from "$app/stores";
+  import { DEFAULT_LOCALE } from "$lib/i18n";
+  import HrefLang from "$lib/i18n/HrefLang.svelte";
   import { title, defaultTitle } from "$t18s/messages/seo";
 
   $: metadata = $page.data.metadata ?? {};
@@ -18,3 +20,6 @@
     {/if}
   {/key}
 </svelte:head>
+
+
+<HrefLang defaultLocale={DEFAULT_LOCALE} />

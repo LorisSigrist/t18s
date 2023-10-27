@@ -15,7 +15,7 @@
 </script>
 
 <div class="relative">
-  <div class="overflow-x-auto px-4 py-3 text-xs text-white font-mono leading-6" bind:this={content}>
+  <div class="overflow-x-auto px-4 py-3 text-xs text-white font-mono leading-6 selection:bg-orange-600 selection:text-white" bind:this={content}>
     <slot />
   </div>
   <CopyButton on:click={saveCodeToClipboard} {copied} />

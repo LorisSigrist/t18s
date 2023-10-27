@@ -70,13 +70,8 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
    * @param {string} locale
    * @param {string} domain
    * @param {Dictionary} dictionary
-   *
-   * @throws {LocaleNotFoundException} If the locale is not registered.
    */
   setDictionary(locale, domain, dictionary) {
-    if (!this.#files.has(locale, domain))
-      throw new LocaleNotFoundException(locale);
-
     this.#messages.set(domain, locale, dictionary);
 
     this.#dispatch("messages_changed", {});
@@ -102,13 +97,11 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
   /**
    * @param {string} locale
    * @param {string} domain
-   * @returns {string}
-   *
-   * @throws {LocaleNotFoundException} If the locale is not registered.
+   * @returns {string | null}
    */
   getFile(locale, domain) {
     const file = this.#files.get(locale, domain);
-    if (!file) throw new LocaleNotFoundException(locale);
+    if (!file) return null;
     return file;
   }
 
@@ -131,14 +124,5 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
     /** @type {CustomEvent} */
     const event = new CustomEvent(event_name, { detail: details });
     this.dispatchTypedEvent(event_name, event);
-  }
-}
-
-export class LocaleNotFoundException extends Error {
-  name = "LocaleNotFoundException";
-
-  /** @param {string} locale */
-  constructor(locale) {
-    super(`Locale ${locale} is not registered.`);
   }
 }

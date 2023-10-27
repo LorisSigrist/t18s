@@ -38,7 +38,8 @@ function generateMessagesModuleCode(Catalogue, domain) {
   }
 
   for (const key of messageKeys) {
-    code += `export const ${key} = derived(locale, currentLocale => {
+    //We need to mark the derived store as pure, so that it will get treeshaken if it is not used.
+    code += `export const ${key} = /* @__PURE__ */ derived(locale, currentLocale => {
             return (values = undefined) => {
                 const translations = {
                     ${[...locales]
@@ -64,13 +65,12 @@ function generateMessagesModuleCode(Catalogue, domain) {
 
   code += `
     if(import.meta.hot) {
-        import.meta.hot.on("t18s:removeDomain", ()=>{
-            import.meta.hot.invalidate()
-        });
-
-        import.meta.hot.on("t18s:removeDomain", ()=>{
-            import.meta.hot.invalidate()
-        });
+      import.meta.hot.accept((newModule) => {
+        if (newModule) {
+          // newModule is undefined when SyntaxError happened
+          console.log(newModule)
+        }
+      })
     }
 `;
 

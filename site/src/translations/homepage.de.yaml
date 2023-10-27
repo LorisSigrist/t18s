@@ -2,7 +2,7 @@ title: i18n mit Typsicherheit
 mission_statement: T18S bietet die besete Übersetzungserfahrung für SvelteKit, mit Typsicherheit, Performance und einfacher Bedienung.
 get_started_cta: Loslegen
 
-typesafety_feature_title: Typsicherheit
+typesafety_feature_title: Typsicher.
 typesafety_feature_description: T18S generiert und erzwingt Typen für Übersetzungen. Vergiss nie wieder die richtigen Argumente zu verwenden.
 precompilation_feature_title: Kompiliert.
 precompilation_feature_description: T18s kompilier Übersetzungen beim Build. Keine riesigen i18n Bundles mehr auf dem Client.

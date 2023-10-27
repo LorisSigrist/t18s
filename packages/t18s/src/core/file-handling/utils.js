@@ -19,12 +19,12 @@ export function flattenTree(tree) {
    */
   function flatten(thing, path = []) {
     if (thing === null) {
-      flattened.set(path.join("."), "");
+      flattened.set(path.join("_"), "");
       return;
     }
 
     if (typeof thing === "string" || typeof thing === "number") {
-      flattened.set(path.join("."), String(thing));
+      flattened.set(path.join("_"), String(thing));
       return;
     }
 
