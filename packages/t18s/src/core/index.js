@@ -78,20 +78,7 @@ export function t18sCore(pluginConfig) {
       }
     }
   );
-
-  /*
-  Catalogue.addEventListener("dictionary_removed", (e) => {
-    const { locale, domain } = e.detail;
-    reporter.unregisterTranslations(locale, domain);
-    hmrDispatch("t18s:removeDictionary", { locale, domain });
-  });
-  Catalogue.addEventListener("dictionary_changed", (e) => {
-    const { locale, domain } = e.detail;
-    reporter.translationsChanged(locale, domain);
-    hmrDispatch("t18s:reloadDictionary", { locale, domain });
-  });
-  */
-
+  
   /** Handles interactions with translation files */
   const fileHandler = new FileHandler([YamlHandler, JsonHandler]);
 

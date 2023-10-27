@@ -7,9 +7,6 @@ import { DoubleKeyedMap } from "./utils/DoubleKeyedMap.js";
  * The valid events that may be emitted by a locale registry.
  *
  * @typedef {{
- *  "dictionary_added": CustomEvent<{ locale: string, domain: string, dictionary: Dictionary }>,
- *  "dictionary_removed": CustomEvent<{ locale: string, domain:string }>,
- *  "dictionary_changed": CustomEvent<{ locale: string, domain: string, dictionary: Dictionary }>,
  *  "messages_changed": CustomEvent<{}>,
  * }} LocaleRegistryEventMap
  */
@@ -48,8 +45,6 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
   registerDictionary(locale, domain, filePath, dictionary) {
     this.#files.set(locale, domain, filePath);
     this.#messages.set(domain, locale, dictionary);
-
-    this.#dispatch("dictionary_added", { locale, domain, dictionary });
     this.#dispatch("messages_changed", {});
   }
 
@@ -61,8 +56,6 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
   unregisterDictionary(locale, domain) {
     this.#files.delete(locale, domain);
     this.#messages.delete(domain, locale);
-
-    this.#dispatch("dictionary_removed", { locale, domain });
     this.#dispatch("messages_changed", {});
   }
 
@@ -75,7 +68,6 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
     this.#messages.set(domain, locale, dictionary);
 
     this.#dispatch("messages_changed", {});
-    this.#dispatch("dictionary_changed", { locale, domain, dictionary });
   }
 
   /**

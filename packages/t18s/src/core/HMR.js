@@ -1,9 +1,5 @@
 /**
  * @typedef {{
- *  "t18s:removeDictionary": { locale: string, domain: string }
- *  "t18s:reloadDictionary": { locale: string, domain: string },
- *  "t18s:removeDomain" : { domain: string },
- *  "t18s:invalidateDomain": { domain: string },
  * }} HMREventMap
  */
 
