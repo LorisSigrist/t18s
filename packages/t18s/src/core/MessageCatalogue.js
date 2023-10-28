@@ -103,7 +103,12 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
    * @returns {Set<string>}
    */
   getDomains = () => new Set(this.#messages.outerKeys());
-  hasDictionary = this.#messages.has;
+  /** 
+   * @param {string} locale 
+   * @param {string} domain 
+   * @returns 
+   */
+  hasDictionary = (locale, domain) => this.#messages.has(domain, locale);
 
   /**
    * Dispatches an event of the given type with the given details.
