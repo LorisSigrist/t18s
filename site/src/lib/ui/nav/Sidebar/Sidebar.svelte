@@ -1,6 +1,10 @@
 <script>
   import { page } from "$app/stores";
+  import { resolveTranslatedPath } from "$lib/i18n";
   import { merge } from "$lib/utils/class-merge";
+  import { locale } from "$t18s";
+  import { gettingStarted, messageSyntax, seo } from "$t18s/messages/nav";
+
   import SidebarSection from "./SidebarSection.svelte";
   import GithubIcon from "virtual:icons/simple-icons/github";
 </script>
@@ -10,7 +14,10 @@
   class="hidden md:flex flex-col w-96 gap-8 overflow-y-auto pt-16 px-12 print:hidden"
 >
   <header>
-    <a href="/" class="flex gap-2 items-center outline-orange-400">
+    <a
+      href={resolveTranslatedPath("/[[locale=locale]]", $locale)}
+      class="flex gap-2 items-center outline-orange-400"
+    >
       <img src="/icon.svg" alt="t18s" class="w-8 h-8 bg-transparent" />
       <span class="text-lg font-bold text-gray-950">T18S</span>
     </a>
@@ -19,17 +26,25 @@
     <SidebarSection let:Heading let:Link>
       <Heading>Guide</Heading>
       <Link
-        href="/getting-started"
-        active={$page.url.pathname === "/getting-started"}>Getting Started</Link
+        href={resolveTranslatedPath(
+          "/[[locale=locale]]/getting-started",
+          $locale
+        )}
+        active={$page.url.pathname.endsWith("/getting-started")}
+        >{$gettingStarted()}</Link
       >
-      <Link href="/syntax" active={$page.url.pathname === "/syntax"}
-        >Syntax</Link
+      <Link
+        href={resolveTranslatedPath("/[[locale=locale]]/syntax", $locale)}
+        active={$page.url.pathname.endsWith("/syntax")}>{$messageSyntax()}</Link
       >
     </SidebarSection>
 
     <SidebarSection let:Heading let:Link>
       <Heading>Best Practices</Heading>
-      <Link href="/seo" active={$page.url.pathname === "/seo"}>SEO</Link>
+      <Link
+        href={resolveTranslatedPath("/[[locale=locale]]/seo", $locale)}
+        active={$page.url.pathname.endsWith("/seo")}>{$seo()}</Link
+      >
     </SidebarSection>
 
     <SidebarSection let:Heading let:Link>

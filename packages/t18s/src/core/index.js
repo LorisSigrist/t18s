@@ -17,17 +17,9 @@ import {
 import { cleanUrl } from "./utils/id.js";
 import { createHMRDispatcher } from "./HMR.js";
 import {
-  loadDictionaryModule,
-  resolveDictionaryModuleId,
-} from "./module-resolution/dictionary.js";
-import {
   loadConfigModule,
   resolveConfigModuleId,
 } from "./module-resolution/config.js";
-import {
-  loadLoaderModule,
-  resolveLoaderModuleId,
-} from "./module-resolution/loader.js";
 import { resolveIdSequence } from "./module-resolution/utils.js";
 import {
   loadMessagesModule,
@@ -235,10 +227,8 @@ export function t18sCore(pluginConfig) {
     },
 
     resolveId: resolveIdSequence([
-      resolveDictionaryModuleId,
       resolveMainModuleId,
       resolveConfigModuleId,
-      resolveLoaderModuleId,
       resolveMessagesModuleId,
     ]),
 
@@ -247,9 +237,7 @@ export function t18sCore(pluginConfig) {
 
       /** @type {import("./module-resolution/types.js").ModuleLoader[]} */
       const loaders = [
-        loadDictionaryModule,
         loadConfigModule,
-        loadLoaderModule,
         loadMessagesModule,
       ];
 

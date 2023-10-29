@@ -9,9 +9,11 @@
     precompilation_feature_title,
     precompilation_feature_description,
     typesafety_feature_title,
-    typesafety_feature_description
+    typesafety_feature_description,
   } from "$t18s/messages/homepage";
   import Prism from "$lib/ui/Prism.svelte";
+  import { resolveTranslatedPath } from "$lib/i18n";
+  import { locale } from "$t18s";
 </script>
 
 <div
@@ -63,7 +65,10 @@
         </CodeGroup>
       </div>
       <a
-        href="/getting-started"
+        href={resolveTranslatedPath(
+          "/[[locale=locale]]/getting-started",
+          $locale
+        )}
         class="rounded-md bg-orange-600 px-6 py-3.5 text-sm font-semibold text-white shadow-sm hover:bg-orange-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
         >{$get_started_cta()}</a
       >

@@ -29,7 +29,9 @@ export function generateDTS(config, Catalogue) {
     );
 
     module.addStatement(
-      `export const fallbackLocale: ${config.fallbackLocale ? addQuotes(config.fallbackLocale) : undefined};`,
+      `export const fallbackLocale: ${
+        config.fallbackLocale ? addQuotes(config.fallbackLocale) : undefined
+      };`,
       (s) => s.setDescription("The fallback locale that's currently in use.")
     );
 
@@ -48,7 +50,6 @@ export function generateDTS(config, Catalogue) {
           "Set the current locale. Equivalent to `locale.set(newLocale)`\n@param newLocale The new locale"
         )
     );
-
 
     module.addStatement(
       "export const isLocale: (maybeLocale: unknown) => maybeLocale is Locale;",
@@ -89,9 +90,7 @@ function addMessageModule(config, dts, Catalogue, domain) {
   }
 
   const moduleId =
-    domain === ""
-      ? "$t18s/messages"
-      : `$t18s/messages/${domain}`;
+    domain === "" ? "$t18s/messages" : `$t18s/messages/${domain}`;
 
   dts.addModule(moduleId, (module) => {
     module.setDescription(
@@ -108,10 +107,14 @@ function addMessageModule(config, dts, Catalogue, domain) {
       }
 
       if (types.size === 0) {
-        module.addStatement(`export const ${key}: Readable<(values?: undefined) => string>;`);
+        module.addStatement(
+          `export const ${key}: Readable<(values?: undefined) => string>;`
+        );
       } else {
         module.addStatement(
-          `export const ${key}: Readable<(values : ${[...types].join(" & ")}) => string>;`
+          `export const ${key}: Readable<(values : ${[...types].join(
+            " & "
+          )}) => string>;`
         );
       }
     }

@@ -5,7 +5,7 @@ export const DEFAULT_LOCALE = "en";
 
 /**
  * A version of `resolvePath` that always set's the locale parameter to the correct value.
- * 
+ *
  * @param {string} routeId
  * @param {import("$t18s").Locale} locale
  * @param {Record<string, string | undefined>} params
