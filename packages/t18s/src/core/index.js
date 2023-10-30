@@ -7,7 +7,6 @@ import { FileHandler } from "./file-handling/fileHandler.js";
 import { LoadingException } from "./file-handling/exception.js";
 import { generateDTS } from "./codegen/dts.js";
 import { resolveMainModuleId } from "./module-resolution/main.js";
-import { compileToDictionary } from "./utils/compileToDictionary.js";
 import { Reporter } from "./utils/reporter.js";
 import { ResultMatcher } from "./utils/resultMatcher.js";
 import { buffer } from "./utils/bufferPromise.js";
@@ -60,7 +59,6 @@ export function t18sCore(pluginConfig) {
       if (viteDevServer) {
         const message_module = viteDevServer.moduleGraph.getModuleById("\0$t18s/messages/homepage")
         if (message_module) {
-          console.log("Invalidating module")
           viteDevServer.moduleGraph.invalidateModule(message_module, undefined, undefined, true);
 
           viteDevServer.ws.send({
@@ -95,15 +93,13 @@ export function t18sCore(pluginConfig) {
     //Try to read the file & buffer the result
     const bufferedFileRead = await buffer(fileHandler.read(filePath));
 
-    const keyVal = new ResultMatcher(bufferedFileRead)
+    const dictionary = new ResultMatcher(bufferedFileRead)
       .catch(LoadingException, (e) => {
         logger.error(e.message);
-        return new Map();
+        return {};
       })
       .run();
 
-    const { dictionary, invalidKeys } = compileToDictionary(keyVal, locale);
-    if (invalidKeys) reporter.warnAboutInvalidKeys(filePath, invalidKeys);
     Catalogue.registerDictionary(locale, domain, filePath, dictionary);
     reporter.translationsRegistered(locale, domain);
   }
@@ -126,16 +122,12 @@ export function t18sCore(pluginConfig) {
     //Try to read the file & buffer the result
     const bufferedFileRead = await buffer(fileHandler.read(filePath));
 
-    const keyVal = new ResultMatcher(bufferedFileRead)
+    const dictionary = new ResultMatcher(bufferedFileRead)
       .catch(LoadingException, (e) => {
         logger.error(e.message);
-        return new Map();
+        return {};
       })
       .run();
-
-    const { dictionary, invalidKeys } = compileToDictionary(keyVal, locale);
-
-    if (invalidKeys) reporter.warnAboutInvalidKeys(filePath, invalidKeys);
     Catalogue.setDictionary(locale, domain, dictionary);
   }
 
@@ -183,15 +175,14 @@ export function t18sCore(pluginConfig) {
         return;
       }
       const readResult = await buffer(fileHandler.read(filePath));
-      const keyVal = new ResultMatcher(readResult)
+      
+      
+      const dictionary = new ResultMatcher(readResult)
         .catch(LoadingException, (e) => {
           logger.error(e.message);
-          return new Map();
+          return {};
         })
         .run();
-
-      const { dictionary, invalidKeys } = compileToDictionary(keyVal, locale);
-      if (invalidKeys) reporter.warnAboutInvalidKeys(filePath, invalidKeys);
 
       Catalogue.registerDictionary(locale, domain, filePath, dictionary);
     }

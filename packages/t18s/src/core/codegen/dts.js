@@ -1,7 +1,10 @@
-import { addQuotes } from "./utils/stringUtils.js";
+import { addQuotes, indent } from "./utils/stringUtils.js";
 import { DTSBuilder } from "./utils/dtsBuilder.js";
 import { VIRTUAL_MODULE_PREFIX } from "../constants.js";
 import { MessageCatalogue } from "../MessageCatalogue.js";
+import { parse } from "@formatjs/icu-messageformat-parser";
+import { generateType } from "../../../compiler/generateTypes.js";
+import { Tree } from "../utils/Tree.js";
 
 /**
  * @param {import("../types.js").ResolvedPluginConfig} config
@@ -76,18 +79,31 @@ export function generateDTS(config, Catalogue) {
  * @param {string} domain
  */
 function addMessageModule(config, dts, Catalogue, domain) {
-  /**
-   * Maps a key to it's set of messages across all locales
-   * @type {Map<string, Set<import("../types.js").Message>>}
-   */
-  const key2messages = new Map();
-
+  /** @type {Tree<string>[]} */
+  let dictionaries = [];
   for (const [locale, dictionary] of Catalogue.getMessages(domain)) {
-    for (const [key, message] of dictionary.entries()) {
-      if (!key2messages.has(key)) key2messages.set(key, new Set());
-      key2messages.get(key)?.add(message);
-    }
+    dictionaries.push(dictionary);
   }
+
+  let merged = Tree.mergeTrees(dictionaries);
+
+  //Map over the tree, and generate types for each message.
+  const typeDefinitions = merged.map((messages) => {
+    /** @type {Set<string>} */
+    const types = new Set();
+
+    for (const message of messages) {
+      const parsed = parse(message, {
+        shouldParseSkeletons: true,
+        requiresOtherClause: false,
+      });
+      const typeDefinition = generateType(parsed);
+      if (typeDefinition) types.add(typeDefinition);
+    }
+
+    if (types.size === 0) return "undefined";
+    return [...types].join(" & ");
+  });
 
   const moduleId =
     domain === "" ? "$t18s/messages" : `$t18s/messages/${domain}`;
@@ -98,25 +114,50 @@ function addMessageModule(config, dts, Catalogue, domain) {
     );
     module.addImport("import type { Readable } from 'svelte/store';");
 
-    for (const [key, messages] of key2messages.entries()) {
-      /** @type {Set<string>} */
-      const types = new Set();
+    const code = treeToType(typeDefinitions);
+    module.addStatement(code);
+  });
+}
 
-      for (const message of messages) {
-        if (message.typeDefinition) types.add(message.typeDefinition);
-      }
+/**
+ * Turns a tree into a type definition.
+ * @param {Tree<string>} tree
+ * @returns {string}
+ */
+function treeToType(tree) {
+  /**
+   * @param {Tree<string>} tree
+   *
+   * @returns {string}
+   */
+  function walk(tree) {
+    /** @type {string[]} */
+    const lines = [];
 
-      if (types.size === 0) {
-        module.addStatement(
-          `export const ${key}: Readable<(values?: undefined) => string>;`
-        );
+    for (const [key, value] of tree.children()) {
+      if (value instanceof Tree) {
+        let line = "";
+        line += `export namespace ${key} {\n`;
+        const innerCode = walk(value);
+
+        line += indent(innerCode, 4);
+        line += "\n}";
+        lines.push(line);
       } else {
-        module.addStatement(
-          `export const ${key}: Readable<(values : ${[...types].join(
-            " & "
-          )}) => string>;`
-        );
+        if (value === "undefined") {
+          lines.push(
+            `export const ${key}: Readable<(values?: undefined) => string>`
+          );
+        } else {
+          lines.push(
+            `export const ${key}: Readable<(values: ${value}) => string>`
+          );
+        }
       }
     }
-  });
+
+    return lines.join(";\n");
+  }
+
+  return walk(tree);
 }

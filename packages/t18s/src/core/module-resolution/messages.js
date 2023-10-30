@@ -1,3 +1,5 @@
+import { parse } from "@formatjs/icu-messageformat-parser";
+import { precompile } from "../../../compiler/precompile.js";
 import { MessageCatalogue } from "../MessageCatalogue.js";
 
 /** @type {import("./types.js").IDResolver} */
@@ -25,14 +27,16 @@ function generateMessagesModuleCode(Catalogue, domain) {
   let code = "";
   code += 'import { locale } from "$t18s";\n';
   code += 'import { get, derived } from "svelte/store";\n';
-  code += 'import { verbose, fallbackLocale } from "t18s-internal:config";\n\n'
+  code += 'import { verbose, fallbackLocale } from "t18s-internal:config";\n\n';
 
   let messageKeys = new Set();
   let locales = new Set();
 
   for (const [locale, dictionary] of Catalogue.getMessages(domain)) {
     locales.add(locale);
-    for (const [key, message] of dictionary.entries()) {
+    for (const key in dictionary) {
+      const value = dictionary[key];
+      if (!value || typeof value !== "string") continue;
       messageKeys.add(key);
     }
   }
@@ -46,8 +50,7 @@ function generateMessagesModuleCode(Catalogue, domain) {
                       .map(
                         (locale) =>
                           `"${locale}": ${
-                            Catalogue.getDictionary(locale, domain)?.get(key)
-                              ?.precompiled
+                            precompile(parse(Catalogue.getDictionary(locale, domain)?.[key] ?? ""), locale)
                           }`
                       )
                       .join(",\n")}

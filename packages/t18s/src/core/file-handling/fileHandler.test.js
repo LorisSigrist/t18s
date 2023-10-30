@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { FileHandler } from "./fileHandler.js";
 import { LoadingException } from "./exception.js";
+import { Tree } from "../utils/Tree.js";
 
 describe("FileHandler", () => {
   describe("handle", () => {
@@ -13,7 +14,7 @@ describe("FileHandler", () => {
       const handler = new FileHandler([
         {
           fileExtensions: ["json"],
-          load: () => new Map(),
+          load: () => new Tree(),
           setPath: () => "",
         },
       ]);
@@ -33,7 +34,7 @@ describe("FileHandler", () => {
       const handler = new FileHandler([
         {
           fileExtensions: ["json"],
-          load: () => new Map(),
+          load: () => new Tree(),
           setPath: () => "",
         },
       ]);
@@ -44,12 +45,12 @@ describe("FileHandler", () => {
       const handler = new FileHandler([
         {
           fileExtensions: ["json"],
-          load: () => new Map(),
+          load: () => new Tree(),
           setPath: () => "",
         },
         {
           fileExtensions: ["yaml", "yml"],
-          load: () => new Map(),
+          load: () => new Tree(),
           setPath: () => "",
         },
       ]);

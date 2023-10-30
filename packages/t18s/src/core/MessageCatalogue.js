@@ -1,7 +1,6 @@
 import { TypedEventTarget } from "typescript-event-target";
 import { DoubleKeyedMap } from "./utils/DoubleKeyedMap.js";
-
-/** @typedef {import("./types.js").Dictionary} Dictionary */
+import { Tree } from "./utils/Tree.js";
 
 /**
  * The valid events that may be emitted by a locale registry.
@@ -30,7 +29,7 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
 
   /**
    * Map domains to locales to their messages.
-   * @type {DoubleKeyedMap<Dictionary>}
+   * @type {DoubleKeyedMap<Tree<string>>}
    */
   #messages = new DoubleKeyedMap();
 
@@ -40,7 +39,7 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
    * @param {string} locale
    * @param {string} domain
    * @param {string} filePath
-   * @param {Dictionary} dictionary
+   * @param {Tree<string>} dictionary
    */
   registerDictionary(locale, domain, filePath, dictionary) {
     this.#files.set(locale, domain, filePath);
@@ -62,7 +61,7 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
   /**
    * @param {string} locale
    * @param {string} domain
-   * @param {Dictionary} dictionary
+   * @param {Tree<string>} dictionary
    */
   setDictionary(locale, domain, dictionary) {
     this.#messages.set(domain, locale, dictionary);
@@ -80,7 +79,7 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
   /**
    * @param {string} locale
    * @param {string} domain
-   * @returns {Dictionary | undefined}
+   * @returns {Tree<string> | undefined}
    */
   getDictionary(locale, domain) {
     return this.#messages.get(domain, locale);

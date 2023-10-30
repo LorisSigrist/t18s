@@ -13,7 +13,7 @@ export class FileHandler {
 
   /**
    * @param {string} filePath Absolute path to the file that needs to be handled
-   * @returns {Promise<Map<string,string>>} A Map of the Key-Value pairs in the file
+   * @returns {Promise<import("./types.js").Tree<string>>} A Map of the Key-Value pairs in the file
    * @throws {LoadingException} If the file could not be handled
    */
   async read(filePath) {
@@ -22,10 +22,11 @@ export class FileHandler {
       throw new LoadingException(
         `Could not find handler for ${filePath}. Supported file extensions are ${this.getSupportedFileExtensions()}`,
       );
+    
     const textContent = await this.#readFileContent(filePath);
-    const keyVal = handler.load(filePath, textContent);
+    const tree = handler.load(filePath, textContent);
 
-    return keyVal;
+    return tree;
   }
 
   /**

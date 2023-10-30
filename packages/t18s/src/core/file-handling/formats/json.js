@@ -1,13 +1,14 @@
+import { Tree } from "../../utils/Tree.js";
 import { ResultMatcher } from "../../utils/resultMatcher.js";
 import { LoadingException } from "../exception.js";
-import { flattenTree, setPathOnTree } from "../utils.js";
+import { setPathOnTree } from "../utils.js";
 
 /** @type {import("../types.js").FormatHandler} */
 export const JsonHandler = {
   fileExtensions: ["json"],
   load: (filePath, content) => {
     const tree = parseAsTree(content, filePath);
-    return flattenTree(tree);
+    return tree;
   },
   setPath(oldJSON, key, value) {
     const tree = parseAsTree(oldJSON);
@@ -25,24 +26,24 @@ export const JsonHandler = {
  *
  * @param {string} content
  * @param {string|undefined} filePath
- * @returns {unknown}
+ * @returns {Tree<string>}
  */
 function parseAsTree(content, filePath = undefined) {
   content = content.trim();
-  if (content.length === 0) return {};
+  if (content.length === 0) return new Tree();
 
   /** @param {Error} e */
   const raiseLoadingException = (e) => {
     throw new LoadingException(
       `Could not parse JSON file ${filePath ?? ""}: ${e.message}`,
-      { cause: e },
+      { cause: e }
     );
   };
 
   return new ResultMatcher(JSON.parse)
     .ok((res) => {
-      if (typeof res !== "object") return {};
-      return res;
+      if (typeof res !== "object") return new Tree();
+      return Tree.fromObject(res);
     })
     .catch(SyntaxError, (e) => raiseLoadingException(e))
     .run(content);

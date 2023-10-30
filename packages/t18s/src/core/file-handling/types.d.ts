@@ -1,3 +1,5 @@
+import { Tree } from "../utils/Tree.js";
+
 export interface FormatHandler {
   fileExtensions: string[];
 
@@ -8,7 +10,7 @@ export interface FormatHandler {
    * @param locale - The locale this file is for.
    * @returns A dictionary.
    */
-  load: (filePath: string, fileContent: string) => Map<string, string>;
+  load: (filePath: string, fileContent: string) => Tree<string>;
 
   /**
    * Modifies the file content so that the given key has the given value.

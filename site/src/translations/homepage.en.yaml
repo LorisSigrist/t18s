@@ -6,3 +6,15 @@ typesafety_feature_title: Typesafety.
 typesafety_feature_description: T18S generates & enforces types for your translations. No more forgetting to pass the right arguments.
 precompilation_feature_title: Precompiled.
 precompilation_feature_description: T18s compiles your translations at build time. No more huge i18n bundles on the client.
+
+
+features:
+  precompilation:
+    title: Precompiled.
+    description: T18s compiles your translations at build time. No more huge i18n bundles on the client.
+  typesafety:
+    title: Typesafety.
+    description: T18S generates & enforces types for your translations. No more forgetting to pass the right arguments.
+  performance: 
+    title: Performance.
+    description: T18S is built with performance in mind. No more huge i18n bundles on the client.

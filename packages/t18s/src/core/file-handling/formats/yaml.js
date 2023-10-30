@@ -1,16 +1,15 @@
 import { dump, load as loadYaml, YAMLException } from "js-yaml";
-import { flattenTree, setPathOnTree } from "../utils.js";
+import { setPathOnTree } from "../utils.js";
 import { LoadingException } from "../exception.js";
 import { ResultMatcher } from "../../utils/resultMatcher.js";
+import { Tree } from "../../utils/Tree.js";
 
 /** @type {import("../types.js").FormatHandler} */
 export const YamlHandler = {
   fileExtensions: ["yaml", "yml"],
   load: (filePath, content) => {
     const tree = parseAsTree(content, filePath);
-    return new ResultMatcher(flattenTree)
-      .catchAll((e) => raiseLoadingException(e, filePath))
-      .run(tree);
+    return tree;
   },
   setPath(oldYaml, key, value) {
     const tree = parseAsTree(oldYaml);
@@ -26,13 +25,13 @@ export const YamlHandler = {
 /**
  * @param {string} content
  * @param {string|undefined} filePath
- * @return {unknown}
+ * @return {Tree<string>}
  */
 function parseAsTree(content, filePath = undefined) {
   return new ResultMatcher(loadYaml)
     .ok((res) => {
-      if (typeof res !== "object") return {};
-      return res;
+      if (typeof res !== "object" || res === null) return new Tree();
+      return Tree.fromObject(res);
     })
     .catch(YAMLException, (e) => raiseLoadingException(e, filePath))
     .run(content, { filename: filePath });
