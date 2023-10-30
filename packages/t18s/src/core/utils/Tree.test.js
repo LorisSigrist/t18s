@@ -16,6 +16,12 @@ describe("Tree", () => {
     });
 
 
+    it("gets nested trees", () => {
+        const tree = new Tree();
+        tree.setPath(["foo", "bar"], "baz");
+        expect(tree.getPath(["foo"]) instanceof Tree).toBe(true);
+    })
+
     it("can be created from an object", () => {
         const obj = {
             foo: {

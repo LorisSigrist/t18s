@@ -9,18 +9,21 @@ export class Tree {
 
   /**
    * @param {string[]} path
-   * @return {Leaf | undefined}
+   * @return {Leaf | Tree<Leaf> | undefined}
    */
   getPath(path) {
     const [key, ...rest] = path;
-    if (!key) return undefined;
+    if (!key) return this;
+
     const child = this.#children.get(key);
+    if (rest.length === 0)
+      return child;
     return child instanceof Tree ? child.getPath(rest) : child;
   }
 
   /**
    * @param {string[]} path
-   * @param {Leaf} value
+   * @param {Leaf | Tree<Leaf>} value
    */
   setPath(path, value) {
     const [key, ...rest] = path;
@@ -121,9 +124,10 @@ export class Tree {
       for (const path of tree.paths()) {
         const value = tree.getPath(path);
         if (!value) throw new Error("Unexpected undefined value. Get path returned undefined when path exists");
-  
+        if (value instanceof Tree) continue;
+
         let merged = mergedTree.getPath(path);
-        if (!merged) merged = new Set();
+        if (!merged || merged instanceof Tree) merged = new Set();
         merged.add(value);
   
         mergedTree.setPath(path, merged);

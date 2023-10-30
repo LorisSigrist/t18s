@@ -2,12 +2,6 @@ title: i18n meets Typesafety
 mission_statement: T18S aims to provide the best internationalization experience for SvelteKit, delivering typesafety, performance, and ease of use.
 get_started_cta: Get Started
 
-typesafety_feature_title: Typesafety.
-typesafety_feature_description: T18S generates & enforces types for your translations. No more forgetting to pass the right arguments.
-precompilation_feature_title: Precompiled.
-precompilation_feature_description: T18s compiles your translations at build time. No more huge i18n bundles on the client.
-
-
 features:
   precompilation:
     title: Precompiled.
