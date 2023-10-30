@@ -15,7 +15,7 @@
   <div class="max-w-2xl flex flex-col gap-4">
     <hgroup class="text-center">
       <h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
-        {get(t.title)}
+        {get(t.title)()}
       </h1>
       <p class="mt-6 text-lg leading-8 text-gray-600">
         {get(t.mission_statement)()}
