@@ -20,13 +20,6 @@ t18s compares to the most popular ones.
     </thead>
     <tbody>
         <tr>
-            <td>Supports SvelteKit</td>
-            <td><Check/></td>
-            <td><Check/></td>
-            <td><Check/></td>
-            <td><Check/></td>
-        </tr>
-        <tr>
             <td>SSR</td>
             <td><Check/></td>
             <td><Check/></td>
@@ -49,7 +42,7 @@ t18s compares to the most popular ones.
         </tr>
         <tr>
             <td>Lazy Loading Locales</td>
-            <td><Check/></td>
+            <td><XMark/></td>
             <td><Check/></td>
             <td><Check/></td>
             <td><Check/></td>

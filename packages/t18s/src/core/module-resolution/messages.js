@@ -5,14 +5,19 @@ import { Message } from "../Message.js";
 /** @type {import("./types.js").IDResolver} */
 export const resolveMessagesModuleId = (unresolved_id) => {
   if (!unresolved_id.startsWith("$t18s/messages")) return null;
-  const [_, __, domain, ...path] = unresolved_id.split("/");
   return "\0" + unresolved_id;
 };
 
 /** @type {import("./types.js").ModuleLoader} */
 export const loadMessagesModule = async (resolved_id, config, Catalogue) => {
   if (!resolved_id.startsWith("\0$t18s/messages")) return null;
-  const [_, __, domain, ...path] = resolved_id.split("/");
+  const [domainString, pathString] = resolved_id.split(":");
+  if (!domainString) return null;
+  const [_, __, second] = domainString.split("/");
+
+
+  const domain = second ?? "";
+  const path = pathString?.split("/") ?? [];
   return generateMessagesModuleCode(Catalogue, domain ?? "", path);
 };
 
@@ -44,7 +49,8 @@ function generateMessagesModuleCode(Catalogue, domain, path) {
   for (const [key, child] of subtree.children()) {
     if (child instanceof Tree) {
       const newPath = [...path, key];
-      code += `export * as ${key} from "$t18s/messages/${domain}/${newPath.join("/")}";\n`;
+      const submoduleID = (domain ? `$t18s/messages/${domain}` : "$t18s/messages") + ":" + newPath.join("/");
+      code += `export * as ${key} from "${submoduleID}";\n`;
     } else {
       code += `export const ${key} = /* @__PURE__ */ (values = undefined) => {
           const currentLocale = get(locale) ?? fallbackLocale;
@@ -58,11 +64,20 @@ function generateMessagesModuleCode(Catalogue, domain, path) {
           };
 
           if(!translations[currentLocale]) {
-              if(verbose) console.warn("Missing translation for key ${key} in locale " + currentLocale);
+
+              if(fallbackLocale && translations[fallbackLocale]) {
+                return typeof translations[fallbackLocale] === "function" 
+                  ? translations[fallbackLocale](values) 
+                  : translations[fallbackLocale];
+              }
+
+              if(verbose) console.warn("[t18s] Key '${key}' missing in domain ${domain} for locale " + currentLocale);
               return "${key}";
           }
 
-          return typeof translations[currentLocale] === "function" ? translations[currentLocale](values) : translations[currentLocale];
+          return typeof translations[currentLocale] === "function" 
+            ? translations[currentLocale](values) 
+            : translations[currentLocale];
       }\n`;
     }
   }

@@ -9,6 +9,7 @@
   $: if(browser) document.documentElement.lang = $locale;
 </script>
 
-<Metadata />
-
-<slot />
+{#key $locale}
+  <Metadata />
+  <slot />
+{/key}
