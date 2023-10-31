@@ -1,4 +1,4 @@
-import { basename, resolve } from "node:path";
+import { resolve } from "node:path";
 import { readdir, writeFile } from "node:fs/promises";
 import { YamlHandler } from "./file-handling/formats/yaml.js";
 import { JsonHandler } from "./file-handling/formats/json.js";
@@ -10,9 +10,7 @@ import { resolveMainModuleId } from "./module-resolution/main.js";
 import { Reporter } from "./utils/reporter.js";
 import { ResultMatcher } from "./utils/resultMatcher.js";
 import { buffer } from "./utils/bufferPromise.js";
-import {
-  MessageCatalogue,
-} from "./MessageCatalogue.js";
+import { MessageCatalogue } from "./MessageCatalogue.js";
 import { cleanUrl } from "./utils/id.js";
 import { createHMRDispatcher } from "./HMR.js";
 import {
@@ -24,6 +22,7 @@ import {
   loadMessagesModule,
   resolveMessagesModuleId,
 } from "./module-resolution/messages.js";
+import { Tree } from "./utils/Tree.js";
 
 /**
  * TypeSafe translations for Svelte & SvelteKit.
@@ -51,24 +50,28 @@ export function t18sCore(pluginConfig) {
 
   /** Keeps track of the messages that exist & where to find them */
   const Catalogue = new MessageCatalogue();
-  Catalogue.addEventListener(
-    "messages_changed",
-    async () => {
-      await regenerateDTS();
+  Catalogue.addEventListener("messages_changed", async () => {
+    await regenerateDTS();
 
-      if (viteDevServer) {
-        const message_module = viteDevServer.moduleGraph.getModuleById("\0$t18s/messages/homepage")
-        if (message_module) {
-          viteDevServer.moduleGraph.invalidateModule(message_module, undefined, undefined, true);
+    if (viteDevServer) {
+      const message_module = viteDevServer.moduleGraph.getModuleById(
+        "\0$t18s/messages/homepage"
+      );
+      if (message_module) {
+        viteDevServer.moduleGraph.invalidateModule(
+          message_module,
+          undefined,
+          undefined,
+          true
+        );
 
-          viteDevServer.ws.send({
-            type: "full-reload"
-          })
-        }
+        viteDevServer.ws.send({
+          type: "full-reload",
+        });
       }
     }
-  );
-  
+  });
+
   /** Handles interactions with translation files */
   const fileHandler = new FileHandler([YamlHandler, JsonHandler]);
 
@@ -77,7 +80,7 @@ export function t18sCore(pluginConfig) {
    * @param {string} filePath Absolute path to the file that needs to be invalidated
    */
   async function registerTranslationFile(filePath) {
-    const { locale, domain } = categorizeFile(filePath);
+    const { locale, domain } = fileHandler.categorizeFile(filePath);
     if (!config.locales.includes(locale)) {
       reporter.warnAboutFileForInvalidLocale(filePath, locale);
       return;
@@ -96,7 +99,7 @@ export function t18sCore(pluginConfig) {
     const dictionary = new ResultMatcher(bufferedFileRead)
       .catch(LoadingException, (e) => {
         logger.error(e.message);
-        return {};
+        return new Tree();
       })
       .run();
 
@@ -111,7 +114,7 @@ export function t18sCore(pluginConfig) {
    * @param {string} filePath Absolute path to the file that needs to be invalidated
    */
   async function invalidateTranslationFile(filePath) {
-    const { locale, domain } = categorizeFile(filePath);
+    const { locale, domain } = fileHandler.categorizeFile(filePath);
     if (!config.locales.includes(locale)) {
       console.warn(
         "Attempted to invalidate file for invalid locale: " + locale
@@ -125,7 +128,7 @@ export function t18sCore(pluginConfig) {
     const dictionary = new ResultMatcher(bufferedFileRead)
       .catch(LoadingException, (e) => {
         logger.error(e.message);
-        return {};
+        return new Tree();
       })
       .run();
     Catalogue.setDictionary(locale, domain, dictionary);
@@ -136,7 +139,7 @@ export function t18sCore(pluginConfig) {
    * @returns void
    */
   const unregisterTranslationFile = (filePath) => {
-    const { locale, domain } = categorizeFile(filePath);
+    const { locale, domain } = fileHandler.categorizeFile(filePath);
     Catalogue.unregisterDictionary(locale, domain);
   };
 
@@ -169,18 +172,17 @@ export function t18sCore(pluginConfig) {
 
     /** @param {string} filePath */
     async function loadFile(filePath) {
-      const { locale, domain } = categorizeFile(filePath);
+      const { locale, domain } = fileHandler.categorizeFile(filePath);
       if (!config.locales.includes(locale)) {
         reporter.warnAboutFileForInvalidLocale(filePath, locale);
         return;
       }
       const readResult = await buffer(fileHandler.read(filePath));
-      
-      
+
       const dictionary = new ResultMatcher(readResult)
         .catch(LoadingException, (e) => {
           logger.error(e.message);
-          return {};
+          return new Tree();
         })
         .run();
 
@@ -227,10 +229,7 @@ export function t18sCore(pluginConfig) {
       id = cleanUrl(id);
 
       /** @type {import("./module-resolution/types.js").ModuleLoader[]} */
-      const loaders = [
-        loadConfigModule,
-        loadMessagesModule,
-      ];
+      const loaders = [loadConfigModule, loadMessagesModule];
 
       //Attempt to load the module from all loaders
       const loadingPromises = loaders.map((loader) =>
@@ -255,7 +254,7 @@ export function t18sCore(pluginConfig) {
        */
       const fileInTranslationDir = (path) =>
         path.startsWith(config.translationsDir);
-      
+
       server.watcher.on("unlink", async (filePath) => {
         if (!fileInTranslationDir(filePath)) return;
         unregisterTranslationFile(filePath);
@@ -275,19 +274,4 @@ export function t18sCore(pluginConfig) {
       viteDevServer = server;
     },
   };
-}
-
-/**
- * Categorizes to which locale & domain a given file belongs.
- * @param {string} path
- * @returns {{locale: string, domain: string}}
- */
-function categorizeFile(path) {
-  //get the filename without the extension
-  const filename = basename(path).split(".").slice(0, -1).join("."); 
-
-  const [first, second] = filename.split(".");
-  if (!first) throw new Error(`Could not determine locale for ${path}`);
-  if (!second) return { locale: first, domain: "" };
-  return { locale: second, domain: first };
 }

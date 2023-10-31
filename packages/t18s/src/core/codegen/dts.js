@@ -2,9 +2,8 @@ import { addQuotes, indent } from "./utils/stringUtils.js";
 import { DTSBuilder } from "./utils/dtsBuilder.js";
 import { VIRTUAL_MODULE_PREFIX } from "../constants.js";
 import { MessageCatalogue } from "../MessageCatalogue.js";
-import { parse } from "@formatjs/icu-messageformat-parser";
-import { generateType } from "../../../compiler/generateTypes.js";
 import { Tree } from "../utils/Tree.js";
+import { Message } from "../Message.js";
 
 /**
  * @param {import("../types.js").ResolvedPluginConfig} config
@@ -79,7 +78,7 @@ export function generateDTS(config, Catalogue) {
  * @param {string} domain
  */
 function addMessageModule(config, dts, Catalogue, domain) {
-  /** @type {Tree<string>[]} */
+  /** @type {Tree<Message>[]} */
   let dictionaries = [];
   for (const [locale, dictionary] of Catalogue.getMessages(domain)) {
     dictionaries.push(dictionary);
@@ -93,12 +92,7 @@ function addMessageModule(config, dts, Catalogue, domain) {
     const types = new Set();
 
     for (const message of messages) {
-      const parsed = parse(message, {
-        shouldParseSkeletons: true,
-        requiresOtherClause: false,
-      });
-      const typeDefinition = generateType(parsed);
-      if (typeDefinition) types.add(typeDefinition);
+      if (message.typeDefinition) types.add(message.typeDefinition);
     }
 
     if (types.size === 0) return "undefined";

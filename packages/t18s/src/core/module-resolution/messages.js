@@ -1,7 +1,6 @@
-import { parse } from "@formatjs/icu-messageformat-parser";
-import { precompile } from "../../../compiler/precompile.js";
 import { MessageCatalogue } from "../MessageCatalogue.js";
 import { Tree } from "../utils/Tree.js";
+import { Message } from "../Message.js";
 
 /** @type {import("./types.js").IDResolver} */
 export const resolveMessagesModuleId = (unresolved_id) => {
@@ -29,12 +28,11 @@ function generateMessagesModuleCode(Catalogue, domain, path) {
   code += 'import { get, derived } from "svelte/store";\n';
   code += 'import { verbose, fallbackLocale } from "t18s-internal:config";\n\n';
 
-  /** @type {Tree<{locale: string, message: string}>[]} */
+  /** @type {Tree<Message>[]} */
   const dictionaries = [];
 
   for (const [locale, dictionary] of Catalogue.getMessages(domain)) {
-    const mappedDictionary = dictionary.map((message) => ({ message, locale }));
-    dictionaries.push(mappedDictionary);
+    dictionaries.push(dictionary);
   }
 
   const tree = Tree.mergeTrees(dictionaries);
@@ -53,8 +51,8 @@ function generateMessagesModuleCode(Catalogue, domain, path) {
           const translations = {
               ${[...child]
                 .map(
-                  ({ locale, message }) =>
-                    `"${locale}": ${precompile(parse(message), locale)}`
+                  (message) =>
+                    `"${message.locale}": ${message.precompiled}`
                 )
                 .join(",\n")}
           };

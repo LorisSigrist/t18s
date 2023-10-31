@@ -1,3 +1,4 @@
+import { Message } from "../Message.js";
 import { Tree } from "../utils/Tree.js";
 
 export interface FormatHandler {
