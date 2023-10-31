@@ -5,8 +5,9 @@
   import Prism from "$lib/ui/Prism.svelte";
   import { resolveTranslatedPath } from "$lib/i18n";
   import { locale } from "$t18s";
-  import * as t from "$t18s/messages/homepage"
   import { get } from "svelte/store";
+
+  import * as t from "$t18s/messages/homepage";
 </script>
 
 <div

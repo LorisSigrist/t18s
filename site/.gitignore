@@ -9,3 +9,4 @@ node_modules
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 $t18s.d.ts
+pagefind

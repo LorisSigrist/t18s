@@ -1,6 +1,30 @@
+<script context="module">
+  import { browser } from "$app/environment";
+
+  /**
+   * @param {string} query
+   */
+  let search = async (query) => ({ results: [] });
+
+  if (browser) {
+    try {
+      const pagefind = await import("" + "/pagefind/pagefind.js");
+    } catch (e) {
+      console.error(e);
+    }
+
+    search = async (query) => {
+      return pagefind.search(query);
+    };
+  }
+</script>
+
 <script>
   import SearchIcon from "virtual:icons/heroicons/magnifying-glass";
+  import SearchResult from "./SearchResult.svelte";
   export let query = "";
+
+  $: resultsPromise = search(query);
 </script>
 
 <label
@@ -15,3 +39,19 @@
     placeholder="Search"
   />
 </label>
+
+{#await resultsPromise}
+  Loading Results
+{:then resultObject}
+  <ul>
+    {#each resultObject.results as result}
+      <li>
+        {#await result.data()}
+          Loading
+        {:then data}
+          <SearchResult link={data.url} title={data.meta.title} />
+        {/await}
+      </li>
+    {/each}
+  </ul>
+{/await}
