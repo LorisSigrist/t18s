@@ -11,8 +11,8 @@
   {#key $page.url.pathname}
     <title
       >{metadata?.title
-        ? $title({ pageTitle: metadata.title })
-        : $defaultTitle()}</title
+        ? title({ pageTitle: metadata.title })
+        : defaultTitle()}</title
     >
 
     {#if metadata.description}

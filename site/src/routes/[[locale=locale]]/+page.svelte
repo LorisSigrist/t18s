@@ -5,8 +5,6 @@
   import Prism from "$lib/ui/Prism.svelte";
   import { resolveTranslatedPath } from "$lib/i18n";
   import { locale } from "$t18s";
-  import { get } from "svelte/store";
-
   import * as t from "$t18s/messages/homepage";
 </script>
 
@@ -16,10 +14,10 @@
   <div class="max-w-2xl flex flex-col gap-4">
     <hgroup class="text-center">
       <h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
-        {get(t.title)()}
+        {t.title()}
       </h1>
       <p class="mt-6 text-lg leading-8 text-gray-600">
-        {get(t.mission_statement)()}
+        {t.mission_statement()}
       </p>
     </hgroup>
     <div>
@@ -32,10 +30,10 @@
               class="absolute left-1 top-1 h-5 w-5 text-orange-500"
               aria-hidden
             />
-            {get(t.features.typesafety.title)()}
+            {t.features.typesafety.title()}
           </dt>
           <dd class="inline">
-            {get(t.features.typesafety.description)()}
+            {t.features.typesafety.description()}
           </dd>
         </div>
         <div class="relative pl-9">
@@ -44,10 +42,10 @@
               class="absolute left-1 top-1 h-5 w-5 text-orange-500"
               aria-hidden
             />
-            {get(t.features.precompilation.title)()}
+            {t.features.precompilation.title()}
           </dt>
           <dd class="inline">
-            {get(t.features.precompilation.description)()}
+            {t.features.precompilation.description()}
           </dd>
         </div>
       </dl>
@@ -64,7 +62,7 @@
           $locale
         )}
         class="rounded-md bg-orange-600 px-6 py-3.5 text-sm font-semibold text-white shadow-sm hover:bg-orange-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
-        >{get(t.get_started_cta)()}</a
+        >{t.get_started_cta()}</a
       >
     </div>
   </div>

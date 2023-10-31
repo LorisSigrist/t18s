@@ -31,11 +31,11 @@
           $locale
         )}
         active={$page.url.pathname.endsWith("/getting-started")}
-        >{$gettingStarted()}</Link
+        >{gettingStarted()}</Link
       >
       <Link
         href={resolveTranslatedPath("/[[locale=locale]]/syntax", $locale)}
-        active={$page.url.pathname.endsWith("/syntax")}>{$messageSyntax()}</Link
+        active={$page.url.pathname.endsWith("/syntax")}>{messageSyntax()}</Link
       >
     </SidebarSection>
 
@@ -43,7 +43,7 @@
       <Heading>Best Practices</Heading>
       <Link
         href={resolveTranslatedPath("/[[locale=locale]]/seo", $locale)}
-        active={$page.url.pathname.endsWith("/seo")}>{$seo()}</Link
+        active={$page.url.pathname.endsWith("/seo")}>{seo()}</Link
       >
     </SidebarSection>
 

@@ -46,8 +46,8 @@ function generateMessagesModuleCode(Catalogue, domain, path) {
       const newPath = [...path, key];
       code += `export * as ${key} from "$t18s/messages/${domain}/${newPath.join("/")}";\n`;
     } else {
-      code += `export const ${key} = /* @__PURE__ */ derived(locale, currentLocale => {
-      return (values = undefined) => {
+      code += `export const ${key} = /* @__PURE__ */ (values = undefined) => {
+          const currentLocale = get(locale) ?? fallbackLocale;
           const translations = {
               ${[...child]
                 .map(
@@ -63,8 +63,7 @@ function generateMessagesModuleCode(Catalogue, domain, path) {
           }
 
           return typeof translations[currentLocale] === "function" ? translations[currentLocale](values) : translations[currentLocale];
-      }
-  });\n`;
+      }\n`;
     }
   }
 

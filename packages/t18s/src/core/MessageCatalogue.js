@@ -6,6 +6,7 @@ import { DoubleKeyedMap } from "./utils/DoubleKeyedMap.js";
  *
  * @typedef {{
  *  "messages_changed": CustomEvent<{}>,
+ *  "dictionary_changed": CustomEvent<{ locale: string, domain: string }>,
  * }} LocaleRegistryEventMap
  */
 
@@ -65,6 +66,7 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
     this.#messages.set(domain, locale, dictionary);
 
     this.#dispatch("messages_changed", {});
+    this.#dispatch("dictionary_changed", { locale, domain });
   }
 
   /**

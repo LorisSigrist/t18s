@@ -106,8 +106,6 @@ function addMessageModule(config, dts, Catalogue, domain) {
     module.setDescription(
       `The messages for the domain ${domain}. Add messages by adding a file at ${config.translationsDir} with the name ${domain}.[locale].yaml`
     );
-    module.addImport("import type { Readable } from 'svelte/store';");
-
     const code = treeToType(typeDefinitions);
     module.addStatement(code);
   });
@@ -140,11 +138,11 @@ function treeToType(tree) {
       } else {
         if (value === "undefined") {
           lines.push(
-            `export const ${key}: Readable<(values?: undefined) => string>`
+            `export const ${key}: (values?: undefined) => string`
           );
         } else {
           lines.push(
-            `export const ${key}: Readable<(values: ${value}) => string>`
+            `export const ${key}: (values: ${value}) => string`
           );
         }
       }

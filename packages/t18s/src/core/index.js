@@ -52,11 +52,15 @@ export function t18sCore(pluginConfig) {
   const Catalogue = new MessageCatalogue();
   Catalogue.addEventListener("messages_changed", async () => {
     await regenerateDTS();
+  });
 
+  Catalogue.addEventListener("dictionary_changed", (e) => {
     if (viteDevServer) {
-      const message_module = viteDevServer.moduleGraph.getModuleById(
-        "\0$t18s/messages/homepage"
-      );
+      const moduleId = e.detail.domain
+        ? `\0$t18s/messages/${e.detail.domain}`
+        : "\0$t18s/messages";
+
+      const message_module = viteDevServer.moduleGraph.getModuleById(moduleId);
       if (message_module) {
         viteDevServer.moduleGraph.invalidateModule(
           message_module,
