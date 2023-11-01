@@ -12,7 +12,6 @@ import { ResultMatcher } from "./utils/resultMatcher.js";
 import { buffer } from "./utils/bufferPromise.js";
 import { MessageCatalogue } from "./MessageCatalogue.js";
 import { cleanUrl } from "./utils/id.js";
-import { createHMRDispatcher } from "./HMR.js";
 import {
   loadConfigModule,
   resolveConfigModuleId,
@@ -20,10 +19,12 @@ import {
 import { resolveIdSequence } from "./module-resolution/utils.js";
 import {
   loadDictionaryModule,
+  parseDictionaryModuleId,
   resolveDictionaryModuleId,
 } from "./module-resolution/dictionary.js";
 import { resolveMessageModuleId } from "./module-resolution/messages.js";
 import { Tree } from "./utils/Tree.js";
+import { resolveDictionaryUtilsModuleId } from "./module-resolution/dictionaryUtils.js";
 
 /**
  * TypeSafe translations for Svelte & SvelteKit.
@@ -43,12 +44,6 @@ export function t18sCore(pluginConfig) {
   /** @type {import("vite").ViteDevServer} */
   let viteDevServer;
 
-  /**
-   * Dispatch an HMR event to the client.
-   * @type {import("./HMR.js").HMREventDispatcher}
-   */
-  let hmrDispatch = () => {};
-
   /** Keeps track of the messages that exist & where to find them */
   const Catalogue = new MessageCatalogue();
   Catalogue.addEventListener("messages_changed", async () => {
@@ -57,23 +52,31 @@ export function t18sCore(pluginConfig) {
 
   Catalogue.addEventListener("dictionary_changed", (e) => {
     if (viteDevServer) {
-      const moduleId = e.detail.domain
-        ? `\0$t18s/messages/${e.detail.domain}`
-        : "\0$t18s/messages";
 
-      const message_module = viteDevServer.moduleGraph.getModuleById(moduleId);
-      if (message_module) {
-        viteDevServer.moduleGraph.invalidateModule(
-          message_module,
-          undefined,
-          undefined,
-          true
-        );
-
-        viteDevServer.ws.send({
-          type: "full-reload",
-        });
+      let invalidatedModuleIDs = new Set();
+      for (const resolvedModuleId of viteDevServer.moduleGraph.idToModuleMap.keys()) {
+        if (resolvedModuleId.startsWith(`\0t18s-internal:dictionary`)) {
+          const { domain } = parseDictionaryModuleId(resolvedModuleId);
+          if(domain === e.detail.domain)
+          invalidatedModuleIDs.add(resolvedModuleId);
+        }
       }
+
+      let invalidatedModules = new Set();
+      for (const moduleId of invalidatedModuleIDs) {
+        const module = viteDevServer.moduleGraph.idToModuleMap.get(moduleId);
+        if (module) {
+          invalidatedModules.add(module);
+        }
+      }
+
+      for (const module of invalidatedModules) {
+        viteDevServer.moduleGraph.invalidateModule(module);
+      }
+
+      viteDevServer.ws.send({
+        type: "full-reload",
+      });
     }
   });
 
@@ -228,7 +231,8 @@ export function t18sCore(pluginConfig) {
       resolveMainModuleId,
       resolveConfigModuleId,
       resolveDictionaryModuleId,
-      resolveMessageModuleId
+      resolveMessageModuleId,
+      resolveDictionaryUtilsModuleId,
     ]),
 
     async load(id) {
@@ -275,8 +279,6 @@ export function t18sCore(pluginConfig) {
         if (!fileInTranslationDir(filePath)) return;
         await invalidateTranslationFile(filePath);
       });
-
-      hmrDispatch = createHMRDispatcher(server);
       viteDevServer = server;
     },
   };

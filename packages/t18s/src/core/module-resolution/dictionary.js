@@ -20,7 +20,8 @@ export const loadDictionaryModule = async (resolved_id, config, Catalogue) => {
  * @returns {{ domain: string, path: string[] }}
  */
 export function parseDictionaryModuleId(resolved_id) {
-  let [_, __, domain, pathString] = resolved_id.split(":");
+  let [_, __, domain, pathString, extra] = resolved_id.split(":");
+  if (extra) throw new Error("Invalid dictionary module ID");
   domain = domain ?? "";
   pathString = pathString ?? "";
   const path = pathString.split("/").filter(Boolean) ?? [];
@@ -36,9 +37,7 @@ export function parseDictionaryModuleId(resolved_id) {
  */
 function generateDictionaryModuleCode(Catalogue, domain, path) {
   let code = "";
-  code += 'import { locale } from "$t18s";\n';
-  code += 'import { get, derived } from "svelte/store";\n';
-  code += 'import { verbose, fallbackLocale } from "t18s-internal:config";\n\n';
+  code += 'import { format } from "t18s-internal:dictionary-utils";\n\n'
 
   /** @type {Tree<Message>[]} */
   const dictionaries = [];
@@ -60,8 +59,7 @@ function generateDictionaryModuleCode(Catalogue, domain, path) {
       code += `export * as ${key} from "${submoduleID}";\n`;
     } else {
       code += `export const ${key} = /* @__PURE__ */ (values = undefined) => {
-          const currentLocale = get(locale) ?? fallbackLocale;
-          const translations = {
+          const messages = {
               ${[...child]
                 .map(
                   (message) =>
@@ -70,21 +68,7 @@ function generateDictionaryModuleCode(Catalogue, domain, path) {
                 .join(",\n")}
           };
 
-          if(!translations[currentLocale]) {
-
-              if(fallbackLocale && translations[fallbackLocale]) {
-                return typeof translations[fallbackLocale] === "function" 
-                  ? translations[fallbackLocale](values) 
-                  : translations[fallbackLocale];
-              }
-
-              if(verbose) console.warn("[t18s] Key '${key}' missing in domain ${domain} for locale " + currentLocale);
-              return "${key}";
-          }
-
-          return typeof translations[currentLocale] === "function" 
-            ? translations[currentLocale](values) 
-            : translations[currentLocale];
+          return format("${key}", messages, values);
       }\n`;
     }
   }

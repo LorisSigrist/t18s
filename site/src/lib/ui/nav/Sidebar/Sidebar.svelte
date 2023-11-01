@@ -4,10 +4,9 @@
   import LocaleSwitcher from "$lib/ui/LocaleSwitcher.svelte";
   import { merge } from "$lib/utils/class-merge";
   import { locale } from "$t18s";
-  import * as t from "$t18s/messages/nav";
-
   import SidebarSection from "./SidebarSection.svelte";
   import GithubIcon from "virtual:icons/simple-icons/github";
+  import * as t from "$t18s/messages/nav";
 </script>
 
 <aside
@@ -36,7 +35,8 @@
       >
       <Link
         href={resolveTranslatedPath("/[[locale=locale]]/syntax", $locale)}
-        active={$page.url.pathname.endsWith("/syntax")}>{t.messageSyntax()}</Link
+        active={$page.url.pathname.endsWith("/syntax")}
+        >{t.messageSyntax()}</Link
       >
     </SidebarSection>
 
@@ -51,25 +51,34 @@
     <SidebarSection let:Heading let:Link>
       <Heading>{t.reference()}</Heading>
       <Link
-        href="/plugin-config"
-        active={$page.url.pathname === "/plugin-config"}>{t.plugin_config()}</Link
+        href={resolveTranslatedPath(
+          "/[[locale=locale]]/plugin-config",
+          $locale
+        )}
+        active={$page.url.pathname.endsWith("/plugin-config")}
+        >{t.plugin_config()}</Link
       >
-      <Link href="/$t18s" active={$page.url.pathname === "/$t18s"}>{t.$t18s()}</Link>
+      <Link
+        href={resolveTranslatedPath("/[[locale=locale]]/$t18s", $locale)}
+        active={$page.url.pathname.endsWith("/$t18s")}>{t.$t18s()}</Link
+      >
     </SidebarSection>
 
     <SidebarSection let:Heading let:Link>
       <Heading>{t.appendix()}</Heading>
-      <Link href="/comparisons" active={$page.url.pathname === "/comparisons"}
+      <Link
+        href={resolveTranslatedPath("/[[locale=locale]]/comparisons", $locale)}
+        active={$page.url.pathname.endsWith("/comparisons")}
         >{t.comparisons()}</Link
       >
-      <Link href="/roadmap" active={$page.url.pathname === "/roadmap"}
-        >{t.roadmap()}</Link
+      <Link
+        href={resolveTranslatedPath("/[[locale=locale]]/roadmap", $locale)}
+        active={$page.url.pathname.endsWith("/roadmap")}>{t.roadmap()}</Link
       >
     </SidebarSection>
   </nav>
 
   <footer>
-
     <LocaleSwitcher />
     <a
       class={merge(
