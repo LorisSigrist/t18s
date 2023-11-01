@@ -19,9 +19,10 @@ import {
 } from "./module-resolution/config.js";
 import { resolveIdSequence } from "./module-resolution/utils.js";
 import {
-  loadMessagesModule,
-  resolveMessagesModuleId,
-} from "./module-resolution/messages.js";
+  loadDictionaryModule,
+  resolveDictionaryModuleId,
+} from "./module-resolution/dictionary.js";
+import { resolveMessageModuleId } from "./module-resolution/messages.js";
 import { Tree } from "./utils/Tree.js";
 
 /**
@@ -226,14 +227,15 @@ export function t18sCore(pluginConfig) {
     resolveId: resolveIdSequence([
       resolveMainModuleId,
       resolveConfigModuleId,
-      resolveMessagesModuleId,
+      resolveDictionaryModuleId,
+      resolveMessageModuleId
     ]),
 
     async load(id) {
       id = cleanUrl(id);
 
       /** @type {import("./module-resolution/types.js").ModuleLoader[]} */
-      const loaders = [loadConfigModule, loadMessagesModule];
+      const loaders = [loadConfigModule, loadDictionaryModule];
 
       //Attempt to load the module from all loaders
       const loadingPromises = loaders.map((loader) =>
