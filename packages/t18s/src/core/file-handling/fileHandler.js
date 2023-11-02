@@ -28,7 +28,6 @@ export class FileHandler {
       );
 
     const textContent = await this.#readFileContent(filePath);
-
     const pojsTree = handler.load(filePath, textContent);
 
     /** @type {Tree<string>} */
@@ -47,8 +46,6 @@ export class FileHandler {
         return false;
       }
     });
-
-
 
     const invalidMessages = new Set();
     const dictionary = validMessageTree

@@ -183,4 +183,13 @@ export class Tree {
 
     return mergedTree;
   }
+
+  /**
+   * @template {unknown} Thing
+   * @param {Thing} thing 
+   * @return {thing is Thing extends Tree<infer Leaf> ? Tree<Leaf> : Tree<any>}
+   */
+  static isTree(thing) {
+    return thing instanceof Tree;
+  }
 }
