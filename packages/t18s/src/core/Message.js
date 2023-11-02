@@ -36,4 +36,12 @@ export class Message {
     this.precompiled = precompile(parsed, locale);
     this.typeDefinition = generateType(parsed);
   }
+
+  /**
+   * @param {unknown} thing 
+   * @returns {thing is Message}
+   */
+  static isMessage(thing) {
+    return thing instanceof Message;
+  }
 }

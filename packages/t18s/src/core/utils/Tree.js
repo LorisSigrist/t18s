@@ -74,10 +74,10 @@ export class Tree {
   }
 
  /**
-   * @template U
-   * @param {(leaf: Leaf, path: string[]) => boolean} fn
+   * @template {(leaf: Leaf, path: string[]) => boolean} Callback
+   * @param {Callback} fn
    *
-   * @returns {Tree<Leaf>}
+   * @returns {Callback extends ((leaf: Leaf, path: string[]) => leaf is infer U) ? Tree<U> : Tree<Leaf>}
    */
   filter(fn) {
     return this.#filter(fn, []);
@@ -85,14 +85,16 @@ export class Tree {
 
 
   /**
-   * @template U
-   * @param {(leaf: Leaf, path: string[]) => boolean} fn
+   * @template {(leaf: Leaf, path: string[]) => boolean} Callback
+   * @param {Callback} fn
    * @param {string[]} pathSoFar
    *
-   * @returns {Tree<Leaf>}
+   * @returns {Callback extends ((leaf: Leaf, path: string[]) => leaf is infer U) ? Tree<U> : Tree<Leaf>}
    */
   #filter(fn, pathSoFar) {
-    /** @type {Tree<Leaf>} */
+    /** 
+     * @type {Tree<Leaf>}
+    */
     const newTree = new Tree();
 
     for (const [childKey, child] of this.#children) {
@@ -110,6 +112,7 @@ export class Tree {
       }
     }
 
+    // @ts-ignore
     return newTree;
   }
 

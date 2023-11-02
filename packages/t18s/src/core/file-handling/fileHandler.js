@@ -30,6 +30,8 @@ export class FileHandler {
     const textContent = await this.#readFileContent(filePath);
 
     const pojsTree = handler.load(filePath, textContent);
+
+    /** @type {Tree<string>} */
     const messageSrcTree = Tree.fromObject(pojsTree);
 
     const invalidKeys = new Set();
@@ -46,20 +48,31 @@ export class FileHandler {
       }
     });
 
-    const dictionary = validMessageTree.map((messageSrc) => {
-      return new Message(locale, messageSrc);
-    });
 
-    return { dictionary, invalidKeys };
+
+    const invalidMessages = new Set();
+    const dictionary = validMessageTree
+      .map((messageSrc) => {
+        try {
+          return new Message(locale, messageSrc);
+        } catch (e) {
+          invalidMessages.add(messageSrc);
+          return false;
+        }
+      })
+      .filter(Message.isMessage);
+
+    return { dictionary, invalidKeys, invalidMessages };
   }
 
   /**
-   * The null read result is can be used as a fallback if an error prevents 
-   * a real read result from being generated. 
+   * The null read result is can be used as a fallback if an error prevents
+   * a real read result from being generated.
    */
   static NullReadResult = {
     dictionary: new Tree(),
     invalidKeys: new Set(),
+    invalidMessages: new Set(),
   };
 
   /**
