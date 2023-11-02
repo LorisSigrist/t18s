@@ -103,7 +103,9 @@ export function t18sCore(pluginConfig) {
     //Try to read the file & buffer the result
     const bufferedFileRead = await buffer(fileHandler.read(filePath));
 
-    const { dictionary, invalidKeys } = new ResultMatcher(bufferedFileRead)
+    const { dictionary, invalidKeys, invalidMessages } = new ResultMatcher(
+      bufferedFileRead
+    )
       .catch(LoadingException, (e) => {
         logger.error(e.message);
         return FileHandler.NullReadResult;
@@ -112,6 +114,10 @@ export function t18sCore(pluginConfig) {
 
     if (invalidKeys.size > 0) {
       reporter.warnAboutInvalidKeys(filePath, invalidKeys);
+    }
+
+    if (invalidMessages.size > 0) {
+      reporter.warnAboutInvalidMessageStrings(filePath, invalidMessages);
     }
 
     Catalogue.registerDictionary(locale, domain, filePath, dictionary);
@@ -127,11 +133,13 @@ export function t18sCore(pluginConfig) {
   async function invalidateTranslationFile(filePath) {
     const { locale, domain } = fileHandler.categorizeFile(filePath);
     if (!config.locales.includes(locale)) return; //No need to log, it would have been logged when the file was registered
-    
+
     //Try to read the file & buffer the result
     const bufferedFileRead = await buffer(fileHandler.read(filePath));
 
-    const { dictionary, invalidKeys } = new ResultMatcher(bufferedFileRead)
+    const { dictionary, invalidKeys, invalidMessages } = new ResultMatcher(
+      bufferedFileRead
+    )
       .catch(LoadingException, (e) => {
         logger.error(e.message);
         return FileHandler.NullReadResult;
@@ -140,6 +148,10 @@ export function t18sCore(pluginConfig) {
 
     if (invalidKeys.size > 0) {
       reporter.warnAboutInvalidKeys(filePath, invalidKeys);
+    }
+
+    if (invalidMessages.size > 0) {
+      reporter.warnAboutInvalidMessageStrings(filePath, invalidMessages);
     }
 
     Catalogue.setDictionary(locale, domain, dictionary);
@@ -190,7 +202,9 @@ export function t18sCore(pluginConfig) {
       }
       const readResult = await buffer(fileHandler.read(filePath));
 
-      const { dictionary, invalidKeys } = new ResultMatcher(readResult)
+      const { dictionary, invalidKeys, invalidMessages } = new ResultMatcher(
+        readResult
+      )
         .catch(LoadingException, (e) => {
           logger.error(e.message);
           return FileHandler.NullReadResult;
@@ -199,6 +213,10 @@ export function t18sCore(pluginConfig) {
 
       if (invalidKeys.size > 0) {
         reporter.warnAboutInvalidKeys(filePath, invalidKeys);
+      }
+
+      if (invalidMessages.size > 0) {
+        reporter.warnAboutInvalidMessageStrings(filePath, invalidMessages);
       }
 
       Catalogue.registerDictionary(locale, domain, filePath, dictionary);

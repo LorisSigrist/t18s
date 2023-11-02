@@ -27,8 +27,21 @@ export class Reporter {
     for (const invalidKey of invalidKeys) {
       errorMessage += `\n· ${invalidKey}`;
     }
-    this.#logger.error(errorMessage);
+    this.#logger.warn(errorMessage);
   }
+
+   /**
+   * @param {string} filePath
+   * @param {Set<string>} invalidMessageStrings
+   */
+    warnAboutInvalidMessageStrings(filePath, invalidMessageStrings) {
+      let errorMessage = `Found messages with invalid syntax in ${filePath}`;
+      for (const invalidMessage of invalidMessageStrings) {
+        errorMessage += `\n· ${invalidMessage}`;
+      }
+      this.#logger.warn(errorMessage);
+    }
+  
 
   /**
    * @param {string} filePath
