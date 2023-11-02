@@ -3,6 +3,7 @@ import { basename } from "path";
 import { LoadingException } from "./exception.js";
 import { Tree } from "../utils/Tree.js";
 import { Message } from "../Message.js";
+import { isValidMessageKey } from "./sanitation.js";
 
 export class FileHandler {
   /** @type {import("./types.js").FormatHandler[]} */
@@ -15,7 +16,6 @@ export class FileHandler {
 
   /**
    * @param {string} filePath Absolute path to the file that needs to be handled
-   * @returns {Promise<Tree<Message>>} A Map of the Key-Value pairs in the file
    * @throws {LoadingException} If the file could not be handled
    */
   async read(filePath) {
@@ -28,15 +28,39 @@ export class FileHandler {
       );
 
     const textContent = await this.#readFileContent(filePath);
-    const tree = handler.load(filePath, textContent);
 
+    const pojsTree = handler.load(filePath, textContent);
+    const messageSrcTree = Tree.fromObject(pojsTree);
 
-    const dictionary = tree.map(messageSrc => {
-      return new Message(locale, messageSrc);      
-    })
+    const invalidKeys = new Set();
 
-    return dictionary;
+    const validMessageTree = messageSrcTree.filter((messageSrc, path) => {
+      const key = path.at(-1);
+      if (key === undefined) return true;
+
+      if (isValidMessageKey(key)) {
+        return true;
+      } else {
+        invalidKeys.add(path.join("."));
+        return false;
+      }
+    });
+
+    const dictionary = validMessageTree.map((messageSrc) => {
+      return new Message(locale, messageSrc);
+    });
+
+    return { dictionary, invalidKeys };
   }
+
+  /**
+   * The null read result is can be used as a fallback if an error prevents 
+   * a real read result from being generated. 
+   */
+  static NullReadResult = {
+    dictionary: new Tree(),
+    invalidKeys: new Set(),
+  };
 
   /**
    * @param {string} filePath Absolute path to the file that needs to be handled

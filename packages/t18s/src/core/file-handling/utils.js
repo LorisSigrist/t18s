@@ -20,3 +20,26 @@ export function setPathOnTree(tree, path, value) {
   if (!tree[current]) tree[current] = {};
   setPathOnTree(tree[current], rest, value);
 }
+
+
+/**
+ * @param {any} thing
+ * @returns {thing is import("./types.js").POJSTree}
+ */
+export function isPOJSTree(thing) {
+  if (typeof thing === "string") return true;
+  if (Array.isArray(thing)) return false;
+  if (thing === null) return false;
+  if(typeof thing !== "object") return false;
+  
+  let childrenArePOJSTrees = true;
+
+  for (const key in thing) {
+    if (!isPOJSTree(thing[key])) {
+      childrenArePOJSTrees = false;
+      break;
+    }
+  }
+
+  return childrenArePOJSTrees;
+}

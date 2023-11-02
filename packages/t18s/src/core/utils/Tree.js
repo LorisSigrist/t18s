@@ -73,6 +73,46 @@ export class Tree {
     return newTree;
   }
 
+ /**
+   * @template U
+   * @param {(leaf: Leaf, path: string[]) => boolean} fn
+   *
+   * @returns {Tree<Leaf>}
+   */
+  filter(fn) {
+    return this.#filter(fn, []);
+  }
+
+
+  /**
+   * @template U
+   * @param {(leaf: Leaf, path: string[]) => boolean} fn
+   * @param {string[]} pathSoFar
+   *
+   * @returns {Tree<Leaf>}
+   */
+  #filter(fn, pathSoFar) {
+    /** @type {Tree<Leaf>} */
+    const newTree = new Tree();
+
+    for (const [childKey, child] of this.#children) {
+      const childPath = [...pathSoFar, childKey];
+
+      if (child instanceof Tree) {
+        const filteredChild = child.#filter(fn, childPath);
+        if (filteredChild.#children.size > 0) {
+          newTree.#children.set(childKey, filteredChild);
+        }
+      } else {
+        if (fn(child, childPath)) {
+          newTree.#children.set(childKey, child)
+        }
+      }
+    }
+
+    return newTree;
+  }
+
   /**
    * @returns {IterableIterator<string[]>}
    */

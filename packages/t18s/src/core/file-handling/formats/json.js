@@ -1,7 +1,7 @@
 import { Tree } from "../../utils/Tree.js";
 import { ResultMatcher } from "../../utils/resultMatcher.js";
 import { LoadingException } from "../exception.js";
-import { setPathOnTree } from "../utils.js";
+import { isPOJSTree, setPathOnTree } from "../utils.js";
 
 /** @type {import("../types.js").FormatHandler} */
 export const JsonHandler = {
@@ -26,11 +26,11 @@ export const JsonHandler = {
  *
  * @param {string} content
  * @param {string|undefined} filePath
- * @returns {Tree<string>}
+ * @returns {import("../types.js").POJSTree}
  */
 function parseAsTree(content, filePath = undefined) {
   content = content.trim();
-  if (content.length === 0) return new Tree();
+  if (content.length === 0) return {};
 
   /** @param {Error} e */
   const raiseLoadingException = (e) => {
@@ -42,8 +42,8 @@ function parseAsTree(content, filePath = undefined) {
 
   return new ResultMatcher(JSON.parse)
     .ok((res) => {
-      if (typeof res !== "object") return new Tree();
-      return Tree.fromObject(res);
+      if (!isPOJSTree(res)) return {};
+      return res;
     })
     .catch(SyntaxError, (e) => raiseLoadingException(e))
     .run(content);

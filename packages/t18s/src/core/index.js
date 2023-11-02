@@ -52,13 +52,12 @@ export function t18sCore(pluginConfig) {
 
   Catalogue.addEventListener("dictionary_changed", (e) => {
     if (viteDevServer) {
-
       let invalidatedModuleIDs = new Set();
       for (const resolvedModuleId of viteDevServer.moduleGraph.idToModuleMap.keys()) {
         if (resolvedModuleId.startsWith(`\0t18s-internal:dictionary`)) {
           const { domain } = parseDictionaryModuleId(resolvedModuleId);
-          if(domain === e.detail.domain)
-          invalidatedModuleIDs.add(resolvedModuleId);
+          if (domain === e.detail.domain)
+            invalidatedModuleIDs.add(resolvedModuleId);
         }
       }
 
@@ -104,12 +103,16 @@ export function t18sCore(pluginConfig) {
     //Try to read the file & buffer the result
     const bufferedFileRead = await buffer(fileHandler.read(filePath));
 
-    const dictionary = new ResultMatcher(bufferedFileRead)
+    const { dictionary, invalidKeys } = new ResultMatcher(bufferedFileRead)
       .catch(LoadingException, (e) => {
         logger.error(e.message);
-        return new Tree();
+        return FileHandler.NullReadResult;
       })
       .run();
+
+    if (invalidKeys.size > 0) {
+      reporter.warnAboutInvalidKeys(filePath, invalidKeys);
+    }
 
     Catalogue.registerDictionary(locale, domain, filePath, dictionary);
     reporter.translationsRegistered(locale, domain);
@@ -123,22 +126,22 @@ export function t18sCore(pluginConfig) {
    */
   async function invalidateTranslationFile(filePath) {
     const { locale, domain } = fileHandler.categorizeFile(filePath);
-    if (!config.locales.includes(locale)) {
-      console.warn(
-        "Attempted to invalidate file for invalid locale: " + locale
-      );
-      return;
-    }
-
+    if (!config.locales.includes(locale)) return; //No need to log, it would have been logged when the file was registered
+    
     //Try to read the file & buffer the result
     const bufferedFileRead = await buffer(fileHandler.read(filePath));
 
-    const dictionary = new ResultMatcher(bufferedFileRead)
+    const { dictionary, invalidKeys } = new ResultMatcher(bufferedFileRead)
       .catch(LoadingException, (e) => {
         logger.error(e.message);
-        return new Tree();
+        return FileHandler.NullReadResult;
       })
       .run();
+
+    if (invalidKeys.size > 0) {
+      reporter.warnAboutInvalidKeys(filePath, invalidKeys);
+    }
+
     Catalogue.setDictionary(locale, domain, dictionary);
   }
 
@@ -187,12 +190,16 @@ export function t18sCore(pluginConfig) {
       }
       const readResult = await buffer(fileHandler.read(filePath));
 
-      const dictionary = new ResultMatcher(readResult)
+      const { dictionary, invalidKeys } = new ResultMatcher(readResult)
         .catch(LoadingException, (e) => {
           logger.error(e.message);
-          return new Tree();
+          return FileHandler.NullReadResult;
         })
         .run();
+
+      if (invalidKeys.size > 0) {
+        reporter.warnAboutInvalidKeys(filePath, invalidKeys);
+      }
 
       Catalogue.registerDictionary(locale, domain, filePath, dictionary);
     }

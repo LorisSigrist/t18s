@@ -1,5 +1,6 @@
-import { Message } from "../Message.js";
-import { Tree } from "../utils/Tree.js";
+export interface POJSTree {
+  [key: string]: string | POJSTree;
+}
 
 export interface FormatHandler {
   fileExtensions: string[];
@@ -11,7 +12,7 @@ export interface FormatHandler {
    * @param locale - The locale this file is for.
    * @returns A dictionary.
    */
-  load: (filePath: string, fileContent: string) => Tree<string>;
+  load: (filePath: string, fileContent: string) => POJSTree;
 
   /**
    * Modifies the file content so that the given key has the given value.

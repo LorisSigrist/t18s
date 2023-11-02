@@ -22,7 +22,8 @@ export class Reporter {
    * @param {Set<string>} invalidKeys
    */
   warnAboutInvalidKeys(filePath, invalidKeys) {
-    let errorMessage = `Invalid ICU Messageformat Strings found in ${filePath}`;
+    let errorMessage = `Found messages with invalid keys in ${filePath}`;
+    errorMessage += `\nAll message-keys must be valid JavaScript variable names.`;
     for (const invalidKey of invalidKeys) {
       errorMessage += `\n· ${invalidKey}`;
     }
@@ -30,12 +31,11 @@ export class Reporter {
   }
 
   /**
-   *
    * @param {string} filePath
    * @param {string} invalidLocale
    */
   warnAboutFileForInvalidLocale(filePath, invalidLocale) {
-    let errorMessage = `Attempted to register a translation file for an unregistered locale: ${invalidLocale}`;
+    let errorMessage = `Attempted to register a translation file for an unknown locale: ${kleur.italic(invalidLocale)}`;
     errorMessage += `\nDid you forget to register the locale in the t18s plugin config?`;
     errorMessage += `\nFile: ${filePath}`;
 

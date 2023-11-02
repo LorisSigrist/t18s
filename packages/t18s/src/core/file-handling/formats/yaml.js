@@ -1,5 +1,5 @@
 import { dump, load as loadYaml, YAMLException } from "js-yaml";
-import { setPathOnTree } from "../utils.js";
+import { isPOJSTree, setPathOnTree } from "../utils.js";
 import { LoadingException } from "../exception.js";
 import { ResultMatcher } from "../../utils/resultMatcher.js";
 import { Tree } from "../../utils/Tree.js";
@@ -25,13 +25,13 @@ export const YamlHandler = {
 /**
  * @param {string} content
  * @param {string|undefined} filePath
- * @return {Tree<string>}
+ * @return {import("../types.js").POJSTree}
  */
 function parseAsTree(content, filePath = undefined) {
   return new ResultMatcher(loadYaml)
     .ok((res) => {
-      if (typeof res !== "object" || res === null) return new Tree();
-      return Tree.fromObject(res);
+      if (!isPOJSTree(res)) return {};
+      return res;
     })
     .catch(YAMLException, (e) => raiseLoadingException(e, filePath))
     .run(content, { filename: filePath });
