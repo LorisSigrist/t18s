@@ -10,7 +10,7 @@ import { TYPE } from "@formatjs/icu-messageformat-parser";
  */
 export function precompile(elements, locale) {
   if (hasOnlyLiterals(elements)) {
-    return '`' + escapeLiteral(elements.map((e) => e.value).join("")) + '`';
+    return "`" + escapeLiteral(elements.map((e) => e.value).join("")) + "`";
   }
 
   return (
@@ -34,7 +34,15 @@ function compileElement(element, locale, poundValue) {
     case TYPE.argument:
       return "${args." + element.value + "}";
     case TYPE.tag:
-      return "${args." + element.value + '(`' + element.children.map(e => compileElement(e, locale, poundValue)).join("") +'`)}';
+      return (
+        "${args." +
+        element.value +
+        "(`" +
+        element.children
+          .map((e) => compileElement(e, locale, poundValue))
+          .join("") +
+        "`)}"
+      );
     case TYPE.select: {
       return compileSelect(element, locale, poundValue);
     }
@@ -132,7 +140,8 @@ function compileDate(element, locale) {
  * @returns {string}
  */
 function compileSelect(element, locale, poundValue) {
-  let fallback = '""';
+  /** @type {string | null} */
+  let fallback = null;
 
   /**
    * @type {Record<string, string>}
@@ -162,10 +171,14 @@ function compileSelect(element, locale, poundValue) {
   /** @type {string[]} */
   const entries = [];
   for (const [key, option] of Object.entries(options)) {
-    entries.push( `"${key}" : ${option}`);
+    entries.push(`"${key}" : ${option}`);
   }
   str += entries.join(", ");
-  str += `}[args.${element.value}] ?? ${fallback}`
+  str += `}[args.${element.value}]`;
+
+  if (fallback !== null) {
+    str += ` ?? ${fallback}`;
+  }
 
   str += "}";
   return str;
@@ -184,7 +197,8 @@ function compilePlural(element, locale, poundValue) {
   /** @type {Record<Intl.LDMLPluralRule | string, string>} */
   const pluralValues = {};
 
-  let fallback = '""';
+  /** @type {string | null} */
+  let fallback = null;
 
   for (const [key, option] of Object.entries(element.options)) {
     if (key.startsWith("=")) {
@@ -229,12 +243,16 @@ function compilePlural(element, locale, poundValue) {
 
     str += entries.join(", ");
 
-    str += `}[new Intl.PluralRules("${locale}", {type: "${element.pluralType}"}).select(args.${element.value})] ?? ${fallback} }`;
+    str += `}[new Intl.PluralRules("${locale}", {type: "${element.pluralType}"}).select(args.${element.value})]`;
 
+    if (fallback !== null) {
+      str += ` ?? ${fallback}`;
+    }
+
+    str += "}"
   } else {
-    str += `${fallback} }`;
+    str += fallback ? `${fallback} }` : " '' }";
   }
-
 
   return str;
 }
