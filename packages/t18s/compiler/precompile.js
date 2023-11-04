@@ -226,13 +226,9 @@ function compilePlural(element, locale, poundValue) {
     }
   }
 
-  const hasExactValues = Object.entries(exactValues).length !== 0;
-  const hasPluralValues = Object.entries(pluralValues).length !== 0;
-
-  let str = "${";
-
-  if (hasExactValues) {
-    str += "{";
+  const segments = [];
+  if (Object.entries(exactValues).length !== 0) {
+    let exactValueCode = "{";
 
     /** @type {string[]} */
     const entries = [];
@@ -240,17 +236,14 @@ function compilePlural(element, locale, poundValue) {
       entries.push(`${number} : ${option}`);
     }
 
-    str += entries.join(", ");
+    exactValueCode += entries.join(", ");
 
-    str += `}[args.${element.value}]`;
+    exactValueCode += `}[args.${element.value}]`;
+    segments.push(exactValueCode);
   }
 
-  if (hasExactValues && hasPluralValues) {
-    str += " ?? ";
-  }
-
-  if (hasPluralValues) {
-    str += "{";
+  if (Object.entries(pluralValues).length !== 0) {
+    let pluralValueCode = "{";
     /** @type {string[]} */
     let entries = [];
 
@@ -258,23 +251,18 @@ function compilePlural(element, locale, poundValue) {
       entries.push(`"${pluralRule}" : ${option}`);
     }
 
-    str += entries.join(", ");
-
-    str += `}[new Intl.PluralRules("${locale}", {type: "${element.pluralType}"}).select(args.${element.value})]`;
-
-  } 
-
-  if (fallback !== null) {
-    if ((hasExactValues || hasPluralValues)) {
-      str += ` ?? ${fallback}`;
-    } else {
-      str += fallback;
-    }
+    pluralValueCode += entries.join(", ");
+    pluralValueCode += `}[new Intl.PluralRules("${locale}", {type: "${element.pluralType}"}).select(args.${element.value})]`;
+    
+    segments.push(pluralValueCode);
   }
 
+  //Handle fallback
+  if (fallback !== null) {
+    segments.push(fallback);
+  }
 
-  str += "}";
-
+  const str = "${" + segments.join(" ?? ") + "}";
   return str;
 }
 
