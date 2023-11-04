@@ -42,6 +42,32 @@ export class Reporter {
       this.#logger.warn(errorMessage);
     }
   
+  
+  
+  /**
+   * Warn about invalid locales being registered in the config.
+   * @param {Iterable<string>} invalidLocales 
+   */
+  warnAboutInvalidLocalesInConfig(invalidLocales) {
+    const locales = Array.from(invalidLocales);
+
+    if (locales.length === 0) return;
+    if (locales.length === 1) {
+      const locale = locales.pop();
+      if (!locale) return;
+
+      this.#logger.warn(
+        `An invalid locale was registered in the t18s plugin config: ${kleur.italic(locale)}. It will be ignored.  Locales must be valid unicode identifiers (eg. de, en-US or zh-Hans-CN))`)
+    } else {
+      let errorMessage = `Invalid locales were registered in the t18s plugin config:`;
+      for (const locale of locales) {
+        errorMessage += `\n· ${kleur.italic(locale)}`;
+      }
+      errorMessage += `\nThey will be ignored. Locales must be valid unicode identifiers (eg. de, en-US or zh-Hans-CN))`;
+      this.#logger.warn(errorMessage);
+    }
+  }
+
 
   /**
    * @param {string} filePath

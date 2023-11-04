@@ -9,15 +9,15 @@ export default defineConfig({
     t18s({
       locales: ["en", "de"],
       fallbackLocale: "en",
-      dts:"./$t18s.d.ts"
+      dts: "./$t18s.d.ts",
     }),
     icons({
-		compiler: "svelte",
+      compiler: "svelte",
     }),
   ],
   server: {
     fs: {
       allow: ["."],
-    }
-  }
+    },
+  },
 });

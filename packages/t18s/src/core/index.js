@@ -235,19 +235,39 @@ export function t18sCore(pluginConfig) {
     enforce: "pre",
 
     async configResolved(resolvedConfig) {
+
+      const verbose = pluginConfig.verbose && resolvedConfig.command === "serve";
+      logger = new Logger(resolvedConfig, verbose);
+      reporter = new Reporter(logger);
+
+      /** @type {string[]} */
+      const validLocales = [];
+       /** @type {string[]} */
+      const invalidLocales = [];
+
+      for (const locale of pluginConfig.locales) {
+        //Check if the Intl API supports the locale
+        try {
+          new Intl.Locale(locale);
+          validLocales.push(locale);
+        } catch (e) {
+          invalidLocales.push(locale);
+        }
+      }
+
+      if(invalidLocales.length > 0) reporter.warnAboutInvalidLocalesInConfig(invalidLocales);
+      
+
       config = {
         dtsPath: resolve(resolvedConfig.root, pluginConfig.dts),
         translationsDir: resolve(
           resolvedConfig.root,
           pluginConfig.translationsDir
         ),
-        verbose: pluginConfig.verbose && resolvedConfig.command === "serve",
+        verbose,
         locales: pluginConfig.locales,
         fallbackLocale: pluginConfig.fallbackLocale ?? null,
       };
-
-      logger = new Logger(resolvedConfig, config.verbose);
-      reporter = new Reporter(logger);
 
       await loadInitialLocales(config);
     },
