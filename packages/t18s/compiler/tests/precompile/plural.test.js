@@ -34,4 +34,16 @@ describe("compile plural", () => {
       expect(result).toMatch(correct);
     }
   });
+
+  it("compiles a plural with only an other clause", () => {
+    let message = "{count, plural, other {other}}";
+    let compiled = precompile(parseMessage(message), "en");
+
+    for (let i = 1; i < 10; i++) {
+      const values = { count: i };
+      let result = evaluateFnString(compiled, values);
+      let correct = formatJS(message, values);
+      expect(result).toMatch(correct);
+    }
+  });
 });

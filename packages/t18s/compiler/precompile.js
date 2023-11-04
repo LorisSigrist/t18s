@@ -226,13 +226,30 @@ function compilePlural(element, locale, poundValue) {
     }
   }
 
+  const hasExactValues = Object.entries(exactValues).length !== 0;
+  const hasPluralValues = Object.entries(pluralValues).length !== 0;
+
   let str = "${";
 
-  for (const [number, option] of Object.entries(exactValues)) {
-    str += `args.${element.value} == ${number} ? ${option} : `;
+  if (hasExactValues) {
+    str += "{";
+
+    /** @type {string[]} */
+    const entries = [];
+    for (const [number, option] of Object.entries(exactValues)) {
+      entries.push(`${number} : ${option}`);
+    }
+
+    str += entries.join(", ");
+
+    str += `}[args.${element.value}]`;
   }
 
-  if (Object.entries(pluralValues).length !== 0) {
+  if (hasExactValues && hasPluralValues) {
+    str += " ?? ";
+  }
+
+  if (hasPluralValues) {
     str += "{";
     /** @type {string[]} */
     let entries = [];
@@ -245,14 +262,18 @@ function compilePlural(element, locale, poundValue) {
 
     str += `}[new Intl.PluralRules("${locale}", {type: "${element.pluralType}"}).select(args.${element.value})]`;
 
-    if (fallback !== null) {
-      str += ` ?? ${fallback}`;
-    }
+  } 
 
-    str += "}"
-  } else {
-    str += fallback ? `${fallback} }` : " '' }";
+  if (fallback !== null) {
+    if ((hasExactValues || hasPluralValues)) {
+      str += ` ?? ${fallback}`;
+    } else {
+      str += fallback;
+    }
   }
+
+
+  str += "}";
 
   return str;
 }
