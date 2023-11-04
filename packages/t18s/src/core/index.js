@@ -95,7 +95,7 @@ export function t18sCore(pluginConfig) {
 
     if (Catalogue.hasDictionary(locale, domain)) {
       logger.error(
-        `Locale ${locale} already exists. Skipping file ${filePath}`
+        `Locale ${locale} already exists. Skipping file ${filePath}`,
       );
       return;
     }
@@ -104,7 +104,7 @@ export function t18sCore(pluginConfig) {
     const bufferedFileRead = await buffer(fileHandler.read(filePath));
 
     const { dictionary, invalidKeys, invalidMessages } = new ResultMatcher(
-      bufferedFileRead
+      bufferedFileRead,
     )
       .catch(LoadingException, (e) => {
         logger.error(e.message);
@@ -138,7 +138,7 @@ export function t18sCore(pluginConfig) {
     const bufferedFileRead = await buffer(fileHandler.read(filePath));
 
     const { dictionary, invalidKeys, invalidMessages } = new ResultMatcher(
-      bufferedFileRead
+      bufferedFileRead,
     )
       .catch(LoadingException, (e) => {
         logger.error(e.message);
@@ -203,7 +203,7 @@ export function t18sCore(pluginConfig) {
       const readResult = await buffer(fileHandler.read(filePath));
 
       const { dictionary, invalidKeys, invalidMessages } = new ResultMatcher(
-        readResult
+        readResult,
       )
         .catch(LoadingException, (e) => {
           logger.error(e.message);
@@ -235,14 +235,14 @@ export function t18sCore(pluginConfig) {
     enforce: "pre",
 
     async configResolved(resolvedConfig) {
-
-      const verbose = pluginConfig.verbose && resolvedConfig.command === "serve";
+      const verbose =
+        pluginConfig.verbose && resolvedConfig.command === "serve";
       logger = new Logger(resolvedConfig, verbose);
       reporter = new Reporter(logger);
 
       /** @type {string[]} */
       const validLocales = [];
-       /** @type {string[]} */
+      /** @type {string[]} */
       const invalidLocales = [];
 
       for (const locale of pluginConfig.locales) {
@@ -255,14 +255,14 @@ export function t18sCore(pluginConfig) {
         }
       }
 
-      if(invalidLocales.length > 0) reporter.warnAboutInvalidLocalesInConfig(invalidLocales);
-      
+      if (invalidLocales.length > 0)
+        reporter.warnAboutInvalidLocalesInConfig(invalidLocales);
 
       config = {
         dtsPath: resolve(resolvedConfig.root, pluginConfig.dts),
         translationsDir: resolve(
           resolvedConfig.root,
-          pluginConfig.translationsDir
+          pluginConfig.translationsDir,
         ),
         verbose,
         locales: pluginConfig.locales,
@@ -288,7 +288,7 @@ export function t18sCore(pluginConfig) {
 
       //Attempt to load the module from all loaders
       const loadingPromises = loaders.map((loader) =>
-        loader(id, config, Catalogue)
+        loader(id, config, Catalogue),
       );
       const results = await Promise.allSettled(loadingPromises);
 

@@ -4,7 +4,10 @@ import { normalizePath } from "vite";
 
 function getDictionaryUtilsModulePath() {
   const thisModulePath = normalizePath(dirname(fileURLToPath(import.meta.url)));
-  const $t18sMainModulePath = resolve(thisModulePath, "../runtime/dictionaryUtils.js");
+  const $t18sMainModulePath = resolve(
+    thisModulePath,
+    "../runtime/dictionaryUtils.js",
+  );
   return $t18sMainModulePath;
 }
 

@@ -24,7 +24,7 @@ export class FileHandler {
     const handler = this.#getHandler(filePath);
     if (!handler)
       throw new LoadingException(
-        `Could not find handler for ${filePath}. Supported file extensions are ${this.getSupportedFileExtensions()}`
+        `Could not find handler for ${filePath}. Supported file extensions are ${this.getSupportedFileExtensions()}`,
       );
 
     const textContent = await this.#readFileContent(filePath);
@@ -83,7 +83,7 @@ export class FileHandler {
     const handler = this.#getHandler(filePath);
     if (!handler)
       throw new LoadingException(
-        `Could not find handler for ${filePath}. Supported file extensions are ${this.getSupportedFileExtensions()}`
+        `Could not find handler for ${filePath}. Supported file extensions are ${this.getSupportedFileExtensions()}`,
       );
 
     const textContent = await this.#readFileContent(filePath);
@@ -101,11 +101,11 @@ export class FileHandler {
     const fileExtension = filename.split(".").at(-1);
     if (typeof fileExtension !== "string")
       throw new LoadingException(
-        "Could not determine file extension for ${filePath}"
+        "Could not determine file extension for ${filePath}",
       );
 
     const handler = this.#handlers.find((l) =>
-      l.fileExtensions.includes(fileExtension)
+      l.fileExtensions.includes(fileExtension),
     );
 
     return handler ?? null;

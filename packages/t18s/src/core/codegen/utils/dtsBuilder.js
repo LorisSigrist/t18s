@@ -39,7 +39,7 @@ export class DTSBuilder {
     const modulesCode = [];
 
     for (const module of this.#modules) {
-      modulesCode.push( module.build());
+      modulesCode.push(module.build());
     }
 
     code += modulesCode.join("\n\n");
@@ -144,15 +144,15 @@ class Statement {
 
 /**
  * Returns a formatted JSDoc comment from a string.
- * @param {string} comment 
+ * @param {string} comment
  * @returns {string}
  */
 function formatJSDocComment(comment) {
   let formatted = "";
-  const lines = comment.split("\n");    
+  const lines = comment.split("\n");
 
   if (lines.length === 1) {
-    formatted += `/** ${comment} */`
+    formatted += `/** ${comment} */`;
   } else if (lines.length >= 2) {
     formatted += "/**\n";
     for (const line of lines) {

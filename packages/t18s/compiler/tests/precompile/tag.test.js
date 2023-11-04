@@ -11,7 +11,7 @@ describe("compile tag", () => {
     };
 
     const result = eval(
-      `(${compiled})({tag: (value) => \`<bold>\${value}</bold>\` })`
+      `(${compiled})({tag: (value) => \`<bold>\${value}</bold>\` })`,
     );
     const correct = formatJS(message, values);
     expect(result).toMatch(correct);
@@ -25,7 +25,7 @@ describe("compile tag", () => {
     };
 
     const result = eval(
-      `(${compiled})({tag: (value) => \`<bold>\${value}</bold>\`, name: "world" })`
+      `(${compiled})({tag: (value) => \`<bold>\${value}</bold>\`, name: "world" })`,
     );
     const correct = formatJS(message, values);
     expect(result).toMatch(correct);

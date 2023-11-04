@@ -16,8 +16,7 @@ export class Tree {
     if (!key) return this;
 
     const child = this.#children.get(key);
-    if (rest.length === 0)
-      return child;
+    if (rest.length === 0) return child;
     return child instanceof Tree ? child.getPath(rest) : child;
   }
 
@@ -43,7 +42,6 @@ export class Tree {
       }
     }
   }
-
 
   /**
    * Loops over all direct children of this tree.
@@ -73,7 +71,7 @@ export class Tree {
     return newTree;
   }
 
- /**
+  /**
    * @template {(leaf: Leaf, path: string[]) => boolean} Callback
    * @param {Callback} fn
    *
@@ -83,7 +81,6 @@ export class Tree {
     return this.#filter(fn, []);
   }
 
-
   /**
    * @template {(leaf: Leaf, path: string[]) => boolean} Callback
    * @param {Callback} fn
@@ -92,9 +89,9 @@ export class Tree {
    * @returns {Callback extends ((leaf: Leaf, path: string[]) => leaf is infer U) ? Tree<U> : Tree<Leaf>}
    */
   #filter(fn, pathSoFar) {
-    /** 
+    /**
      * @type {Tree<Leaf>}
-    */
+     */
     const newTree = new Tree();
 
     for (const [childKey, child] of this.#children) {
@@ -107,7 +104,7 @@ export class Tree {
         }
       } else {
         if (fn(child, childPath)) {
-          newTree.#children.set(childKey, child)
+          newTree.#children.set(childKey, child);
         }
       }
     }
@@ -130,7 +127,6 @@ export class Tree {
       }
     }
   }
-
 
   /**
    * Returns a new tree with all values mapped by the given function.
@@ -161,21 +157,23 @@ export class Tree {
     /** @type {Tree<Set<Values>>} */
     const mergedTree = new Tree();
 
-
     /** @param {Tree<Values>} tree */
     const walkTree = (tree) => {
       for (const path of tree.paths()) {
         const value = tree.getPath(path);
-        if (!value) throw new Error("Unexpected undefined value. Get path returned undefined when path exists");
+        if (!value)
+          throw new Error(
+            "Unexpected undefined value. Get path returned undefined when path exists",
+          );
         if (value instanceof Tree) continue;
 
         let merged = mergedTree.getPath(path);
         if (!merged || merged instanceof Tree) merged = new Set();
         merged.add(value);
-  
+
         mergedTree.setPath(path, merged);
       }
-    }
+    };
 
     for (const tree of trees) {
       walkTree(tree);
@@ -186,8 +184,8 @@ export class Tree {
 
   /**
    * @template U
-   * @param {Tree<U>} before 
-   * @param {Tree<U>} after 
+   * @param {Tree<U>} before
+   * @param {Tree<U>} after
    * @param {(a: U, b: U) => boolean} equalityFn
    * @returns {Tree<U>}
    */
@@ -200,7 +198,6 @@ export class Tree {
     const paths = [...before.paths(), ...after.paths()];
 
     for (const path of paths) {
-      
     }
 
     return diffTree;
@@ -208,7 +205,7 @@ export class Tree {
 
   /**
    * @template {unknown} Thing
-   * @param {Thing} thing 
+   * @param {Thing} thing
    * @return {thing is Thing extends Tree<infer Leaf> ? Tree<Leaf> : Tree<any>}
    */
   static isTree(thing) {

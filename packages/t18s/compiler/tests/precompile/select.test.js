@@ -23,7 +23,6 @@ describe("compile select", () => {
     expect(result).toMatch(correct);
   });
 
-
   it("compiles a message with a select argument without an other clause into a function", () => {
     const message = "{season, select, summer {Summer} winter {Winter}}";
     const compiled = precompile(parseMessage(message), "en");

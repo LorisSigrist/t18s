@@ -14,7 +14,7 @@ describe("FileHandler", () => {
       const handler = new FileHandler([
         {
           fileExtensions: ["json"],
-          load: () => ({ }),
+          load: () => ({}),
           setPath: () => "",
         },
       ]);
@@ -34,7 +34,7 @@ describe("FileHandler", () => {
       const handler = new FileHandler([
         {
           fileExtensions: ["json"],
-          load: () => ({ }),
+          load: () => ({}),
           setPath: () => "",
         },
       ]);
@@ -45,12 +45,12 @@ describe("FileHandler", () => {
       const handler = new FileHandler([
         {
           fileExtensions: ["json"],
-          load: () => ({ }),
+          load: () => ({}),
           setPath: () => "",
         },
         {
           fileExtensions: ["yaml", "yml"],
-          load: () => ({ }),
+          load: () => ({}),
           setPath: () => "",
         },
       ]);

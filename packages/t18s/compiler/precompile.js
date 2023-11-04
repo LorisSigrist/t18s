@@ -253,7 +253,7 @@ function compilePlural(element, locale, poundValue) {
 
     pluralValueCode += entries.join(", ");
     pluralValueCode += `}[new Intl.PluralRules("${locale}", {type: "${element.pluralType}"}).select(args.${element.value})]`;
-    
+
     segments.push(pluralValueCode);
   }
 

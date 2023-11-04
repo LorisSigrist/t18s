@@ -38,7 +38,7 @@ export class Message {
   }
 
   /**
-   * @param {unknown} thing 
+   * @param {unknown} thing
    * @returns {thing is Message}
    */
   static isMessage(thing) {

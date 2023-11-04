@@ -30,23 +30,21 @@ export class Reporter {
     this.#logger.warn(errorMessage);
   }
 
-   /**
+  /**
    * @param {string} filePath
    * @param {Set<string>} invalidMessageStrings
    */
-    warnAboutInvalidMessageStrings(filePath, invalidMessageStrings) {
-      let errorMessage = `Found messages with invalid syntax in ${filePath}`;
-      for (const invalidMessage of invalidMessageStrings) {
-        errorMessage += `\n· ${invalidMessage}`;
-      }
-      this.#logger.warn(errorMessage);
+  warnAboutInvalidMessageStrings(filePath, invalidMessageStrings) {
+    let errorMessage = `Found messages with invalid syntax in ${filePath}`;
+    for (const invalidMessage of invalidMessageStrings) {
+      errorMessage += `\n· ${invalidMessage}`;
     }
-  
-  
-  
+    this.#logger.warn(errorMessage);
+  }
+
   /**
    * Warn about invalid locales being registered in the config.
-   * @param {Iterable<string>} invalidLocales 
+   * @param {Iterable<string>} invalidLocales
    */
   warnAboutInvalidLocalesInConfig(invalidLocales) {
     const locales = Array.from(invalidLocales);
@@ -57,7 +55,10 @@ export class Reporter {
       if (!locale) return;
 
       this.#logger.warn(
-        `An invalid locale was registered in the t18s plugin config: ${kleur.italic(locale)}. It will be ignored.  Locales must be valid unicode identifiers (eg. de, en-US or zh-Hans-CN))`)
+        `An invalid locale was registered in the t18s plugin config: ${kleur.italic(
+          locale,
+        )}. It will be ignored.  Locales must be valid unicode identifiers (eg. de, en-US or zh-Hans-CN))`,
+      );
     } else {
       let errorMessage = `Invalid locales were registered in the t18s plugin config:`;
       for (const locale of locales) {
@@ -68,13 +69,14 @@ export class Reporter {
     }
   }
 
-
   /**
    * @param {string} filePath
    * @param {string} invalidLocale
    */
   warnAboutFileForInvalidLocale(filePath, invalidLocale) {
-    let errorMessage = `Attempted to register a translation file for an unknown locale: ${kleur.italic(invalidLocale)}`;
+    let errorMessage = `Attempted to register a translation file for an unknown locale: ${kleur.italic(
+      invalidLocale,
+    )}`;
     errorMessage += `\nDid you forget to register the locale in the t18s plugin config?`;
     errorMessage += `\nFile: ${filePath}`;
 

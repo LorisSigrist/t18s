@@ -36,7 +36,7 @@ function parseAsTree(content, filePath = undefined) {
   const raiseLoadingException = (e) => {
     throw new LoadingException(
       `Could not parse JSON file ${filePath ?? ""}: ${e.message}`,
-      { cause: e }
+      { cause: e },
     );
   };
 

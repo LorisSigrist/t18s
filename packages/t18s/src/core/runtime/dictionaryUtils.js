@@ -22,6 +22,6 @@ export function format(key, messages, values) {
     return msg;
   }
 
-  if(verbose) console.warn("Could not find translation for key " + key)
+  if (verbose) console.warn("Could not find translation for key " + key);
   return key;
 }

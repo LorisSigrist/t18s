@@ -16,7 +16,7 @@ export const loadDictionaryModule = async (resolved_id, config, Catalogue) => {
 };
 
 /**
- * @param {string} resolved_id 
+ * @param {string} resolved_id
  * @returns {{ domain: string, path: string[] }}
  */
 export function parseDictionaryModuleId(resolved_id) {
@@ -26,7 +26,7 @@ export function parseDictionaryModuleId(resolved_id) {
   pathString = pathString ?? "";
   const path = pathString.split("/").filter(Boolean) ?? [];
 
-  return { domain, path }
+  return { domain, path };
 }
 
 /**
@@ -37,7 +37,7 @@ export function parseDictionaryModuleId(resolved_id) {
  */
 function generateDictionaryModuleCode(Catalogue, domain, path) {
   let code = "";
-  code += 'import { format } from "t18s-internal:dictionary-utils";\n\n'
+  code += 'import { format } from "t18s-internal:dictionary-utils";\n\n';
 
   /** @type {Tree<Message>[]} */
   const dictionaries = [];
@@ -55,16 +55,14 @@ function generateDictionaryModuleCode(Catalogue, domain, path) {
   for (const [key, child] of subtree.children()) {
     if (child instanceof Tree) {
       const newPath = [...path, key];
-      const submoduleID = `t18s-internal:dictionary:${domain}:` + newPath.join("/");
+      const submoduleID =
+        `t18s-internal:dictionary:${domain}:` + newPath.join("/");
       code += `export * as ${key} from "${submoduleID}";\n`;
     } else {
       code += `export const ${key} = /* @__PURE__ */ (values = undefined) => {
           const messages = {
               ${[...child]
-                .map(
-                  (message) =>
-                    `"${message.locale}": ${message.precompiled}`
-                )
+                .map((message) => `"${message.locale}": ${message.precompiled}`)
                 .join(",\n")}
           };
 
