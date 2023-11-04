@@ -10,7 +10,7 @@ import { TYPE } from "@formatjs/icu-messageformat-parser";
  */
 export function precompile(elements, locale) {
   if (hasOnlyLiterals(elements)) {
-    return '"' + elements.map((e) => e.value).join("") + '"';
+    return '`' + escapeLiteral(elements.map((e) => e.value).join("")) + '`';
   }
 
   return (
@@ -157,13 +157,15 @@ function compileSelect(element, locale, poundValue) {
     }
   }
 
-  let str = "${";
+  let str = "${{";
 
+  /** @type {string[]} */
+  const entries = [];
   for (const [key, option] of Object.entries(options)) {
-    str += `args.${element.value} === "${key}" ? ${option} : `;
+    entries.push( `"${key}" : ${option}`);
   }
-
-  str += `${fallback}`;
+  str += entries.join(", ");
+  str += `}[args.${element.value}] ?? ${fallback}`
 
   str += "}";
   return str;
@@ -216,11 +218,24 @@ function compilePlural(element, locale, poundValue) {
     str += `args.${element.value} == ${number} ? ${option} : `;
   }
 
-  for (const [pluralRule, option] of Object.entries(pluralValues)) {
-    str += `new Intl.PluralRules("${locale}", {type: "${element.pluralType}"}).select(args.${element.value}) == "${pluralRule}" ? ${option} : `;
+  if (Object.entries(pluralValues).length !== 0) {
+    str += "{";
+    /** @type {string[]} */
+    let entries = [];
+
+    for (const [pluralRule, option] of Object.entries(pluralValues)) {
+      entries.push(`"${pluralRule}" : ${option}`);
+    }
+
+    str += entries.join(", ");
+
+    str += `}[new Intl.PluralRules("${locale}", {type: "${element.pluralType}"}).select(args.${element.value})] ?? ${fallback} }`;
+
+  } else {
+    str += `${fallback} }`;
   }
 
-  str += `${fallback} }`;
+
   return str;
 }
 

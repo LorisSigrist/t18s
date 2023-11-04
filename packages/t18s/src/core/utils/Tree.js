@@ -185,6 +185,28 @@ export class Tree {
   }
 
   /**
+   * @template U
+   * @param {Tree<U>} before 
+   * @param {Tree<U>} after 
+   * @param {(a: U, b: U) => boolean} equalityFn
+   * @returns {Tree<U>}
+   */
+  static diffTrees(before, after, equalityFn) {
+    throw new Error("Not implemented");
+    /** @type {Tree<U>} */
+    const diffTree = new Tree();
+
+    //Loop over all paths in tree1 & tree2 and add them to the diff tree if they are not equal
+    const paths = [...before.paths(), ...after.paths()];
+
+    for (const path of paths) {
+      
+    }
+
+    return diffTree;
+  }
+
+  /**
    * @template {unknown} Thing
    * @param {Thing} thing 
    * @return {thing is Thing extends Tree<infer Leaf> ? Tree<Leaf> : Tree<any>}
