@@ -54,5 +54,12 @@ t18s compares to the most popular ones.
             <td><XMark/></td>
             <td><XMark/></td>
         </tr>
+        <tr>
+            <td>Message Tree Shaking</td>
+            <td><Check/></td>
+            <td><XMark/></td>
+            <td><XMark/></td>
+            <td><XMark/></td>
+        </tr>
     </tbody>
 </table>

@@ -2,7 +2,7 @@
   import { page } from "$app/stores";
   import { DEFAULT_LOCALE } from "$lib/i18n";
   import HrefLang from "$lib/i18n/HrefLang.svelte";
-  import { title, defaultTitle } from "$t18s/messages/seo";
+  import * as t from "$t18s/messages/seo";
 
   $: metadata = $page.data.metadata ?? {};
 </script>
@@ -11,8 +11,8 @@
   {#key $page.url.pathname}
     <title
       >{metadata?.title
-        ? title({ pageTitle: metadata.title })
-        : defaultTitle()}</title
+        ? t.title({ pageTitle: metadata.title })
+        : t.defaultTitle()}</title
     >
 
     {#if metadata.description}
