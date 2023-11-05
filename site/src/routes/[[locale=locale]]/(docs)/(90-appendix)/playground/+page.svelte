@@ -2,8 +2,6 @@
   import IcuMessageSyntaxEditor from "$lib/ui/ICU-Message-Syntax-Editor/IcuMessageSyntaxEditor.svelte";
   let value = "Hello World";
 
-  $: console.log(value);
-
   /** @type {import("@sveltejs/kit").Snapshot<string>} */
   export const snapshot = {
     capture: () => value,

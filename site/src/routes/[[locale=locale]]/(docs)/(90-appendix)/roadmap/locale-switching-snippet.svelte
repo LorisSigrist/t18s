@@ -1,0 +1,3 @@
+{#key $locale}
+    <slot/>
+{/key}
