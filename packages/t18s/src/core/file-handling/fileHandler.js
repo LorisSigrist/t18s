@@ -4,6 +4,7 @@ import { LoadingException } from "./exception.js";
 import { Tree } from "../utils/Tree.js";
 import { Message } from "../Message.js";
 import { isValidMessageKey } from "./sanitation.js";
+import { categorizeFile } from "./categorizeFile.js";
 
 export class FileHandler {
   /** @type {import("./types.js").FormatHandler[]} */
@@ -16,11 +17,11 @@ export class FileHandler {
 
   /**
    * @param {string} filePath Absolute path to the file that needs to be handled
+   * @param {string} locale
+   * @param {string} domain
    * @throws {LoadingException} If the file could not be handled
    */
-  async read(filePath) {
-    const { locale } = this.categorizeFile(filePath);
-
+  async read(filePath, locale, domain) {
     const handler = this.#getHandler(filePath);
     if (!handler)
       throw new LoadingException(
@@ -137,18 +138,5 @@ export class FileHandler {
     return new Set(this.#handlers.flatMap((h) => h.fileExtensions));
   }
 
-  /**
-   * Categorizes to which locale & domain a given file belongs.
-   * @param {string} path
-   * @returns {{locale: string, domain: string}}
-   */
-  categorizeFile(path) {
-    //get the filename without the extension
-    const filename = basename(path).split(".").slice(0, -1).join(".");
-
-    const [first, second] = filename.split(".");
-    if (!first) throw new Error(`Could not determine locale for ${path}`);
-    if (!second) return { locale: first, domain: "" };
-    return { locale: second, domain: first };
-  }
+  categorizeFile = categorizeFile;
 }

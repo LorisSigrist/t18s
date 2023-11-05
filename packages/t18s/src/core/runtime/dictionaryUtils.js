@@ -1,6 +1,6 @@
 import { get } from "svelte/store";
 import { fallbackLocale, verbose } from "t18s-internal:config";
-import { locale } from "$t18s";
+import { locale } from "./$t18s.js";
 
 function getLocaleChain() {
   const localeChain = [get(locale)];

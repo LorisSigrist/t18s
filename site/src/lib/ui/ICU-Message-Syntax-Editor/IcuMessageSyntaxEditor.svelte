@@ -16,6 +16,8 @@
    */
   export let value;
 
+  export let locale = "en";
+
   const message = undoable(value);
   $: value = $message;
   $: message.set(value);
@@ -172,9 +174,26 @@
     }
   }
 
-  $: precompiled = precompile(elements, "en");
+  $: precompiled = precompile(elements, locale);
   $: generatedType = generateType(elements);
 </script>
+
+<div class="not-prose mb-4 w-36 max-w-full">
+  <label
+    for="locale-input"
+    class="block text-sm font-medium leading-6 text-gray-900">Locale</label
+  >
+  <div class="mt-2">
+    <input
+      type="text"
+      name="locale"
+      id="locale-input"
+      placeholder="en-US"
+      bind:value={locale}
+      class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 outline-none placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-orange-600 sm:text-sm sm:leading-6"
+    />
+  </div>
+</div>
 
 <div
   class="relative w-full h-56 overflow-auto not-prose bg-zinc-900 shadow-md rounded-md text-sm"
@@ -195,19 +214,22 @@
         },
         {
           key: "z",
-          modifier: [["ctrl", "shift"], ["meta", "shift"]],
+          modifier: [
+            ["ctrl", "shift"],
+            ["meta", "shift"],
+          ],
           callback: (e) => {
             console.log("redo");
             message.redo();
           },
           preventDefault: true,
-        }
+        },
       ],
     }}
-    class="p-4 min-w-full w-full max-w-none h-full absolute top-0 left-0 resize-none bg-transparent font-mono text-white whitespace-nowrap overflow-x-hidden"
+    class="text-sm border-none p-4 min-w-full w-full max-w-none h-full absolute top-0 left-0 resize-none bg-transparent font-mono text-white whitespace-nowrap overflow-x-hidden"
   />
   <pre
-    class="language-icu-message-format p-4 min-w-full max-w-none h-full absolute top-0 left-0 font-mono pointer-events-none select-none overflow-x-visible">{@html html}</pre>
+    class="language-icu-message-format text-sm p-4 min-w-full max-w-none h-full absolute top-0 left-0 font-mono pointer-events-none select-none overflow-x-visible">{@html html}</pre>
 </div>
 
 <CodeGroup let:Tab let:Header>

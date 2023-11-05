@@ -56,8 +56,8 @@ export class Reporter {
 
       this.#logger.warn(
         `An invalid locale was registered in the t18s plugin config: ${kleur.italic(
-          locale,
-        )}. It will be ignored.  Locales must be valid unicode identifiers (eg. de, en-US or zh-Hans-CN))`,
+          locale
+        )}. It will be ignored.  Locales must be valid unicode identifiers (eg. de, en-US or zh-Hans-CN))`
       );
     } else {
       let errorMessage = `Invalid locales were registered in the t18s plugin config:`;
@@ -70,17 +70,46 @@ export class Reporter {
   }
 
   /**
-   * @param {string} filePath
-   * @param {string} invalidLocale
+   *
+   * @param {Extract<import("../file-handling/categorizeFile.js").FileCategorizationResult, { success: false}>} failed_result
    */
-  warnAboutFileForInvalidLocale(filePath, invalidLocale) {
-    let errorMessage = `Attempted to register a translation file for an unknown locale: ${kleur.italic(
-      invalidLocale,
-    )}`;
-    errorMessage += `\nDid you forget to register the locale in the t18s plugin config?`;
-    errorMessage += `\nFile: ${filePath}`;
+  warnAboutFileCategorizationFailure(failed_result) {
+    switch (failed_result.reason) {
+      case "LOCALE_MISSING": {
+        this.#logger.warn(
+          `Could not load file ${kleur.italic(
+            failed_result.path
+          )}. The filename must contain a locale.`
+        );
+        break;
+      }
 
-    this.#logger.warn(errorMessage);
+      case "INVALID_DOMAIN_NAME": {
+        this.#logger.warn(
+          `The file ${kleur.italic(
+            failed_result.path
+          )} has an invalid domain name. Domain names must only contain letters, numbers, underscores and dashes.`
+        );
+        break;
+      }
+
+      case "UNREGISTERED_LOCALE": {
+        let errorMessage = `Attempted to register a translation file for an unknown locale: ${failed_result.path}`;
+        errorMessage += `\nDid you forget to register the locale in the t18s plugin config?`;
+
+        this.#logger.warn(errorMessage);
+        break;
+      }
+
+      default: {
+        this.#logger.warn(
+          `Could not load the file ${kleur.italic(
+            failed_result.path
+          )} because it's name is invalid.`
+        );
+        break;
+      }
+    }
   }
 
   /**
@@ -90,8 +119,8 @@ export class Reporter {
   translationsRegistered(locale, domain) {
     this.#logger.log(
       `Domain ${kleur.italic(domain)} registered for locale ${kleur.italic(
-        locale,
-      )}`,
+        locale
+      )}`
     );
   }
 
@@ -102,8 +131,8 @@ export class Reporter {
   translationsChanged(locale, domain) {
     this.#logger.log(
       `Domain ${kleur.italic(domain)} changed for locale ${kleur.italic(
-        locale,
-      )}`,
+        locale
+      )}`
     );
   }
 
@@ -114,8 +143,8 @@ export class Reporter {
   unregisterTranslations(locale, domain) {
     this.#logger.log(
       `Domain ${kleur.italic(domain)} unregistered for locale ${kleur.italic(
-        locale,
-      )}`,
+        locale
+      )}`
     );
   }
 
@@ -126,8 +155,8 @@ export class Reporter {
   warnAboutDuplicateLocaleFiles(locale, filePaths) {
     this.#logger.error(
       `Multiple files for locale ${locale} found:\n    ${filePaths.join(
-        "\n    ",
-      )}`,
+        "\n    "
+      )}`
     );
   }
 }

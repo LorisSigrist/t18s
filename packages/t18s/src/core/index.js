@@ -23,7 +23,6 @@ import {
   resolveDictionaryModuleId,
 } from "./module-resolution/dictionary.js";
 import { resolveMessageModuleId } from "./module-resolution/messages.js";
-import { Tree } from "./utils/Tree.js";
 import { resolveDictionaryUtilsModuleId } from "./module-resolution/dictionaryUtils.js";
 
 /**
@@ -87,24 +86,26 @@ export function t18sCore(pluginConfig) {
    * @param {string} filePath Absolute path to the file that needs to be invalidated
    */
   async function registerTranslationFile(filePath) {
-    const { locale, domain } = fileHandler.categorizeFile(filePath);
-    if (!config.locales.includes(locale)) {
-      reporter.warnAboutFileForInvalidLocale(filePath, locale);
+    const result = fileHandler.categorizeFile(filePath, config.locales);
+    if (!result.success) {
+      reporter.warnAboutFileCategorizationFailure(result);
       return;
     }
 
+    const { locale, domain } = result;
+
     if (Catalogue.hasDictionary(locale, domain)) {
       logger.error(
-        `Locale ${locale} already exists. Skipping file ${filePath}`,
+        `Locale ${locale} already exists. Skipping file ${filePath}`
       );
       return;
     }
 
     //Try to read the file & buffer the result
-    const bufferedFileRead = await buffer(fileHandler.read(filePath));
+    const bufferedFileRead = await buffer(fileHandler.read(filePath, locale, domain));
 
     const { dictionary, invalidKeys, invalidMessages } = new ResultMatcher(
-      bufferedFileRead,
+      bufferedFileRead
     )
       .catch(LoadingException, (e) => {
         logger.error(e.message);
@@ -131,14 +132,18 @@ export function t18sCore(pluginConfig) {
    * @param {string} filePath Absolute path to the file that needs to be invalidated
    */
   async function invalidateTranslationFile(filePath) {
-    const { locale, domain } = fileHandler.categorizeFile(filePath);
-    if (!config.locales.includes(locale)) return; //No need to log, it would have been logged when the file was registered
+    const result = fileHandler.categorizeFile(filePath, config.locales);
+    if (!result.success) {
+      reporter.warnAboutFileCategorizationFailure(result);
+      return;
+    }
+    const { locale, domain } = result;
 
     //Try to read the file & buffer the result
-    const bufferedFileRead = await buffer(fileHandler.read(filePath));
+    const bufferedFileRead = await buffer(fileHandler.read(filePath, locale, domain));
 
     const { dictionary, invalidKeys, invalidMessages } = new ResultMatcher(
-      bufferedFileRead,
+      bufferedFileRead
     )
       .catch(LoadingException, (e) => {
         logger.error(e.message);
@@ -162,7 +167,10 @@ export function t18sCore(pluginConfig) {
    * @returns void
    */
   const unregisterTranslationFile = (filePath) => {
-    const { locale, domain } = fileHandler.categorizeFile(filePath);
+    const result = fileHandler.categorizeFile(filePath, config.locales);
+    if (!result.success) return;
+    const { locale, domain } = result;
+
     Catalogue.unregisterDictionary(locale, domain);
   };
 
@@ -195,15 +203,17 @@ export function t18sCore(pluginConfig) {
 
     /** @param {string} filePath */
     async function loadFile(filePath) {
-      const { locale, domain } = fileHandler.categorizeFile(filePath);
-      if (!config.locales.includes(locale)) {
-        reporter.warnAboutFileForInvalidLocale(filePath, locale);
+      const result = fileHandler.categorizeFile(filePath, config.locales);
+      if (!result.success) {
+        reporter.warnAboutFileCategorizationFailure(result);
         return;
       }
-      const readResult = await buffer(fileHandler.read(filePath));
+
+      const { locale, domain } = result;
+      const readResult = await buffer(fileHandler.read(filePath, locale, domain));
 
       const { dictionary, invalidKeys, invalidMessages } = new ResultMatcher(
-        readResult,
+        readResult
       )
         .catch(LoadingException, (e) => {
           logger.error(e.message);
@@ -262,7 +272,7 @@ export function t18sCore(pluginConfig) {
         dtsPath: resolve(resolvedConfig.root, pluginConfig.dts),
         translationsDir: resolve(
           resolvedConfig.root,
-          pluginConfig.translationsDir,
+          pluginConfig.translationsDir
         ),
         verbose,
         locales: pluginConfig.locales,
@@ -288,7 +298,7 @@ export function t18sCore(pluginConfig) {
 
       //Attempt to load the module from all loaders
       const loadingPromises = loaders.map((loader) =>
-        loader(id, config, Catalogue),
+        loader(id, config, Catalogue)
       );
       const results = await Promise.allSettled(loadingPromises);
 

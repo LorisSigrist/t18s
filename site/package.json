@@ -16,6 +16,7 @@
 		"@svelte-put/shortcut": "^3.0.0",
 		"@sveltejs/adapter-static": "^2.0.3",
 		"@sveltejs/kit": "^1.27.2",
+		"@tailwindcss/forms": "^0.5.6",
 		"@tailwindcss/typography": "^0.5.10",
 		"autoprefixer": "^10.4.16",
 		"html-minifier": "^4.0.0",
