@@ -18,6 +18,7 @@
 
   const message = undoable(value);
   $: value = $message;
+  $: message.set(value);
 
   $: html = Prism.highlight(
     $message,
