@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [
     sveltekit(),
     t18s({
-      locales: ["en", "de"],
+      locales: ["en"],
       fallbackLocale: "en",
       dts: "./$t18s.d.ts",
     }),

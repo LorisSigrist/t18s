@@ -1,6 +1,7 @@
 guide: Anleitung
 gettingStarted: Schnellstart
 messageSyntax: Syntax
+switching_locales: Sprache wechseln
 
 best_practices: Empfehlungen
 seo: SEO
@@ -12,3 +13,4 @@ plugin_config: Plugin Konfiguration
 appendix: Anhang
 comparisons: Vergleiche
 roadmap: Weiterentwicklung
+playground: Playground

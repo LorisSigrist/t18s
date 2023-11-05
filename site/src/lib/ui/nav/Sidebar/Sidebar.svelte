@@ -1,7 +1,6 @@
 <script>
   import { page } from "$app/stores";
   import { resolveTranslatedPath } from "$lib/i18n";
-  import LocaleSwitcher from "$lib/ui/LocaleSwitcher.svelte";
   import { merge } from "$lib/utils/class-merge";
   import { locale } from "$t18s";
   import SidebarSection from "./SidebarSection.svelte";
@@ -38,6 +37,12 @@
         active={$page.url.pathname.endsWith("/syntax")}
         >{t.messageSyntax()}</Link
       >
+
+      <Link
+      href={resolveTranslatedPath("/[[locale=locale]]/switching-locales", $locale)}
+      active={$page.url.pathname.endsWith("/switching-locales")}
+      >{t.switching_locales()}</Link
+    >
     </SidebarSection>
 
     <SidebarSection let:Heading let:Link>
@@ -75,11 +80,14 @@
         href={resolveTranslatedPath("/[[locale=locale]]/roadmap", $locale)}
         active={$page.url.pathname.endsWith("/roadmap")}>{t.roadmap()}</Link
       >
+      <Link
+        href={resolveTranslatedPath("/[[locale=locale]]/playground", $locale)}
+        active={$page.url.pathname.endsWith("/playground")}>{t.playground()}</Link
+      >
     </SidebarSection>
   </nav>
 
   <footer>
-    <LocaleSwitcher />
     <a
       class={merge(
         "text-gray-300 hover:text-orange-500 rounded-full outline-offset-4 outline-orange-400",
