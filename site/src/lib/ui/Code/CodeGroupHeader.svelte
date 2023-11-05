@@ -1,5 +1,6 @@
 <script>
   import { merge } from "$lib/utils/class-merge";
+  import { Ripple } from "svelte-material-ripple";
   import { getContext } from "svelte";
 
   /** @type {string | null}*/
@@ -40,12 +41,18 @@
           on:click={() => activeTab.set(i)}
           class={merge(
             "border-b py-3 px-2 transition ui-not-focus-visible:outline-none outline-none",
-            "focus-visible:bg-orange-600/30",
+            "focus-visible:bg-orange-600/30 relative",
             active
               ? "border-orange-500 text-orange-400"
-              : "border-transparent text-zinc-400 hover:text-zinc-300",
-          )}>{tab}</button
+              : "border-transparent text-zinc-400 "
+          )}
         >
+          <Ripple
+            pressedOpacity={0.2}
+            hoverColor={active ? "#ff3e00" : "rgb(161 161 170)"}
+            pressedColor={"#ff3e00"}
+          />{tab}
+        </button>
       {/each}
     </div>
   {/if}

@@ -38,6 +38,7 @@
 		"@melt-ui/svelte": "^0.55.4",
 		"prismjs": "^1.29.0",
 		"svelte-focus-trap": "^1.2.0",
+		"svelte-material-ripple": "^0.0.2",
 		"t18s": "workspace:*"
 	}
 }
