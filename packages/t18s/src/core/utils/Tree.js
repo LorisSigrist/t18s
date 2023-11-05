@@ -194,12 +194,6 @@ export class Tree {
     /** @type {Tree<U>} */
     const diffTree = new Tree();
 
-    //Loop over all paths in tree1 & tree2 and add them to the diff tree if they are not equal
-    const paths = [...before.paths(), ...after.paths()];
-
-    for (const path of paths) {
-    }
-
     return diffTree;
   }
 

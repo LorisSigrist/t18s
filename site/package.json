@@ -13,6 +13,7 @@
 		"@iconify-json/heroicons": "^1.1.13",
 		"@iconify-json/logos": "^1.1.37",
 		"@iconify-json/simple-icons": "^1.1.76",
+		"@svelte-put/shortcut": "^3.0.0",
 		"@sveltejs/adapter-static": "^2.0.3",
 		"@sveltejs/kit": "^1.27.2",
 		"@tailwindcss/typography": "^0.5.10",

@@ -1,7 +1,8 @@
 import { TYPE } from "@formatjs/icu-messageformat-parser";
 
 /**
- * Compiles a message into a function that can be used to format the message.
+ * Compiles a message into a function that can be used to format the message. 
+ * If the message contains only literals it will instead return a string literal that can be used directly.
  * This eliminates the need to ship a parser to the client.
  *
  * @param {import("@formatjs/icu-messageformat-parser").MessageFormatElement[]} elements

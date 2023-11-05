@@ -84,6 +84,9 @@ importers:
       '@iconify-json/simple-icons':
         specifier: ^1.1.76
         version: 1.1.76
+      '@svelte-put/shortcut':
+        specifier: ^3.0.0
+        version: 3.0.0
       '@sveltejs/adapter-static':
         specifier: ^2.0.3
         version: 2.0.3(@sveltejs/kit@1.27.2)
@@ -580,6 +583,10 @@ packages:
 
   /@sinclair/typebox@0.27.8:
     resolution: {integrity: sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==}
+    dev: true
+
+  /@svelte-put/shortcut@3.0.0:
+    resolution: {integrity: sha512-nZg3pwpTi9wUsvQPlqOzEsxZcF2jmY5j+VBq/20IUjjd2OpM92XqZAga0PCCjE6OuEobOt58UMnC2QZgOvk0tQ==}
     dev: true
 
   /@sveltejs/adapter-static@2.0.3(@sveltejs/kit@1.27.2):
