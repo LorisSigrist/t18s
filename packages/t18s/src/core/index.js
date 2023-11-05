@@ -1,4 +1,4 @@
-import { basename, resolve } from "node:path";
+import { resolve } from "node:path";
 import { readdir, writeFile } from "node:fs/promises";
 import { YamlHandler } from "./file-handling/formats/yaml.js";
 import { JsonHandler } from "./file-handling/formats/json.js";
@@ -7,29 +7,23 @@ import { FileHandler } from "./file-handling/fileHandler.js";
 import { LoadingException } from "./file-handling/exception.js";
 import { generateDTS } from "./codegen/dts.js";
 import { resolveMainModuleId } from "./module-resolution/main.js";
-import { compileToDictionary } from "./utils/compileToDictionary.js";
 import { Reporter } from "./utils/reporter.js";
 import { ResultMatcher } from "./utils/resultMatcher.js";
 import { buffer } from "./utils/bufferPromise.js";
-import {
-  MessageCatalogue,
-  LocaleNotFoundException,
-} from "./MessageCatalogue.js";
+import { MessageCatalogue } from "./MessageCatalogue.js";
 import { cleanUrl } from "./utils/id.js";
-import { createHMRDispatcher } from "./HMR.js";
-import {
-  loadDictionaryModule,
-  resolveDictionaryModuleId,
-} from "./module-resolution/dictionary.js";
 import {
   loadConfigModule,
   resolveConfigModuleId,
 } from "./module-resolution/config.js";
-import {
-  loadLoaderModule,
-  resolveLoaderModuleId,
-} from "./module-resolution/loader.js";
 import { resolveIdSequence } from "./module-resolution/utils.js";
+import {
+  loadDictionaryModule,
+  parseDictionaryModuleId,
+  resolveDictionaryModuleId,
+} from "./module-resolution/dictionary.js";
+import { resolveMessageModuleId } from "./module-resolution/messages.js";
+import { resolveDictionaryUtilsModuleId } from "./module-resolution/dictionaryUtils.js";
 
 /**
  * TypeSafe translations for Svelte & SvelteKit.
@@ -46,31 +40,42 @@ export function t18sCore(pluginConfig) {
   /** @type {Reporter} */
   let reporter;
 
-  /**
-   * Dispatch an HMR event to the client.
-   * @type {import("./HMR.js").HMREventDispatcher}
-   */
-  let hmrDispatch = () => {};
+  /** @type {import("vite").ViteDevServer} */
+  let viteDevServer;
 
   /** Keeps track of the messages that exist & where to find them */
-  const Catalogue = new MessageCatalogue(pluginConfig.locales);
-  Catalogue.addEventListener(
-    "messages_changed",
-    async () => await regenerateDTS()
-  );
-  Catalogue.addEventListener("dictionary_added", (e) => {
-    const { locale, domain } = e.detail;
-    hmrDispatch("t18s:addDictionary", { locale, domain });
+  const Catalogue = new MessageCatalogue();
+  Catalogue.addEventListener("messages_changed", async () => {
+    await regenerateDTS();
   });
-  Catalogue.addEventListener("dictionary_removed", (e) => {
-    const { locale, domain } = e.detail;
-    reporter.unregisterTranslations(locale, domain);
-    hmrDispatch("t18s:removeDictionary", { locale, domain });
-  });
+
   Catalogue.addEventListener("dictionary_changed", (e) => {
-    const { locale, domain } = e.detail;
-    reporter.translationsChanged(locale, domain);
-    hmrDispatch("t18s:reloadDictionary", { locale, domain });
+    if (viteDevServer) {
+      let invalidatedModuleIDs = new Set();
+      for (const resolvedModuleId of viteDevServer.moduleGraph.idToModuleMap.keys()) {
+        if (resolvedModuleId.startsWith(`\0t18s-internal:dictionary`)) {
+          const { domain } = parseDictionaryModuleId(resolvedModuleId);
+          if (domain === e.detail.domain)
+            invalidatedModuleIDs.add(resolvedModuleId);
+        }
+      }
+
+      let invalidatedModules = new Set();
+      for (const moduleId of invalidatedModuleIDs) {
+        const module = viteDevServer.moduleGraph.idToModuleMap.get(moduleId);
+        if (module) {
+          invalidatedModules.add(module);
+        }
+      }
+
+      for (const module of invalidatedModules) {
+        viteDevServer.moduleGraph.invalidateModule(module);
+      }
+
+      viteDevServer.ws.send({
+        type: "full-reload",
+      });
+    }
   });
 
   /** Handles interactions with translation files */
@@ -81,11 +86,13 @@ export function t18sCore(pluginConfig) {
    * @param {string} filePath Absolute path to the file that needs to be invalidated
    */
   async function registerTranslationFile(filePath) {
-    const { locale, domain } = categorizeFile(filePath);
-    if (!config.locales.includes(locale)) {
-      reporter.warnAboutFileForInvalidLocale(filePath, locale);
+    const result = fileHandler.categorizeFile(filePath, config.locales);
+    if (!result.success) {
+      reporter.warnAboutFileCategorizationFailure(result);
       return;
     }
+
+    const { locale, domain } = result;
 
     if (Catalogue.hasDictionary(locale, domain)) {
       logger.error(
@@ -95,17 +102,25 @@ export function t18sCore(pluginConfig) {
     }
 
     //Try to read the file & buffer the result
-    const bufferedFileRead = await buffer(fileHandler.read(filePath));
+    const bufferedFileRead = await buffer(fileHandler.read(filePath, locale, domain));
 
-    const keyVal = new ResultMatcher(bufferedFileRead)
+    const { dictionary, invalidKeys, invalidMessages } = new ResultMatcher(
+      bufferedFileRead
+    )
       .catch(LoadingException, (e) => {
         logger.error(e.message);
-        return new Map();
+        return FileHandler.NullReadResult;
       })
       .run();
 
-    const { dictionary, invalidKeys } = compileToDictionary(keyVal, locale);
-    if (invalidKeys) reporter.warnAboutInvalidKeys(filePath, invalidKeys);
+    if (invalidKeys.size > 0) {
+      reporter.warnAboutInvalidKeys(filePath, invalidKeys);
+    }
+
+    if (invalidMessages.size > 0) {
+      reporter.warnAboutInvalidMessageStrings(filePath, invalidMessages);
+    }
+
     Catalogue.registerDictionary(locale, domain, filePath, dictionary);
     reporter.translationsRegistered(locale, domain);
   }
@@ -117,27 +132,33 @@ export function t18sCore(pluginConfig) {
    * @param {string} filePath Absolute path to the file that needs to be invalidated
    */
   async function invalidateTranslationFile(filePath) {
-    const { locale, domain } = categorizeFile(filePath);
-    if (!config.locales.includes(locale)) {
-      console.warn(
-        "Attempted to invalidate file for invalid locale: " + locale
-      );
+    const result = fileHandler.categorizeFile(filePath, config.locales);
+    if (!result.success) {
+      reporter.warnAboutFileCategorizationFailure(result);
       return;
     }
+    const { locale, domain } = result;
 
     //Try to read the file & buffer the result
-    const bufferedFileRead = await buffer(fileHandler.read(filePath));
+    const bufferedFileRead = await buffer(fileHandler.read(filePath, locale, domain));
 
-    const keyVal = new ResultMatcher(bufferedFileRead)
+    const { dictionary, invalidKeys, invalidMessages } = new ResultMatcher(
+      bufferedFileRead
+    )
       .catch(LoadingException, (e) => {
         logger.error(e.message);
-        return new Map();
+        return FileHandler.NullReadResult;
       })
       .run();
 
-    const { dictionary, invalidKeys } = compileToDictionary(keyVal, locale);
+    if (invalidKeys.size > 0) {
+      reporter.warnAboutInvalidKeys(filePath, invalidKeys);
+    }
 
-    if (invalidKeys) reporter.warnAboutInvalidKeys(filePath, invalidKeys);
+    if (invalidMessages.size > 0) {
+      reporter.warnAboutInvalidMessageStrings(filePath, invalidMessages);
+    }
+
     Catalogue.setDictionary(locale, domain, dictionary);
   }
 
@@ -146,21 +167,12 @@ export function t18sCore(pluginConfig) {
    * @returns void
    */
   const unregisterTranslationFile = (filePath) => {
-    const { locale, domain } = categorizeFile(filePath);
+    const result = fileHandler.categorizeFile(filePath, config.locales);
+    if (!result.success) return;
+    const { locale, domain } = result;
+
     Catalogue.unregisterDictionary(locale, domain);
   };
-
-  /**
-   * Sets (create or overwrite) the message for a given key and locale.   *
-   * @param {string} locale
-   * @param {string} domain
-   * @param {string} key
-   * @param {string} message_src
-   */
-  async function setMessage(locale, domain, key, message_src) {
-    const filePath = Catalogue.getFile(locale, domain);
-    fileHandler.setPath(filePath, key, message_src);
-  }
 
   /**
    * Safely list the files that are in the given directory. If the reading fails, an empty array is returned & a warning is logged.
@@ -191,21 +203,31 @@ export function t18sCore(pluginConfig) {
 
     /** @param {string} filePath */
     async function loadFile(filePath) {
-      const { locale, domain } = categorizeFile(filePath);
-      if (!config.locales.includes(locale)) {
-        reporter.warnAboutFileForInvalidLocale(filePath, locale);
+      const result = fileHandler.categorizeFile(filePath, config.locales);
+      if (!result.success) {
+        reporter.warnAboutFileCategorizationFailure(result);
         return;
       }
-      const readResult = await buffer(fileHandler.read(filePath));
-      const keyVal = new ResultMatcher(readResult)
+
+      const { locale, domain } = result;
+      const readResult = await buffer(fileHandler.read(filePath, locale, domain));
+
+      const { dictionary, invalidKeys, invalidMessages } = new ResultMatcher(
+        readResult
+      )
         .catch(LoadingException, (e) => {
           logger.error(e.message);
-          return new Map();
+          return FileHandler.NullReadResult;
         })
         .run();
 
-      const { dictionary, invalidKeys } = compileToDictionary(keyVal, locale);
-      if (invalidKeys) reporter.warnAboutInvalidKeys(filePath, invalidKeys);
+      if (invalidKeys.size > 0) {
+        reporter.warnAboutInvalidKeys(filePath, invalidKeys);
+      }
+
+      if (invalidMessages.size > 0) {
+        reporter.warnAboutInvalidMessageStrings(filePath, invalidMessages);
+      }
 
       Catalogue.registerDictionary(locale, domain, filePath, dictionary);
     }
@@ -223,40 +245,56 @@ export function t18sCore(pluginConfig) {
     enforce: "pre",
 
     async configResolved(resolvedConfig) {
+      const verbose =
+        pluginConfig.verbose && resolvedConfig.command === "serve";
+      logger = new Logger(resolvedConfig, verbose);
+      reporter = new Reporter(logger);
+
+      /** @type {string[]} */
+      const validLocales = [];
+      /** @type {string[]} */
+      const invalidLocales = [];
+
+      for (const locale of pluginConfig.locales) {
+        //Check if the Intl API supports the locale
+        try {
+          new Intl.Locale(locale);
+          validLocales.push(locale);
+        } catch (e) {
+          invalidLocales.push(locale);
+        }
+      }
+
+      if (invalidLocales.length > 0)
+        reporter.warnAboutInvalidLocalesInConfig(invalidLocales);
+
       config = {
         dtsPath: resolve(resolvedConfig.root, pluginConfig.dts),
         translationsDir: resolve(
           resolvedConfig.root,
           pluginConfig.translationsDir
         ),
-        verbose: pluginConfig.verbose && resolvedConfig.command === "serve",
-        defaultDomain: pluginConfig.defaultDomain,
+        verbose,
         locales: pluginConfig.locales,
         fallbackLocale: pluginConfig.fallbackLocale ?? null,
       };
-
-      logger = new Logger(resolvedConfig, config.verbose);
-      reporter = new Reporter(logger);
 
       await loadInitialLocales(config);
     },
 
     resolveId: resolveIdSequence([
-      resolveDictionaryModuleId,
       resolveMainModuleId,
       resolveConfigModuleId,
-      resolveLoaderModuleId,
+      resolveDictionaryModuleId,
+      resolveMessageModuleId,
+      resolveDictionaryUtilsModuleId,
     ]),
 
     async load(id) {
       id = cleanUrl(id);
 
       /** @type {import("./module-resolution/types.js").ModuleLoader[]} */
-      const loaders = [
-        loadDictionaryModule,
-        loadConfigModule,
-        loadLoaderModule,
-      ];
+      const loaders = [loadConfigModule, loadDictionaryModule];
 
       //Attempt to load the module from all loaders
       const loadingPromises = loaders.map((loader) =>
@@ -270,7 +308,6 @@ export function t18sCore(pluginConfig) {
         if (result.value) return result.value;
       }
 
-      //If none of the loaders could load the module, return null.
       return null;
     },
 
@@ -297,26 +334,7 @@ export function t18sCore(pluginConfig) {
         if (!fileInTranslationDir(filePath)) return;
         await invalidateTranslationFile(filePath);
       });
-
-      server.ws.on("t18s:add-message", (event) => {
-        setMessage(event.locale, event.domain, event.key, event.value);
-      });
-
-      hmrDispatch = createHMRDispatcher(server);
+      viteDevServer = server;
     },
   };
-}
-
-/**
- * Categorizes to which locale & domain a given file belongs.
- * @param {string} path
- * @returns {{locale: string, domain: string}}
- */
-function categorizeFile(path) {
-  const filename = basename(path).split(".").slice(0, -1).join(".");
-
-  const [first, second] = filename.split(".");
-  if (!first) throw new Error(`Could not determine locale for ${path}`);
-  if (!second) throw new Error(`Could not determine domain for ${path}`);
-  return { locale: second, domain: first };
 }

@@ -35,9 +35,14 @@ export class DTSBuilder {
       code += "\n";
     }
 
+    /** @type {string[]} */
+    const modulesCode = [];
+
     for (const module of this.#modules) {
-      code += module.build();
+      modulesCode.push(module.build());
     }
+
+    code += modulesCode.join("\n\n");
 
     return code;
   }
@@ -92,12 +97,7 @@ class Module {
     let code = "";
 
     if (this.#description) {
-      code += "/**\n";
-      const lines = this.#description.split("\n");
-      for (const line of lines) {
-        code += ` * ${line}\n`;
-      }
-      code += " */\n";
+      code += formatJSDocComment(this.#description) + "\n";
     }
 
     code += `declare module "${this.#name}" {\n`;
@@ -134,15 +134,32 @@ class Statement {
   build() {
     let code = "";
     if (this.#description) {
-      code += "/**\n";
-      const lines = this.#description.split("\n");
-      for (const line of lines) {
-        code += ` * ${line}\n`;
-      }
-      code += " */\n";
+      code += formatJSDocComment(this.#description) + "\n";
     }
 
     code += this.#code;
     return code;
   }
+}
+
+/**
+ * Returns a formatted JSDoc comment from a string.
+ * @param {string} comment
+ * @returns {string}
+ */
+function formatJSDocComment(comment) {
+  let formatted = "";
+  const lines = comment.split("\n");
+
+  if (lines.length === 1) {
+    formatted += `/** ${comment} */`;
+  } else if (lines.length >= 2) {
+    formatted += "/**\n";
+    for (const line of lines) {
+      formatted += ` * ${line}\n`;
+    }
+    formatted += " */";
+  }
+
+  return formatted;
 }

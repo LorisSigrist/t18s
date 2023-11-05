@@ -1,16 +1,12 @@
 import { TypedEventTarget } from "typescript-event-target";
 import { DoubleKeyedMap } from "./utils/DoubleKeyedMap.js";
 
-/** @typedef {import("./types.js").Dictionary} Dictionary */
-
 /**
  * The valid events that may be emitted by a locale registry.
  *
  * @typedef {{
- *  "dictionary_added": CustomEvent<{ locale: string, domain: string, dictionary: Dictionary }>,
- *  "dictionary_removed": CustomEvent<{ locale: string, domain:string }>,
- *  "dictionary_changed": CustomEvent<{ locale: string, domain: string, dictionary: Dictionary }>,
  *  "messages_changed": CustomEvent<{}>,
+ *  "dictionary_changed": CustomEvent<{ locale: string, domain: string }>,
  * }} LocaleRegistryEventMap
  */
 
@@ -24,12 +20,6 @@ const MessageCatalogueEventTarget = /** @type {any} */ (TypedEventTarget);
 
 export class MessageCatalogue extends MessageCatalogueEventTarget {
   /**
-   * Map locales to their dictionaries.
-   * @type {DoubleKeyedMap<Dictionary>}
-   */
-  #dictionaries = new DoubleKeyedMap();
-
-  /**
    * Maps locales & domains to the files where they are defined.
    * - Key1: locale
    * - Key2: domain
@@ -38,31 +28,21 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
   #files = new DoubleKeyedMap();
 
   /**
-   * The locales that are registered.
-   * @type {Set<string>}
+   * Map domains to locales to their messages.
+   * @type {DoubleKeyedMap<import("./types.js").Dictionary>}
    */
-  #locales;
-
-  /**
-   * @param {Iterable<string>} locales
-   */
-  constructor(locales) {
-    super();
-    this.#locales = new Set(locales);
-  }
+  #messages = new DoubleKeyedMap();
 
   /**
    * Register a new locale.
    * @param {string} locale
    * @param {string} domain
    * @param {string} filePath
-   * @param {Dictionary} dictionary
+   * @param {import("./types.js").Dictionary} dictionary
    */
   registerDictionary(locale, domain, filePath, dictionary) {
     this.#files.set(locale, domain, filePath);
-    this.#dictionaries.set(locale, domain, dictionary);
-
-    this.#dispatch("dictionary_added", { locale, domain, dictionary });
+    this.#messages.set(domain, locale, dictionary);
     this.#dispatch("messages_changed", {});
   }
 
@@ -72,80 +52,62 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
    * @param {string} domain
    */
   unregisterDictionary(locale, domain) {
-    this.#dictionaries.delete(locale, domain);
     this.#files.delete(locale, domain);
-
-    this.#dispatch("dictionary_removed", { locale, domain });
+    this.#messages.delete(domain, locale);
     this.#dispatch("messages_changed", {});
   }
 
   /**
    * @param {string} locale
    * @param {string} domain
-   * @param {Dictionary} dictionary
-   *
-   * @throws {LocaleNotFoundException} If the locale is not registered.
+   * @param {import("./types.js").Dictionary} dictionary
    */
   setDictionary(locale, domain, dictionary) {
-    if (!this.#files.has(locale, domain))
-      throw new LocaleNotFoundException(locale);
-    this.#dictionaries.set(locale, domain, dictionary);
+    this.#messages.set(domain, locale, dictionary);
+
     this.#dispatch("messages_changed", {});
-    this.#dispatch("dictionary_changed", { locale, domain, dictionary });
+    this.#dispatch("dictionary_changed", { locale, domain });
+  }
+
+  /**
+   * @param {string} domain
+   */
+  getMessages(domain) {
+    return this.#messages.getInner(domain);
   }
 
   /**
    * @param {string} locale
    * @param {string} domain
-   * @returns {Dictionary | undefined}
+   * @returns {import("./types.js").Dictionary | undefined}
    */
   getDictionary(locale, domain) {
-    return this.#dictionaries.get(locale, domain);
+    return this.#messages.get(domain, locale);
   }
 
   /**
    * @param {string} locale
    * @param {string} domain
-   * @returns {string}
-   *
-   * @throws {LocaleNotFoundException} If the locale is not registered.
+   * @returns {string | null}
    */
   getFile(locale, domain) {
     const file = this.#files.get(locale, domain);
-    if (!file) throw new LocaleNotFoundException(locale);
+    if (!file) return null;
     return file;
-  }
-
-  getDictionaries() {
-    return this.#dictionaries;
   }
 
   /**
    * Get all domains that are registered for the given locale.
    *
-   * @param {string} locale
-   * @throws {LocaleNotFoundException} If the locale is not registered.
+   * @returns {Set<string>}
    */
-  getDomains(locale) {
-    if (!this.#locales.has(locale)) throw new LocaleNotFoundException(locale);
-
-    /** @type {Set<string>} */
-    const domains = new Set();
-    for (const [loc, domain] of this.#files.keys()) {
-      if (loc === locale) domains.add(domain);
-    }
-
-    return domains;
-  }
-
+  getDomains = () => new Set(this.#messages.outerKeys());
   /**
    * @param {string} locale
    * @param {string} domain
-   * @returns {boolean}
+   * @returns
    */
-  hasDictionary(locale, domain) {
-    return this.#dictionaries.has(locale, domain);
-  }
+  hasDictionary = (locale, domain) => this.#messages.has(domain, locale);
 
   /**
    * Dispatches an event of the given type with the given details.
@@ -158,14 +120,5 @@ export class MessageCatalogue extends MessageCatalogueEventTarget {
     /** @type {CustomEvent} */
     const event = new CustomEvent(event_name, { detail: details });
     this.dispatchTypedEvent(event_name, event);
-  }
-}
-
-export class LocaleNotFoundException extends Error {
-  name = "LocaleNotFoundException";
-
-  /** @param {string} locale */
-  constructor(locale) {
-    super(`Locale ${locale} is not registered.`);
   }
 }

@@ -1,6 +1,10 @@
 import { readFile, writeFile } from "fs/promises";
 import { basename } from "path";
 import { LoadingException } from "./exception.js";
+import { Tree } from "../utils/Tree.js";
+import { Message } from "../Message.js";
+import { isValidMessageKey } from "./sanitation.js";
+import { categorizeFile } from "./categorizeFile.js";
 
 export class FileHandler {
   /** @type {import("./types.js").FormatHandler[]} */
@@ -13,20 +17,61 @@ export class FileHandler {
 
   /**
    * @param {string} filePath Absolute path to the file that needs to be handled
-   * @returns {Promise<Map<string,string>>} A Map of the Key-Value pairs in the file
+   * @param {string} locale
+   * @param {string} domain
    * @throws {LoadingException} If the file could not be handled
    */
-  async read(filePath) {
+  async read(filePath, locale, domain) {
     const handler = this.#getHandler(filePath);
     if (!handler)
       throw new LoadingException(
         `Could not find handler for ${filePath}. Supported file extensions are ${this.getSupportedFileExtensions()}`,
       );
-    const textContent = await this.#readFileContent(filePath);
-    const keyVal = handler.load(filePath, textContent);
 
-    return keyVal;
+    const textContent = await this.#readFileContent(filePath);
+    const pojsTree = handler.load(filePath, textContent);
+
+    /** @type {Tree<string>} */
+    const messageSrcTree = Tree.fromObject(pojsTree);
+
+    const invalidKeys = new Set();
+
+    const validMessageTree = messageSrcTree.filter((messageSrc, path) => {
+      const key = path.at(-1);
+      if (key === undefined) return true;
+
+      if (isValidMessageKey(key)) {
+        return true;
+      } else {
+        invalidKeys.add(path.join("."));
+        return false;
+      }
+    });
+
+    const invalidMessages = new Set();
+    const dictionary = validMessageTree
+      .map((messageSrc) => {
+        try {
+          return new Message(locale, messageSrc);
+        } catch (e) {
+          invalidMessages.add(messageSrc);
+          return false;
+        }
+      })
+      .filter(Message.isMessage);
+
+    return { dictionary, invalidKeys, invalidMessages };
   }
+
+  /**
+   * The null read result is can be used as a fallback if an error prevents
+   * a real read result from being generated.
+   */
+  static NullReadResult = {
+    dictionary: new Tree(),
+    invalidKeys: new Set(),
+    invalidMessages: new Set(),
+  };
 
   /**
    * @param {string} filePath Absolute path to the file that needs to be handled
@@ -92,4 +137,6 @@ export class FileHandler {
   getSupportedFileExtensions() {
     return new Set(this.#handlers.flatMap((h) => h.fileExtensions));
   }
+
+  categorizeFile = categorizeFile;
 }

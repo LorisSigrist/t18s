@@ -1,35 +1,75 @@
 import { MessageCatalogue } from "../MessageCatalogue.js";
-import { generateDictionaryModule } from "../codegen/dictionary.js";
+import { Tree } from "../utils/Tree.js";
+import { Message } from "../Message.js";
+
+/** @type {import("./types.js").IDResolver} */
+export const resolveDictionaryModuleId = (unresolved_id) => {
+  if (!unresolved_id.startsWith("t18s-internal:dictionary:")) return null;
+  return "\0" + unresolved_id;
+};
+
+/** @type {import("./types.js").ModuleLoader} */
+export const loadDictionaryModule = async (resolved_id, config, Catalogue) => {
+  if (!resolved_id.startsWith("\0t18s-internal:dictionary:")) return null;
+  const { domain, path } = parseDictionaryModuleId(resolved_id);
+  return generateDictionaryModuleCode(Catalogue, domain, path);
+};
 
 /**
- * If the unresolved_id is for a t18s dictionary, this function will resolve it.
- * Dictionary modules have the format "t18s-dictionary:<locale>:<domain>"
- * 
- * @type {import("./types.js").IDResolver}
+ * @param {string} resolved_id
+ * @returns {{ domain: string, path: string[] }}
  */
-export const resolveDictionaryModuleId = (unresolved_id) => {
-  if (!unresolved_id.startsWith("t18s-dictionary:")) return null;
+export function parseDictionaryModuleId(resolved_id) {
+  let [_, __, domain, pathString, extra] = resolved_id.split(":");
+  if (extra) throw new Error("Invalid dictionary module ID");
+  domain = domain ?? "";
+  pathString = pathString ?? "";
+  const path = pathString.split("/").filter(Boolean) ?? [];
 
-  const [_, locale, domain] = unresolved_id.split(":");
-  if (!locale || !domain) return null;
-
-  const resolved_id = "\0" + unresolved_id;
-  return resolved_id;
+  return { domain, path };
 }
 
 /**
- * Returns the code for the dictionary module if the resolved_id is for the main module.
- * @type {import("./types.js").ModuleLoader}
+ * @param {MessageCatalogue} Catalogue
+ * @param {string} domain
+ * @param {string[]} path
+ * @returns {string}
  */
-export const loadDictionaryModule = async (resolved_id, config, Catalogue)  => {
-  if (!resolved_id.startsWith("\0t18s-dictionary:")) return null;
+function generateDictionaryModuleCode(Catalogue, domain, path) {
+  let code = "";
+  code += 'import { format } from "t18s-internal:dictionary-utils";\n\n';
 
-  const [_, locale, domain] = resolved_id.split(":");
-  if (!locale || !domain) return null;
+  /** @type {Tree<Message>[]} */
+  const dictionaries = [];
 
-  const dictionary = Catalogue.getDictionary(locale, domain);
+  for (const [locale, dictionary] of Catalogue.getMessages(domain)) {
+    dictionaries.push(dictionary);
+  }
 
-  return dictionary
-    ? generateDictionaryModule(dictionary)
-    : "export default {}";
+  const tree = Tree.mergeTrees(dictionaries);
+  const subtree = tree.getPath(path);
+  if (!(subtree instanceof Tree)) {
+    return "export {}";
+  }
+
+  for (const [key, child] of subtree.children()) {
+    if (child instanceof Tree) {
+      const newPath = [...path, key];
+      const submoduleID =
+        `t18s-internal:dictionary:${domain}:` + newPath.join("/");
+      code += `export * as ${key} from "${submoduleID}";\n`;
+    } else {
+      code += `export const ${key} = /* @__PURE__ */ (values = undefined) => {
+          const messages = {
+              ${[...child]
+                .map((message) => `"${message.locale}": ${message.precompiled}`)
+                .join(",\n")}
+          };
+
+          return format("${key}", messages, values);
+      }\n`;
+    }
+  }
+
+  return code;
 }

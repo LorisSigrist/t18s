@@ -29,7 +29,6 @@ function generateConfigModule(config) {
   code += `export const fallbackLocale = ${
     config.fallbackLocale ? `"${config.fallbackLocale}"` : "undefined"
   };\n`;
-  code += `export const defaultDomain = "${config.defaultDomain}";\n`;
   code += `export const loadingDelay = 200;\n`;
   cachedCode = code;
   return code;

@@ -35,6 +35,18 @@ export class DoubleKeyedMap {
   }
 
   /**
+   * @param {string} outerKey
+   * @returns {Map<string, T>} value
+   */
+  getInner(outerKey) {
+    return this.#outer.get(outerKey) ?? new Map();
+  }
+
+  outerKeys() {
+    return this.#outer.keys();
+  }
+
+  /**
    * @param {string} key1
    * @param {string} key2
    * @returns {boolean}

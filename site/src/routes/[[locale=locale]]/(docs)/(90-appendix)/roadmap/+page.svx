@@ -1,5 +1,8 @@
 <script>
   import better_i18n_demo_gif from "./better-i18n-demo.gif";
+  import CodeGroup from "$lib/ui/CodeGroup.svelte";
+  import Prism from "$lib/ui/Prism.svelte";
+  import locale_switching_snippet from "./locale-switching-snippet.svelte?raw";
 </script>
 
 # Roadmap
@@ -11,7 +14,17 @@ ideas for the future in no particular order.
 
 T18S is still relatively new, and hasn't handled all the edge cases yet. This causes occasional
 problems with the dev-server, reloading translations and other inconveniences. We want to make sure
-that t18s is as robust as possible and can deliver the best experience possible.
+that t18s is as robust as possible.
+
+## Locale Switching with granular updates
+Currently when switching locales messages that have been rendered do not automatically update. Instead the developer needs to manually cause a rerender. This is commonly done by wrapping the entire app in a `key` block that reacts to locale changes. 
+
+<CodeGroup let:Tab let:Header>
+  <Header title="src/routes/+layout.svelte" />
+  <Tab><Prism language="svelte" code={locale_switching_snippet} /></Tab>
+</CodeGroup>
+
+In future we want messages to automatically update when switching locales. That way component state can be preserved across locale switches. Unfortunately, due to the nature of Svelte's current reactivity, this will likely only be possible in Svelte 5 (at least without a horrible API).
 
 ## Support more File Formats
 

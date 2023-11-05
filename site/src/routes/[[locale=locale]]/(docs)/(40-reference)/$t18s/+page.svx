@@ -60,48 +60,6 @@ It is useful for quickly creating a param matcher for locales.
 
 Sets the current locale. Useful for Locale Switchers.
 
-## `$t` Store
-
-The main store through which you interact with t18s. It contains a function that
-will return a translated string for a given key.
-
-<CodeGroup let:Tab>
-  <Tab>
-    <Prism
-      language="typescript"
-      code="Readable<(key: string, values: ✨inferred✨) => string>"
-    />
-  </Tab>
-</CodeGroup>
-
-You need to pass it a key and depending on the message an object of values to
-interpolate into.
-
-<CodeGroup let:Tab let:Header>
-  <Header title="Example" />
-  <Tab name="Svelte">
-    <Prism
-      language="typescript"
-      code={"$t('greeting', { fullName: 'John Doe' })"}
-    />
-  </Tab>
-  <Tab name="en.yaml">
-    <Prism language="yaml" code={"greeting: Hello, {fullName}!"} />
-  </Tab>
-</CodeGroup>
-
-## `preloadLocale`
-
-Preloads any messages that are needed for the given locale. Call this before
-trying to display any messages to avoid a flash of fallbacks. This is usually
-done in `+page.js` files.
-
-<CodeGroup let:Tab>
-  <Tab>
-    <Prism language="typescript" code="(locale: Locale) => Promise<void>" />
-  </Tab>
-</CodeGroup>
-
 ## `const fallbackLocale`
 
 The fallback locale you specified in your config, or null if you don't specify one. Will be definitely

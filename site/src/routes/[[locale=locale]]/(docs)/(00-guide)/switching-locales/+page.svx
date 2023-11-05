@@ -1,1 +1,18 @@
+<script>
+  import CodeGroup from "$lib/ui/CodeGroup.svelte";
+  import Prism from "$lib/ui/Prism.svelte";
+  import locale_switching_snippet from "./locale-switching-snippet.svelte?raw";
+</script>
+
 # Switching Locales
+
+Switching locales can be done by either directly updating the `locale` store or by using the `setLocale` function. 
+
+However, doing either will not result in any immediate changes to what's displayed on the site. This is because messages do not automatically rerender when the locale is changed. You will need to trigger a rerender yourself. (Automatic rerendering is on our roadmap.). 
+
+The easiest way to trigger a rerender on locale changes is to wrap the root layout using a `key` block that reacts to the locale. 
+
+<CodeGroup let:Tab let:Header>
+  <Header title="src/routes/+layout.svelte" />
+  <Tab><Prism language="svelte" code={locale_switching_snippet} /></Tab>
+</CodeGroup>

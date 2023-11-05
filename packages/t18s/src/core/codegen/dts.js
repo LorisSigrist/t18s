@@ -1,7 +1,9 @@
-import { addQuotes } from "./utils/stringUtils.js";
+import { addQuotes, indent } from "./utils/stringUtils.js";
 import { DTSBuilder } from "./utils/dtsBuilder.js";
 import { VIRTUAL_MODULE_PREFIX } from "../constants.js";
 import { MessageCatalogue } from "../MessageCatalogue.js";
+import { Tree } from "../utils/Tree.js";
+import { Message } from "../Message.js";
 
 /**
  * @param {import("../types.js").ResolvedPluginConfig} config
@@ -9,7 +11,6 @@ import { MessageCatalogue } from "../MessageCatalogue.js";
  */
 export function generateDTS(config, Catalogue) {
   const locales = config.locales;
-  const messagesTypeMap = generateMessagesTypeMap(config, Catalogue);
 
   const dts = new DTSBuilder();
   dts.setDisclaimer(
@@ -30,7 +31,9 @@ export function generateDTS(config, Catalogue) {
     );
 
     module.addStatement(
-      `export const fallbackLocale: Locale | undefined;`,
+      `export const fallbackLocale: ${
+        config.fallbackLocale ? addQuotes(config.fallbackLocale) : undefined
+      };`,
       (s) => s.setDescription("The fallback locale that's currently in use."),
     );
 
@@ -50,31 +53,6 @@ export function generateDTS(config, Catalogue) {
         ),
     );
 
-    module.addStatement("export const isLoading: Readable<boolean>;", (s) =>
-      s.setDescription("If the current locale is still being loaded."),
-    );
-
-    module.addStatement(
-      "export function loadLocale(locale: Locale): Promise<void>;",
-      (s) =>
-        s.setDescription(
-          "Loads the given locale if it's not already loaded. Does NOT change the current locale.",
-        ),
-    );
-
-    module.addStatement(
-      `export const preloadLocale: (newLocale: Locale) => Promise<void>;`,
-      (s) =>
-        s.setDescription(
-          [
-            "Preloads the translations for the given locale.",
-            "This can be used to anticipate a locale change.",
-            "",
-            "Maybe preload the locale of the user's browser, since they're likely to switch to that.",
-          ].join("\n"),
-        ),
-    );
-
     module.addStatement(
       "export const isLocale: (maybeLocale: unknown) => maybeLocale is Locale;",
       (s) =>
@@ -82,63 +60,34 @@ export function generateDTS(config, Catalogue) {
           "Convenience function to check if something is a valid locale.",
         ),
     );
-
-    let messagesType = "type Messages = {\n";
-    //Loop over all keys, and generate a type for each key.
-    //The type of a key is the intersection of the types of the key in each locale.
-    //Make sure to handle empty types (i.e. {}) correctly.
-    for (const [key, type] of messagesTypeMap.entries()) {
-      messagesType += `    "${key}": ${type},\n`;
-    }
-
-    messagesType += "};";
-
-    module.addStatement(messagesType, (s) =>
-      s.setDescription("Available Translations and their Arguments"),
-    );
-
-    // t Store
-    module.addStatement(
-      "export const t : Writable<<Key extends keyof Messages>(key: Key, ...values: (Messages[Key] extends undefined ? [(undefined | {})?] : [Messages[Key]])) => string>;",
-      (s) =>
-        s.setDescription(
-          [
-            "The translation store.",
-            "@param key A translation key.",
-            "@param values Any values that are interpolated into the translation.",
-          ].join("\n"),
-        ),
-    );
   });
+
+  const domains = Catalogue.getDomains();
+
+  for (const domain of domains) {
+    addMessageModule(config, dts, Catalogue, domain);
+  }
 
   return dts.build();
 }
 
 /**
  * @param {import("../types.js").ResolvedPluginConfig} config
+ * @param {DTSBuilder} dts
  * @param {MessageCatalogue} Catalogue
- * @returns {Map<string, string>}
+ * @param {string} domain
  */
-function generateMessagesTypeMap(config, Catalogue) {
-  /**
-   * Maps a key to it's set of messages across all locales
-   * @type {Map<string, Set<import("../types.js").Message>>}
-   */
-  const key2messages = new Map();
-
-  for (const [_, domain, dictionary] of Catalogue.getDictionaries().entries()) {
-    for (const [messageKey, message] of dictionary.entries()) {
-      const key =
-        domain === config.defaultDomain
-          ? messageKey
-          : `${domain}:${messageKey}`;
-      if (!key2messages.has(key)) key2messages.set(key, new Set());
-      key2messages.get(key)?.add(message);
-    }
+function addMessageModule(config, dts, Catalogue, domain) {
+  /** @type {Tree<Message>[]} */
+  let dictionaries = [];
+  for (const [locale, dictionary] of Catalogue.getMessages(domain)) {
+    dictionaries.push(dictionary);
   }
 
-  const messagesTypeMap = new Map();
-  for (const [key, messages] of key2messages.entries()) {
+  let merged = Tree.mergeTrees(dictionaries);
+
+  //Map over the tree, and generate types for each message.
+  const typeDefinitions = merged.map((messages) => {
     /** @type {Set<string>} */
     const types = new Set();
 
@@ -146,12 +95,57 @@ function generateMessagesTypeMap(config, Catalogue) {
       if (message.typeDefinition) types.add(message.typeDefinition);
     }
 
-    if (types.size === 0) {
-      messagesTypeMap.set(key, "undefined");
-    } else {
-      messagesTypeMap.set(key, [...types].join(" & "));
+    if (types.size === 0) return "undefined";
+    return [...types].join(" & ");
+  });
+
+  const moduleId =
+    domain === "" ? "$t18s/messages" : `$t18s/messages/${domain}`;
+
+  dts.addModule(moduleId, (module) => {
+    module.setDescription(
+      `The messages for the domain ${domain}. Add messages by adding a file at ${config.translationsDir} with the name ${domain}.[locale].yaml`,
+    );
+    const code = treeToType(typeDefinitions);
+    module.addStatement(code);
+  });
+}
+
+/**
+ * Turns a tree into a type definition.
+ * @param {Tree<string>} tree
+ * @returns {string}
+ */
+function treeToType(tree) {
+  /**
+   * @param {Tree<string>} tree
+   *
+   * @returns {string}
+   */
+  function walk(tree) {
+    /** @type {string[]} */
+    const lines = [];
+
+    for (const [key, value] of tree.children()) {
+      if (value instanceof Tree) {
+        let line = "";
+        line += `export namespace ${key} {\n`;
+        const innerCode = walk(value);
+
+        line += indent(innerCode, 4);
+        line += "\n}";
+        lines.push(line);
+      } else {
+        if (value === "undefined") {
+          lines.push(`export const ${key}: (values?: undefined) => string`);
+        } else {
+          lines.push(`export const ${key}: (values: ${value}) => string`);
+        }
+      }
     }
+
+    return lines.join(";\n");
   }
 
-  return messagesTypeMap;
+  return walk(tree);
 }

@@ -1,5 +1,6 @@
 import colors from "tailwindcss/colors";
 import typography from "@tailwindcss/typography";
+import forms from "@tailwindcss/forms";
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -46,5 +47,5 @@ export default {
     },
   },
   darkMode: "class",
-  plugins: [typography()],
+  plugins: [typography(), forms()],
 };

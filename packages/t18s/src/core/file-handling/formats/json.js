@@ -1,13 +1,14 @@
+import { Tree } from "../../utils/Tree.js";
 import { ResultMatcher } from "../../utils/resultMatcher.js";
 import { LoadingException } from "../exception.js";
-import { flattenTree, setPathOnTree } from "../utils.js";
+import { isPOJSTree, setPathOnTree } from "../utils.js";
 
 /** @type {import("../types.js").FormatHandler} */
 export const JsonHandler = {
   fileExtensions: ["json"],
   load: (filePath, content) => {
     const tree = parseAsTree(content, filePath);
-    return flattenTree(tree);
+    return tree;
   },
   setPath(oldJSON, key, value) {
     const tree = parseAsTree(oldJSON);
@@ -25,7 +26,7 @@ export const JsonHandler = {
  *
  * @param {string} content
  * @param {string|undefined} filePath
- * @returns {unknown}
+ * @returns {import("../types.js").POJSTree}
  */
 function parseAsTree(content, filePath = undefined) {
   content = content.trim();
@@ -41,7 +42,7 @@ function parseAsTree(content, filePath = undefined) {
 
   return new ResultMatcher(JSON.parse)
     .ok((res) => {
-      if (typeof res !== "object") return {};
+      if (!isPOJSTree(res)) return {};
       return res;
     })
     .catch(SyntaxError, (e) => raiseLoadingException(e))

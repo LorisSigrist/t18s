@@ -29,8 +29,13 @@ const config = {
     // See https://kit.svelte.dev/docs/adapters for more information about adapters.
     adapter: adapter(),
     prerender: {
-      entries: ["/", "/404"],
+      entries: ["/", "/404", "/de"],
     },
+    typescript: {
+      "config": config => {
+          config.include.push("../$t18s.d.ts");
+      }
+    }
   },
 };
 

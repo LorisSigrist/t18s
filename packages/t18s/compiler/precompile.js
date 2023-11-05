@@ -1,7 +1,8 @@
 import { TYPE } from "@formatjs/icu-messageformat-parser";
 
 /**
- * Compiles a message into a function that can be used to format the message.
+ * Compiles a message into a function that can be used to format the message. 
+ * If the message contains only literals it will instead return a string literal that can be used directly.
  * This eliminates the need to ship a parser to the client.
  *
  * @param {import("@formatjs/icu-messageformat-parser").MessageFormatElement[]} elements
@@ -10,7 +11,7 @@ import { TYPE } from "@formatjs/icu-messageformat-parser";
  */
 export function precompile(elements, locale) {
   if (hasOnlyLiterals(elements)) {
-    return '"' + elements.map((e) => e.value).join("") + '"';
+    return "`" + escapeLiteral(elements.map((e) => e.value).join("")) + "`";
   }
 
   return (
@@ -34,7 +35,15 @@ function compileElement(element, locale, poundValue) {
     case TYPE.argument:
       return "${args." + element.value + "}";
     case TYPE.tag:
-      return "${args." + element.value + '(`' + element.children.map(e => compileElement(e, locale, poundValue)).join("") +'`)}';
+      return (
+        "${args." +
+        element.value +
+        "(`" +
+        element.children
+          .map((e) => compileElement(e, locale, poundValue))
+          .join("") +
+        "`)}"
+      );
     case TYPE.select: {
       return compileSelect(element, locale, poundValue);
     }
@@ -132,7 +141,8 @@ function compileDate(element, locale) {
  * @returns {string}
  */
 function compileSelect(element, locale, poundValue) {
-  let fallback = '""';
+  /** @type {string | null} */
+  let fallback = null;
 
   /**
    * @type {Record<string, string>}
@@ -157,13 +167,19 @@ function compileSelect(element, locale, poundValue) {
     }
   }
 
-  let str = "${";
+  let str = "${{";
 
+  /** @type {string[]} */
+  const entries = [];
   for (const [key, option] of Object.entries(options)) {
-    str += `args.${element.value} === "${key}" ? ${option} : `;
+    entries.push(`"${key}" : ${option}`);
   }
+  str += entries.join(", ");
+  str += `}[args.${element.value}]`;
 
-  str += `${fallback}`;
+  if (fallback !== null) {
+    str += ` ?? ${fallback}`;
+  }
 
   str += "}";
   return str;
@@ -182,7 +198,8 @@ function compilePlural(element, locale, poundValue) {
   /** @type {Record<Intl.LDMLPluralRule | string, string>} */
   const pluralValues = {};
 
-  let fallback = '""';
+  /** @type {string | null} */
+  let fallback = null;
 
   for (const [key, option] of Object.entries(element.options)) {
     if (key.startsWith("=")) {
@@ -210,17 +227,43 @@ function compilePlural(element, locale, poundValue) {
     }
   }
 
-  let str = "${";
+  const segments = [];
+  if (Object.entries(exactValues).length !== 0) {
+    let exactValueCode = "{";
 
-  for (const [number, option] of Object.entries(exactValues)) {
-    str += `args.${element.value} == ${number} ? ${option} : `;
+    /** @type {string[]} */
+    const entries = [];
+    for (const [number, option] of Object.entries(exactValues)) {
+      entries.push(`${number} : ${option}`);
+    }
+
+    exactValueCode += entries.join(", ");
+
+    exactValueCode += `}[args.${element.value}]`;
+    segments.push(exactValueCode);
   }
 
-  for (const [pluralRule, option] of Object.entries(pluralValues)) {
-    str += `new Intl.PluralRules("${locale}", {type: "${element.pluralType}"}).select(args.${element.value}) == "${pluralRule}" ? ${option} : `;
+  if (Object.entries(pluralValues).length !== 0) {
+    let pluralValueCode = "{";
+    /** @type {string[]} */
+    let entries = [];
+
+    for (const [pluralRule, option] of Object.entries(pluralValues)) {
+      entries.push(`"${pluralRule}" : ${option}`);
+    }
+
+    pluralValueCode += entries.join(", ");
+    pluralValueCode += `}[new Intl.PluralRules("${locale}", {type: "${element.pluralType}"}).select(args.${element.value})]`;
+
+    segments.push(pluralValueCode);
   }
 
-  str += `${fallback} }`;
+  //Handle fallback
+  if (fallback !== null) {
+    segments.push(fallback);
+  }
+
+  const str = "${" + segments.join(" ?? ") + "}";
   return str;
 }
 

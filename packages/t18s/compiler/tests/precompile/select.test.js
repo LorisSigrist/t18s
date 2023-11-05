@@ -13,6 +13,16 @@ describe("compile select", () => {
     expect(result).toMatch(correct);
   });
 
+  it("compiles a message with a select argument into a function & can use the other clause", () => {
+    const message =
+      "{gender, select, male {Herr} female {Frau} other {Person}}";
+    const compiled = precompile(parseMessage(message), "en");
+    const values = { gender: "swag" };
+    let result = evaluateFnString(compiled, values);
+    let correct = formatJS(message, values);
+    expect(result).toMatch(correct);
+  });
+
   it("compiles a message with a select argument without an other clause into a function", () => {
     const message = "{season, select, summer {Summer} winter {Winter}}";
     const compiled = precompile(parseMessage(message), "en");

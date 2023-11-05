@@ -100,3 +100,18 @@ and then reactively set the `lang` attribute base on the `$locale` store exporte
     This may become built in behavior in the future, depending on feedback. Old
     code probably won't break, so you can add this now without worrying about it.
 </Callout>
+
+
+## Text Direction
+It's important to set the `dir` attribute on the `html` tag to the correct value. This can be done in the same way as the `lang` attribute. 
+
+You can get the current locale's direction using the built in `Intl` API.
+
+<CodeGroup let:Header let:Tab>
+    <Header title="src/routes/+layout.svelte" />
+    <Tab>
+        <Prism language="js" code="const dir = new Intl.Locale(get(locale)).textInfo.direction;" />
+    </Tab>
+</CodeGroup>
+
+You then do the same thing as with the `lang` attribute.
