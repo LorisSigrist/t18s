@@ -99,14 +99,6 @@
       <BottomAppbarSection let:Heading let:Link>
         <Heading>{t.appendix()}</Heading>
         <Link
-          href={resolveTranslatedPath(
-            "/[[locale=locale]]/comparisons",
-            $locale
-          )}
-          active={$page.url.pathname.endsWith("/comparisons")}
-          >{t.comparisons()}</Link
-        >
-        <Link
           href={resolveTranslatedPath("/[[locale=locale]]/roadmap", $locale)}
           active={$page.url.pathname.endsWith("/roadmap")}>{t.roadmap()}</Link
         >
