@@ -1,7 +1,7 @@
 {
   "name": "t18s",
   "description": "Typesafe i18n for SvelteKit",
-  "version": "0.0.2",
+  "version": "0.1.2",
   "author": "Loris Sigrist",
   "type": "module",
   "main": "src/index.js",
@@ -22,7 +22,8 @@
     "@formatjs/icu-messageformat-parser": "^2.6.2",
     "js-yaml": "^4.1.0",
     "kleur": "^4.1.5",
-    "magic-string": "^0.30.4"
+    "magic-string": "^0.30.4",
+    "typescript-event-target": "^1.0.5"
   },
   "devDependencies": {
     "@formatjs/intl": "^2.9.3",
@@ -32,7 +33,6 @@
     "dts-buddy": "^0.2.5",
     "prettier": "^3.0.3",
     "typescript": "^5.2.2",
-    "typescript-event-target": "^1.0.5",
     "vitest": "^0.34.6"
   },
   "peerDependencies": {
@@ -42,6 +42,7 @@
   "files": [
     "types",
     "src",
+    "compiler",
     "!**/*.test.js"
   ],
   "exports": {

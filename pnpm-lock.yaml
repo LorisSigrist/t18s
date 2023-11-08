@@ -25,6 +25,9 @@ importers:
       svelte:
         specifier: ^3 || ^4
         version: 4.2.1
+      typescript-event-target:
+        specifier: ^1.0.5
+        version: 1.0.5
       vite:
         specifier: ^4.5.0
         version: 4.5.0(@types/node@20.7.2)
@@ -50,9 +53,6 @@ importers:
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
-      typescript-event-target:
-        specifier: ^1.0.5
-        version: 1.0.5
       vitest:
         specifier: ^0.34.6
         version: 0.34.6
@@ -3729,7 +3729,7 @@ packages:
 
   /typescript-event-target@1.0.5:
     resolution: {integrity: sha512-XA12H04oaUBcrD7El9L65to5gKe1gcvi5hzgLOez0Fn2EgGRZvPhGXyhnF1GX9YHBM+soY88zQ8IXOsg+cnqTg==}
-    dev: true
+    dev: false
 
   /typescript@5.0.4:
     resolution: {integrity: sha512-cW9T5W9xY37cc+jfEnaUvX91foxtHkza3Nw3wkoF4sSlKn0MONdkdEndig/qPBWXNkmplh3NzayQzCiHM4/hqw==}
